@@ -1,0 +1,13 @@
+{"chosen_before_outcomes": "2026-11-14, from the OpenRouter catalog; ten families/sizes, default routing, hidden reasoning off where supported",
+ "models": [
+  {"id": "openai/gpt-4.1-mini", "why": "continuity with V1; clean dissociation there"},
+  {"id": "openai/gpt-4.1", "why": "stronger non-reasoning OpenAI model"},
+  {"id": "anthropic/claude-haiku-5.5", "why": "Anthropic family; could not be tested in V1 at 16 tokens with hidden reasoning on"},
+  {"id": "google/gemini-2.5-flash", "why": "Google family"},
+  {"id": "meta-llama/llama-4-maverick", "why": "Meta family; tested in V1 replication"},
+  {"id": "mistralai/mistral-large-2512", "why": "Mistral family; tested in V1 replication"},
+  {"id": "deepseek/deepseek-v3.2", "why": "DeepSeek family; erred by over-refusal in V1 replication"},
+  {"id": "x-ai/grok-4.3", "why": "xAI family; strongest in V1 replication"},
+  {"id": "qwen/qwen3.5-9b", "why": "continuity with V1; small open-weight model"},
+  {"id": "amazon/nova-lite-v1", "why": "Amazon family; weaker low-cost model for the ranking analysis"}
+ ]}
