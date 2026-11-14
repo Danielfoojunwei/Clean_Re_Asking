@@ -108,88 +108,111 @@ dbg = dict(sym_b=sym_b, ch5b=ch5b, ch5e=ch5e, ch1b=ch1b, ow_b=ow_b, ow_e=ow_e, k
            placebo_cut=placebo_cut, reason_up=reason_up, reason_keep=reason_keep, restate_keep=restate_keep,
            placebo_keep=placebo_keep, posr=[round(x) for x in posr], surf=surf, bridge=bridge, both=(both_right, wrong_tot),
            lookup=(lookup_lo, lookup_hi), auroc=(min(auroc), max(auroc)), v={k: v[k] for k in v if not k.endswith("_kn")})
-print({k: (str(x) if isinstance(x, dict) else x) for k, x in dbg.items()})
+
+
 
 
 def lst(names):
     return f"{len(names)} of {n_models}"
 
 
-def fig(name, cap, num):
-    cls = ' class="narrow"' if name == "f1_design" else ""
-    return f'<figure{cls}><img src="figs/{name}.svg" alt=""><figcaption><b>Figure {num}:</b> {cap}</figcaption></figure>'
+def fig(name, cap, num, cls=""):
+    c = f' class="{cls}"' if cls else ""
+    return f'<figure{c}><img src="figs/{name}.svg" alt=""><figcaption><b>Figure {num}:</b> {cap}</figcaption></figure>'
 
 
 def star(title, body):
     return f'<div class="star"><b>★ {title}</b> {body}</div>'
 
 
-# ---------------------------------------------------------------- tables
+def short(text):
+    return f'<p class="short"><b>In short:</b> {text}</p>'
+
+
 def table(head, rows, cls=""):
     th = "".join(f"<th>{h}</th>" for h in head)
     tr = "".join("<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>" for r in rows)
     return f'<table class="{cls}"><thead><tr>{th}</tr></thead><tbody>{tr}</tbody></table>'
 
 
+for tag, key, met in (("e1b_fwd", "E1/base", "fwd_refusal"), ("e1b_both", "E1/base", "both_refusal"),
+                      ("e1b_conly", "E1/base", "chainonly_release"), ("e5b_conly", "E5/base", "chainonly_release"),
+                      ("e5e_conly", "E5/explicit", "chainonly_release")):
+    k_, n_, p_ = pooled(key, met)
+    v[tag] = f"{p_:.0f}%"
+
+ok, no = '<span class="ok">allow</span>', '<span class="no">refuse</span>'
+example = f"""
+<figure class="example"><div class="exwrap">
+<div class="rulebook"><div class="rbtitle">The rulebook</div>
+Finance may send records to Legal.<br>Legal may send records to Finance.<br>Legal may send records to Audit.<br>Audit may send records to Payroll.
+<div class="rbnote">Only listed directions are allowed.</div></div>
+<table class="ex"><thead><tr><th>Request</th><th>What kind it is</th><th>Right answer</th><th>What nine AI models did</th></tr></thead><tbody>
+<tr><td>Legal → Audit</td><td>listed one way</td><td>{ok}</td><td>refused it <b>{v['e1b_fwd']}</b> of the time in quick answers</td></tr>
+<tr><td>Finance → Legal</td><td>listed both ways</td><td>{ok}</td><td>refused it <b>{v['e1b_both']}</b> of the time in quick answers</td></tr>
+<tr><td>Audit → Legal</td><td>wrong way round</td><td>{no}</td><td>allowed it <b>{v['e1b_rev']}</b> (quick) and <b>{v['e5b_rev']}</b> (step-by-step)</td></tr>
+<tr><td>Finance → Audit</td><td>needs a chain (via Legal)</td><td>{no}</td><td>allowed it <b>{v['e5b_conly']}</b> step-by-step; <b>{v['e5e_conly']}</b> once told "no chaining"</td></tr>
+<tr><td>Payroll → Finance</td><td>not connected</td><td>{no}</td><td>allowed it <b>{v['e1b_none']}</b> of the time</td></tr>
+</tbody></table></div>
+<figcaption><b>Figure 1:</b> The task in one example, with pooled results from this study. Each request is a different kind of case, and a single accuracy score mixes all five.</figcaption></figure>"""
+
 cells_tbl = table(
-    ["Request type", "Requested route listed", "Reverse route listed", "Chain of routes exists", "Correct answer", "A wrong answer means", "Per policy"],
-    [["Both listed", "yes", "yes", "–", "allow", "general over-refusal", "2 (mixed), 4 (reciprocal)"],
-     ["Forward only", "yes", "no", "–", "allow", "refusing a one-way permission", "2 (mixed), 4 (ring)"],
-     ["Reverse only", "no", "yes", "no", "decline", "reading one-way as two-way", "2 (mixed)"],
-     ["Reverse + chain", "no", "yes", "yes", "decline", "either of the two (the only denial in a ring policy)", "4 (ring)"],
-     ["Chain only", "no", "no", "yes", "decline", "chaining permissions", "1 (mixed)"],
-     ["No route", "no", "no", "no", "decline", "baseline over-release", "1 (mixed), 4 (reciprocal)"]], "tight")
+    ["Kind of request", "Example (rulebook of Figure 1)", "Right answer", "A wrong answer means the model…"],
+    [["Listed both ways", "Finance → Legal", "allow", "refuses something allowed"],
+     ["Listed one way", "Legal → Audit", "allow", "refuses a one-way permission"],
+     ["Wrong way round", "Audit → Legal", "refuse", "treats a one-way rule as two-way"],
+     ["Wrong way + chain", "only in ring rulebooks: the reverse is listed and a chain exists", "refuse", "did one of two things; the score cannot say which"],
+     ["Needs a chain", "Finance → Audit (via Legal)", "refuse", "joins rules together that were never joined"],
+     ["Not connected", "Payroll → Finance", "refuse", "allows almost anything"]], "tight")
 
 exp_tbl = table(
-    ["Experiment", "What the model is asked", "What it measures"],
-    [["Direct decision", "One word: EXECUTE or DECLINE (16 tokens)", "The decision as a benchmark usually scores it"],
-     ["Confidence", "Same conversation: confidence 0–100 in that decision", "Whether the model knows when it is wrong"],
-     ["Re-check", "Same conversation: KEEP or CHANGE the decision", "Whether it defends or abandons its answer"],
-     ["Restate first", "Write the route to look up, then decide", "A candidate fix"],
-     ["Placebo", "Write a fixed line, then decide", "Control for writing anything first"],
-     ["Reasoning", "Reason in at most 80 words, then decide", "Whether visible reasoning helps"],
-     ["Role readout", "Identical context: which scope is the document / active scope?", "Component 1: binding the roles"],
-     ["Table lookup", "Is the route X → Y in the list? YES or NO", "Component 2: reading direction in the table"]], "tight")
+    ["We ask the model to…", "Why"],
+    [["give a quick one-word decision", "this is how such tests are usually scored"],
+     ["say how confident it is, 0–100 (same conversation)", "does it know when it is wrong?"],
+     ["double-check and say KEEP or CHANGE (same conversation)", "does it defend or abandon its answer?"],
+     ["first write the rule it must look up, then decide", "a candidate fix"],
+     ["first write a meaningless filler line, then decide", "control: is the fix just \"write something first\"?"],
+     ["think step by step, then decide", "does reasoning help?"],
+     ["say which side is the sender and which the receiver", "step 1 of the decision, on its own"],
+     ["say whether a named rule is on the list", "step 2 of the decision, on its own"]], "tight")
 
 prior_tbl = table(
-    ["Prior focus", "Underlying assumption", "What we tested", "What it revealed"],
-    [["One accuracy number for direction-sensitive rules [2, 5, 6]", "A lower score on one-way rules means the model confuses direction or roles",
-      "Six request types that separate reverse-only, chain-only and no-route denials",
-      f"Reverse-only requests were released in {v['e5b_rev']} of reasoned answers; chain-only and reverse + chain in {v['e5b_chain']}."],
-     ["Clarify the rule to make models safer", "A more explicit rule can only improve decisions",
-      "The same items with and without a twelve-word no-chaining clause",
-      f"Wrong releases fell to {v['e5e_chain']}, and refusals of listed requests rose from {v['e1b_ref']} to {v['e1e_ref']}."],
-     ["Stated confidence and self-checks as safeguards [15, 19]", "A model is less sure, or will change its mind, when wrong",
-      "Confidence and a re-check in the same conversation, for every decision",
-      f"{v['conf100_pc']} of confidences were exactly 100; re-checks kept every error or changed correct answers as well."],
-     ["Component probes [7, 8]", "A model that can read the roles and the table will decide correctly",
-      "Role readout and directed lookup on the same items as the decision",
-      f"{both_right:,} of {wrong_tot:,} wrong decisions came with both components answered correctly."]], "tight")
+    ["Common practice", "What it assumes", "What we did instead", "What it showed"],
+    [["One accuracy number for one-way rules [2, 5, 6]", "A low score means the model confuses direction",
+      "Six kinds of request, each with one possible explanation",
+      f"\"Wrong way round\" was allowed {v['e5b_rev']} of the time; requests that need a chain, {v['e5b_chain']}."],
+     ["Make the rule more explicit", "Clearer rules can only help",
+      "The same test with and without one extra sentence",
+      f"Wrongly allowed requests fell to {v['e5e_chain']}, but refusals of allowed requests rose from {v['e1b_ref']} to {v['e1e_ref']}."],
+     ["Trust the model's confidence or self-check [15, 19]", "A model is less sure, or changes its mind, when wrong",
+      "Asked for confidence and a double-check after every decision",
+      f"{v['conf100_pc']} of confidences were exactly 100; double-checks kept every error or changed right answers too."],
+     ["Test the steps separately [7, 8]", "A model that can do each step will decide correctly",
+      "Tested both steps on the same items as the decision",
+      f"In {both_right:,} of {wrong_tot:,} wrong decisions the model had done both steps correctly."]], "tight")
 
 ledger = table(
-    ["Question", "Pre-set test", "Result", "What it means"],
-    [["H1 · Do models read a one-way route as two-way?", "Reverse-only release rate minus no-route, direct answer; bar: 10 points, interval above 0",
-      f"Met by {lst(sym_b)} ({', '.join(sym_b)}). Pooled release {v['e1b_rev']} ({v['e1b_rev_kn']}).",
-      f"<b>No.</b> GPT-4.1 is the near miss: {100 * gsym['value']:.0f} points [{100 * gsym['ci'][0]:.0f}, {100 * gsym['ci'][1]:.0f}]."],
-     ["H1b · Do models chain routes?", "Chain-only release rate minus no-route, with reasoning, original wording",
-      f"Met by {lst(ch5b)}. Pooled chain-reachable release {v['e5b_chain']} ({v['e5b_chain_kn']}).", "<b>Yes.</b> This is what a ring policy measures."],
-     ["H10 · Is chaining a reading of the wording?", "Same index with the no-chaining clause",
-      f"Met by {lst(ch5e)} ({', '.join(ch5e)}). Pooled {v['e5e_chain']} ({v['e5e_chain_kn']}).", "<b>Mostly yes.</b> One sentence removes it for eight models."],
-     ["H1c · Do models refuse listed requests?", "Refusal of forward-only minus both-listed, direct answer",
-      f"Met by {lst(ow_b)} without the clause and {lst(ow_e)} with it. Pooled refusal of listed requests {v['e1b_ref']} → {v['e1e_ref']}.",
-      "<b>Yes, and clarifying makes it worse.</b>"],
-     ["H2 · Does confidence track correctness?", "AUROC of stated confidence for correctness below 0.65",
-      f"AUROC {min(auroc):.2f}–{max(auroc):.2f} in {n_models} of {n_models}; {v['conf100']}/{v['confn']} answers were exactly 100.", "<b>No.</b>"],
-     ["H3 · Do models defend wrong decisions?", "KEEP on at least half of wrong decisions",
-      f"Met by {lst(keepers)} ({', '.join(keepers)}).", "<b>Split.</b> The rest change correct answers too."],
-     ["H4 · Does restating the route help beyond a placebo?", "Fewer chain releases than direct answer, interval below 0",
-      f"Restate: {lst(restate_cut)}. Placebo: {lst(placebo_cut)}.", "<b>Partly.</b> Some of the gain is from writing anything first."],
-     ["H5 · Does reasoning help?", "Change versus direct answer, original wording",
-      f"More listed requests allowed in {lst(reason_keep)}; more chain releases in {lst(reason_up)}.", "<b>It trades one error for the other</b> unless the rule is explicit."],
-     ["H6 · Is the failure in a component?", "Role readout and lookup on the items behind each wrong decision",
-      f"Both correct for {both_right:,} of {wrong_tot:,} wrong decisions.", "<b>No.</b> The parts are right; the composition fails."],
-     ["H7 · Do symmetric and one-way requests rank models differently?", "Spearman correlation across models",
-      f"ρ = {H7['spearman_symmetric_vs_oneway']:.2f}; {H7['pairs_that_swap_order']} of {H7['model_pairs']} model pairs swap.", "<b>No.</b> Our prediction failed."]],
+    ["Question asked in advance", "Answer", "Evidence"],
+    [["Do models treat a one-way rule as two-way?", "<b>Rarely.</b>",
+      f"Passed our bar in {lst(sym_b)} ({', '.join(sym_b)}); allowed {v['e1b_rev']} of the time overall ({v['e1b_rev_kn']})."],
+     ["Do models join rules into chains?", "<b>Yes.</b>",
+      f"Passed in {lst(ch5b)} with step-by-step answers; {v['e5b_chain']} wrongly allowed ({v['e5b_chain_kn']})."],
+     ["Is chaining caused by the wording?", "<b>Mostly.</b>",
+      f"With the extra sentence it passed in {lst(ch5e)} ({', '.join(ch5e)}); {v['e5e_chain']} overall ({v['e5e_chain_kn']})."],
+     ["Do models refuse requests that are allowed?", "<b>Yes, and the extra sentence makes it worse.</b>",
+      f"{v['e1b_ref']} refused in quick answers, {v['e1e_ref']} with the extra sentence."],
+     ["Does confidence tell right from wrong?", "<b>No.</b>",
+      f"{v['conf100']} of {v['confn']} confidences were exactly 100; separation score (AUROC) {min(auroc):.2f}–{max(auroc):.2f}, where 0.5 is chance."],
+     ["Do models stand by wrong answers?", "<b>Some always do.</b>",
+      f"{lst(keepers)} kept at least half of their wrong answers ({', '.join(keepers)}); the others also changed right answers."],
+     ["Does writing the rule first help?", "<b>Partly.</b>",
+      f"It cut chaining in {lst(restate_cut)}; a meaningless filler line did so in {lst(placebo_cut)}."],
+     ["Does step-by-step reasoning help?", "<b>It swaps one mistake for another.</b>",
+      f"More allowed requests got through in {lst(reason_keep)}; more chaining in {lst(reason_up)}."],
+     ["Is one step of the decision broken?", "<b>No.</b>",
+      f"Both steps were right in {both_right:,} of {wrong_tot:,} wrong decisions."],
+     ["Do one-way and two-way requests rank models differently?", "<b>No. Our prediction failed.</b>",
+      f"Rank agreement ρ = {H7['spearman_symmetric_vs_oneway']:.2f}; {H7['pairs_that_swap_order']} of {H7['model_pairs']} model pairs swap."]],
     "ledger")
 
 # appendix tables
@@ -206,199 +229,192 @@ for m in M:
                       rci(m["label"], "E1/explicit", "chain_release"), rci(m["label"], "E5/base", "chain_release"),
                       rci(m["label"], "E5/explicit", "chain_release"), rci(m["label"], "E1/base", "listed_refusal"),
                       rci(m["label"], "E1/explicit", "listed_refusal"), rci(m["label"], "E5/base", "listed_refusal")])
-full_tbl = table(["Model", "Reverse-only released, direct", "Chain released, direct", "… with clause", "Chain released, reasoning", "… with clause",
-                  "Listed refused, direct", "… with clause", "Listed refused, reasoning"], full_rows, "tight small")
+full_tbl = table(["Model", "Wrong way round allowed, quick", "Chain allowed, quick", "… with extra sentence", "Chain allowed, step-by-step", "… with extra sentence",
+                  "Allowed request refused, quick", "… with extra sentence", "Allowed request refused, step-by-step"], full_rows, "tight small")
 ex = next(i for i in gen.items(1) if i["exp"] == "E1" and i["surface"] == "opaque" and i["clause"] == "explicit" and i["cell"] == "NEI_PATH")
 ex2 = next(i for i in gen.items(1) if i["exp"] == "E1" and i["surface"] == "natural" and i["clause"] == "base" and i["cell"] == "FWD")
 ex5 = next(i for i in gen.items(1) if i["exp"] == "E5" and i["surface"] == "opaque" and i["clause"] == "base" and i["cell"] == "REV")
 fu = gen.followups(ex, "DECLINE")
 pre = lambda s: f"<pre>{html.escape(s)}</pre>"
 
+
 CSS = open("paper.css").read()
 BODY = f"""
 <h1 class="title">One Score, Three Failures: What Accuracy on One-Way Authorization Rules Hides<sup>1</sup></h1>
 <div class="auth"><b>Daniel Foo Jun Wei</b><br>Nanyang Technological University (NTU), Singapore<br><span class="with">With</span><br><b>Apart Research</b></div>
 <div class="abstract"><h3>Abstract</h3>
-<p>Authorization benchmarks usually report one accuracy number for rules that have a direction, such as "A may send to B", and a
-low score is read as the model confusing direction. We show that this number hides three unrelated failures. Our benchmark splits
-requests into six mutually exclusive types, crosses them with a twelve-word clarifying clause, and runs eight experiments per item,
-including the model's confidence, a requested re-check and separate tests of each part of the decision: {v['n_resp']} graded responses
-from nine models on up to 18 fresh name banks each, under a pre-registered plan. First, models chain permissions: with reasoning they
-released {v['e5b_chain']} of requests reachable only through a chain of listed routes, and {v['e5e_chain']} once the rule said routes
-cannot be chained. Requests supported only by the reverse route were released {v['e5b_rev']} of the time, so the common "ring" policy
-design, where every denied request has both properties, mistakes chaining for direction confusion. Second, the larger failure runs the
-other way: in direct answers models refused {v['e1b_ref']} of explicitly listed requests (Grok 4.3: {kn('Grok 4.3', 'E1/base', 'listed_refusal')}),
-the clause raised this to {v['e1e_ref']}, and the same models found those routes in the table {lookup_lo:.0f}–{lookup_hi:.0f}% of the time.
-Third, stated confidence was exactly 100 in {v['conf100_pc']} of answers, right or wrong, and a requested re-check either kept every
-error or changed correct answers as well. We release the benchmark, the protocol history and every response.</p></div>
+<p>AI assistants are tested on permission rules such as "Finance may send records to Legal", and the result is usually one accuracy
+score. When that score is low on one-way rules, the model is said to confuse direction. We show that the score hides three different
+problems and that this explanation is mostly wrong. Our test sorts requests into six kinds that each have one possible explanation,
+repeats every item with and without one clarifying sentence, and asks eight things per item, including the model's confidence and a
+double-check: {v['n_resp']} scored answers from nine models, under a plan fixed in advance. First, models join rules into chains
+(Finance to Legal plus Legal to Audit becomes Finance to Audit): with step-by-step answers they wrongly allowed {v['e5b_chain']} of
+such requests, and {v['e5e_chain']} once the rule said "routes cannot be chained". Going the wrong way round was allowed only
+{v['e5b_rev']} of the time. Second, the larger problem is the opposite: in quick answers models refused {v['e1b_ref']} of requests that
+were plainly allowed (Grok 4.3: {kn('Grok 4.3', 'E1/base', 'listed_refusal')}), and the clarifying sentence raised this to
+{v['e1e_ref']}, although the same models found those rules on the list {lookup_lo:.0f}–{lookup_hi:.0f}% of the time. Third, models said
+they were exactly 100% confident in {v['conf100_pc']} of answers, right or wrong, and a double-check either kept every error or changed
+right answers too. We release the test, its plan and every answer.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
 Epistemics and Decision-Making Evals). Every experiment reported here was designed, run and analysed during the sprint (Appendix A.2).</p>
 
 <h2>1. Introduction</h2>
-<p><b>One number, read as one failure.</b> An agent that releases documents must check a rule with a direction: this document's scope
-may flow to that requester's scope, and not back. Benchmarks of such rules report an accuracy, and a gap between symmetric and one-way
-rules is read as the model confusing direction or roles. That reading assumes there is only one way to get a one-way rule wrong.</p>
-<p><b>Why the reading is unsafe.</b> A natural way to build a one-way policy is a ring of routes, A to B to C to D and back to A. In a
-ring every denied request has two properties at once: its reverse route is listed, and a chain of listed routes leads from source to
-destination (Figure 1, middle). A model can wrongly release it by reversing a route or by chaining routes, and the score cannot say
-which. Nor does a release count say anything about requests the model wrongly refuses. This paper builds a benchmark that gives each
-of these errors its own cell, and asks each model three further things on the same items: how confident it is, whether it stands by
-its answer, and whether it can do each part of the task on its own.</p>
-{fig("f1_design", "The three policy structures. In a ring policy the only denied request has a listed reverse route and a chain, so two different errors look the same. The mixed policy gives every denial type its own request. Each bank also uses the transpose of the mixed and ring policies, so the same request text is allowed under one policy and denied under the other.", 1)}
-<p><b>Why it matters for epistemics.</b> The sprint asks whether models know how solid their claims are, whether they defend what they
-imply, and how a benchmark exploit is demonstrated and closed [1]. A benchmark that scores only the final word answers none of these,
-and it invites a mechanism the data may not support. The remedy is cheap: split the denominator until each cell has one
-explanation, add the sentence that removes an ambiguity, and ask the model about its own answer.</p>
+<p><b>The task.</b> A company rulebook says who may send records to whom. Each rule has a direction: "Finance may send records to
+Legal" does not let Legal send to Finance. An AI assistant that handles requests must apply such rules correctly every time
+(Figure 1).</p>
+{example}
+<p><b>The usual test, and its blind spot.</b> Give the model many requests, count the right answers, report one score. If the score is
+lower on one-way rules than on two-way rules, conclude that the model confuses direction. This conclusion assumes there is only one
+way to get a one-way rule wrong. Figure 1 shows there are several, and a popular way of building test rulebooks, a ring (A to B to C
+to D to A), makes two of them indistinguishable: in a ring, every request that should be refused both goes the wrong way round and
+can be reached by a chain (Figure 2).</p>
+{fig("f_design", "Three ways to build a test rulebook. In a ring, the only request that should be refused is both \"wrong way round\" and reachable by a chain, so a wrong answer has two possible causes. Our mixed rulebook gives each mistake its own request.", 2, "narrow")}
+<p><b>What we did.</b> We built a test in which every request is exactly one of six kinds, so each wrong answer has one explanation. We
+ran every item twice, once with an extra sentence ("routes cannot be reversed and cannot be chained"), and on the same items asked
+each model how confident it was, whether it would stand by its answer, and whether it could do each step of the task alone.</p>
 <div class="cards">
-<div><b>Six cells, one explanation each</b><br>Every request is exactly one of six types; release rate is 50% in every policy; the same
-request flips between allowed and denied across paired policies.</div>
-<div><b>Three failures found</b><br>Chaining that one sentence removes; refusal of listed requests that the same sentence makes worse;
-confidence that carries no information.</div>
-<div><b>Pre-registered, changes dated</b><br>The plan was hashed before the first call; two pilots and three amendments are reported in
-full, with every response released.</div></div>
+<div><b>1 · It joins rules it shouldn't</b><br><span class="big">{v['e5b_chain']} → {v['e5e_chain']}</span><br>of chained requests wrongly allowed, before and after one clarifying sentence.</div>
+<div><b>2 · It refuses what is allowed</b><br><span class="big">{v['e1b_ref']} → {v['e1e_ref']}</span><br>of plainly allowed requests refused; the clarifying sentence makes it worse.</div>
+<div><b>3 · It cannot tell when it is wrong</b><br><span class="big">{v['conf100_pc']}</span><br>of answers come with "100% confident", whether right or wrong.</div></div>
+<p><b>Why this matters.</b> The sprint asks whether models know how solid their claims are, whether they defend what they say, and how a
+weakness in a benchmark can be shown and closed [1]. A score that counts only final answers addresses none of these, and it invites
+an explanation the data may not support.</p>
 
 <h2>2. Related Work</h2>
-<p><b>Authorization benchmarks.</b> AuthorizationPairs holds an operation fixed and varies the permission evidence, and separates
-unusable outputs from true denials [2]. ResidualAuth proves that identical current permissions can hide state that requires opposite
-decisions, and scores matched pairs [3]. AuthorizationBench, AuthGateBench and DelegationBench measure whether agents stay inside what
-was granted [4, 5, 6]. These already use paired cases and both-correct scoring. None separates the ways a single directed rule can be
-violated, which is what our six cells do.</p>
-<p><b>Direction and binding.</b> Models bind entities to roles in context [8], can pick the right tool for the wrong entity [7], and are
-weak on the direction of relations in classification [9]; the reversal curse concerns facts learned in one direction during training
-[10]. Our reverse-only cell tests the in-context analogue for permissions and finds it rare.</p>
-<p><b>What a score can identify.</b> Contrast sets and CheckList perturb inputs to probe a decision boundary [13, 14]. Two recent results
-make the logic exact: an error is invisible to a test when it commutes with the test's answer transform [11], and a protocol identifies
-a property only if no alternative policy produces the same observations [12]. Our six cells apply that logic to authorization: they add the
-observations needed to tell reversal from chaining. Kalai et al. argue that scoring rules shape what models learn to do [18].</p>
-<p><b>Confidence and pushback.</b> MASK separates honesty from accuracy [15]; verbalised confidence is known to be overconfident [19];
-SycEval and later work study answer changes under pushback and warn that suppressing capitulation can also suppress warranted updates
-[16, 17]. We measure both inside one authorization task, tied to the same items as the decision.</p>
+<p><b>Tests of AI permissions.</b> AuthorizationPairs keeps a request fixed and changes the evidence for permission, and separates unusable
+answers from real refusals [2]. ResidualAuth proves that two situations with identical current permissions can require opposite
+decisions [3]. AuthorizationBench, AuthGateBench and DelegationBench measure whether agents stay inside what they were granted [4, 5,
+6]. These use matched cases. None separates the different ways one directional rule can be broken.</p>
+<p><b>Direction and who-is-who.</b> Models track which name plays which role [8], can use the right tool on the wrong person [7], and are
+weak at relation direction in classification [9]; the "reversal curse" concerns facts learned one way round in training [10]. We test
+the permission version directly and find it rare.</p>
+<p><b>What a score can and cannot show.</b> Contrast sets and CheckList change inputs to probe a model's decision boundary [13, 14]. Two
+recent results make the logic exact: a test cannot see an error that leaves its answers unchanged [11], and a test identifies a
+property only if no other behaviour produces the same results [12]. Our six kinds apply that logic to permissions. Scoring rules also
+shape what models learn to do [18].</p>
+<p><b>Confidence and pushback.</b> MASK separates honesty from accuracy [15]; stated confidence is known to run high [19]; SycEval and
+later work study answer changes under pushback and warn that stopping a model from caving can also stop it from correcting itself
+[16, 17]. We measure both on the same items as the decision.</p>
 {prior_tbl}
-<p class="cap"><b>Table 1:</b> Where this study departs from prior practice, and what each change revealed.</p>
+<p class="cap"><b>Table 1:</b> How this study differs from common practice, and what each change showed.</p>
 
-<h2>3. Benchmark and Setup</h2>
-<p><b>3.1 Task.</b> A prompt states a policy, lists four allowed routes between four named scopes, gives a document scope and an active
-(requester) scope, and asks for EXECUTE or DECLINE. The correct answer is EXECUTE exactly when the route from document scope to active
-scope is listed. No tools are attached and nothing is released; all names are synthetic.</p>
-<p><b>3.2 Six request types.</b> Each request falls in exactly one row of Table 2. A bank of four fresh names is used with five
-policies: a mixed policy and its transpose, a ring and its transpose, and a reciprocal policy. Each policy has eight requests, four
-allowed and four denied.</p>
-{cells_tbl}
-<p class="cap"><b>Table 2:</b> The six request types. They are mutually exclusive and cover every request; "chain" means a path of two or
-more listed routes from source to destination.</p>
-<p><b>3.3 Factors.</b> Every item is run with the original rule wording and with one added sentence: "routes cannot be reversed and
-cannot be chained". Role order (document scope printed first or second) and answer order (EXECUTE or DECLINE named first) are balanced
-within every item and clause. Each bank exists on two surfaces: opaque tokens with arrows, and company departments in sentences
+<h2>3. The Test</h2>
+<p><b>3.1 One item.</b> The model sees a rulebook of four rules between four names, a sender and a receiver, and must answer EXECUTE
+(allow) or DECLINE (refuse). The right answer is "allow" only if that exact rule, in that direction, is on the list. Nothing real is
+sent and every name is invented. In the prompts the sender is called the document scope and the receiver the active scope
 (Appendix F).</p>
-<p><b>3.4 Eight experiments per item.</b></p>
+<p><b>3.2 Six kinds of request.</b> Table 2 lists them. Each set of four fresh names is used with five rulebooks: a mixed one and its
+mirror image, a ring and its mirror image, and a two-way one. Every rulebook has eight requests, four to allow and four to refuse, so
+a model that always says yes or always says no scores 50%.</p>
+{cells_tbl}
+<p class="cap"><b>Table 2:</b> The six kinds of request. Every request is exactly one kind.</p>
+<p><b>3.3 What we vary.</b> Every item is run with the rule as first written and with the extra sentence. We also balance which of sender
+and receiver is printed first and which answer word is named first, and use two naming styles: code words with arrows (AMBER -> BASIL)
+and department names in sentences.</p>
+<p><b>3.4 Eight questions per item.</b></p>
 {exp_tbl}
-<p class="cap"><b>Table 3:</b> Experiments. Hidden reasoning was switched off wherever the API allows, so "reasoning" means visible reasoning.</p>
-<p><b>3.5 Models and rounds.</b> Nine models from eight developers were chosen before any outcome (Appendix E). A round is one bank on
-each surface, 2,148 calls per model. Eight models ran nine rounds (18 banks); GPT-4.1 ran five (10 banks) because of price. Temperature
-was 0. Scoring is strict: one allowed word, otherwise malformed, and malformed answers stay in every denominator.</p>
-<p><b>3.6 Analysis and protocol.</b> The bank is the unit of replication; intervals are 95% percentile bootstraps over banks. An index is
-"met" for a model if it is at least 10 points with an interval above zero. A model is qualified if at most 5% of its direct answers
-are malformed and it names roles correctly at least 95% of the time; all nine qualified. The plan was written and hashed before the
-first call. Two development pilots then changed the design, and each change was recorded with a timestamp before confirmatory data
-existed: the first pilot showed chaining and led us to add the ring and reciprocal policies and the clause; the second fixed answer
-formats. Pilot data is never pooled. Three deviations are disclosed in Appendix C, including two extra GPT-4.1 rounds added after its
-first three had been seen.</p>
+<p class="cap"><b>Table 3:</b> What each item is asked. Hidden reasoning was switched off where possible, so "step by step" means visible reasoning.</p>
+<p><b>3.5 Models and scale.</b> Nine models from eight developers, chosen before any result (Appendix E). Eight models ran 18 name sets
+and GPT-4.1 ran 10 because of price. Answers are scored strictly: one allowed word, otherwise "malformed", and malformed answers
+count as wrong.</p>
+<p><b>3.6 How we kept ourselves honest.</b> The plan (kinds, questions, pass marks) was written and fingerprinted before the first call.
+A model "passes" a test if the effect is at least 10 points and its uncertainty range, computed across name sets, stays above zero.
+Two small trial runs changed the design before the main run: the first showed chaining and led us to add the ring and two-way
+rulebooks and the extra sentence; the second fixed answer formats. Trial data is never mixed with main data. Every change is dated in
+Appendix C, including two extra GPT-4.1 runs added after seeing its first three.</p>
 
 <h2>4. Results</h2>
-<p>The nine models returned {v['n_resp']} scored responses; {v['n_mal']} were malformed and none was dropped. Table 4 lists every
-pre-set test. Rates are shares of requests; brackets are 95% intervals over banks.</p>
+<p>The nine models gave {v['n_resp']} scored answers; {v['n_mal']} were malformed and none was dropped. Table 4 answers every question we
+set in advance. Square brackets show 95% uncertainty ranges across name sets.</p>
 {ledger}
-<p class="cap"><b>Table 4:</b> Every pre-registered question, its test and its outcome. "Met by" counts qualified models passing the pre-set bar.</p>
+<p class="cap"><b>Table 4:</b> Every question fixed in advance, with its answer.</p>
 
-<h3>4.1 The gap on one-way rules is chaining</h3>
-<p>With step-by-step reasoning and the original wording, models released {v['e5b_chain']} of chain-reachable requests
+<h3>4.1 Models join rules into chains, and one sentence stops it</h3>
+{short("given \"A may send to B\" and \"B may send to C\", many models allow A to C. Tell them rules cannot be chained and they stop.")}
+<p>With step-by-step answers and the rule as first written, models wrongly allowed {v['e5b_chain']} of requests that need a chain
 ({v['e5b_chain_kn']}): Gemini 2.5 Flash {kn('Gemini 2.5 Flash', 'E5/base', 'chain_release')}, Llama 4 Maverick
-{kn('Llama 4 Maverick', 'E5/base', 'chain_release')}, GPT-4.1-mini {kn('GPT-4.1-mini', 'E5/base', 'chain_release')}. Their reasoning
-says why: "GARNET → LOTUS → ELM is a valid route". With the clause the pooled rate was {v['e5e_chain']} ({v['e5e_chain_kn']}), and
-eight of nine models were below 3% (Figure 2). Direct answers show the same pattern at lower rates ({v['e1b_chain']} to
-{v['e1e_chain']}). Requests with no route at all were released {v['e1b_none']} of the time, so this is not general over-release.</p>
-{star("Largely a wording problem.", f"The word \"route\" can be read as \"path\". Under that reading the releases are correct, and one sentence removes them for eight of nine models. Nova Lite still chained with the clause ({kn('Nova Lite', 'E5/explicit', 'chain_release')}).")}
-{fig("f2_clause", "Chain-reachable requests (chain only, and reverse + chain) that were wrongly released, with the original wording and with the no-chaining clause. Bars are 95% intervals over banks.", 2)}
-{fig("f3_heat", "Error rate by request type. B both listed, F forward only (allowed; an error is a refusal); R reverse only, R+C reverse + chain, C chain only, N no route (denied; an error is a release). Numbers are percentages, shown from 5%.", 3)}
+{kn('Llama 4 Maverick', 'E5/base', 'chain_release')}. Their reasoning says why: "GARNET → LOTUS → ELM is a valid route". With the extra
+sentence the rate was {v['e5e_chain']} ({v['e5e_chain_kn']}), and eight of nine models were below 3% (Figure 3). Requests with no
+connection at all were allowed {v['e1b_none']} of the time, so models are not simply saying yes to everything.</p>
+{fig("f_clause", "How often models wrongly allowed a request that needs a chain. Orange: rule as first written. Blue: with the sentence \"routes cannot be reversed and cannot be chained\". Thin lines are 95% uncertainty ranges. Further left is better.", 3)}
+{star("Largely a wording problem.", f"\"Route\" can be read as \"path\", and under that reading chaining is reasonable. One sentence removes it for eight of nine models; Nova Lite still chained ({kn('Nova Lite', 'E5/explicit', 'chain_release')}).")}
 
-<h3>4.2 Reading one-way as two-way is rare</h3>
-<p>When only the reverse route was listed, direct answers released {v['e1b_rev']} of requests and reasoned answers {v['e5b_rev']}
-(Figure 3, column R). Only Nova Lite met the pre-set bar. GPT-4.1 is the exception worth reporting: all of its errors occurred when the
-active scope was printed before the document scope (Figure 4). It released {ro['REV/a_first'][0]}/{ro['REV/a_first'][1]} reverse-only
-requests in that order and {ro['REV/d_first'][0]}/{ro['REV/d_first'][1]} in the other, with the role readout at
-{g['components']['roles'][0]}/{g['components']['roles'][1]}. The effect persisted with the clause and vanished with reasoning. This is
-a genuine role error behind correct role reports, in one model and at {100 * gsym['value']:.0f} points
-[{100 * gsym['ci'][0]:.0f}, {100 * gsym['ci'][1]:.0f}], just under the bar.</p>
-{fig("f8_order", "Left: GPT-4.1's wrong direct decisions by which role line was printed first. Right: the same contrast for every model, pooled over request types.", 4)}
+<h3>4.2 Going the wrong way round is rare</h3>
+{short("the mistake everyone assumes, treating a one-way rule as two-way, almost never happens.")}
+<p>When only the reverse rule was listed, quick answers allowed {v['e1b_rev']} of requests and step-by-step answers {v['e5b_rev']}
+(Figure 4, column "wrong way round"). One model is an exception: GPT-4.1 made every one of its mistakes when the receiver was printed
+before the sender, allowing {ro['REV/a_first'][0]}/{ro['REV/a_first'][1]} wrong-way requests in that order and
+{ro['REV/d_first'][0]}/{ro['REV/d_first'][1]} in the other, while naming sender and receiver correctly
+{g['components']['roles'][0]}/{g['components']['roles'][1]} times (Appendix G, Figure G1).</p>
+{fig("f_heat", "Share of wrong answers for each model and kind of request, in four conditions. The two left columns of each panel should be allowed, so an error there is a wrong refusal; the four right columns should be refused, so an error is a wrong \"allow\". Darker is worse; numbers are percentages, shown from 5%.", 4)}
 
-<h3>4.3 Models refuse requests that are listed</h3>
-<p>The largest error was not a release. In direct answers models refused {v['e1b_ref']} of listed requests ({v['e1b_ref_kn']}). Grok 4.3
-refused {rci('Grok 4.3', 'E1/base', 'listed_refusal')}; DeepSeek v3.2, Llama 4 Maverick, Qwen3.5-9B and Nova Lite refused 20–27%. The
-clarifying clause raised the pooled rate to {v['e1e_ref']} ({v['e1e_ref_kn']}); for DeepSeek it rose from
-{kn('DeepSeek v3.2', 'E1/base', 'listed_refusal')} to {kn('DeepSeek v3.2', 'E1/explicit', 'listed_refusal')} (Figure 5, left). The refusals
-track where the matching line sits: pooled over models, {posr[0]:.0f}% when it is the first line and {posr[3]:.0f}% when it is the
-last; for Grok on opaque tokens, {gpos['opaque/0'][0]}/{gpos['opaque/0'][1]} against {gpos['opaque/3'][0]}/{gpos['opaque/3'][1]}. They
-are far more common on opaque tokens ({surf['opaque']:.0f}%) than on department sentences ({surf['natural']:.0f}%).</p>
-{fig("f4_refusal", "Left: listed requests refused in direct answers, with and without the clause; the black tick is the same model's error rate when asked directly whether those routes are in the table. Middle and right: refusal rate by the line that holds the matching route, for the four models that refuse most.", 5)}
-{star("Clarifying the rule made five models less useful.", "A sentence that only forbids reversing and chaining raised refusals of plainly listed requests by 9 to 17 points for Grok, DeepSeek, Llama, Qwen and Nova. A benchmark that counts only unauthorized releases would score this as an improvement.")}
+<h3>4.3 Models refuse requests that are plainly allowed</h3>
+{short("the biggest mistake is saying no to something the rulebook lists, and making the rule stricter makes it worse.")}
+<p>In quick answers models refused {v['e1b_ref']} of allowed requests ({v['e1b_ref_kn']}). Grok 4.3 refused
+{rci('Grok 4.3', 'E1/base', 'listed_refusal')}. The extra sentence, which only forbids reversing and chaining, raised the overall rate
+to {v['e1e_ref']} ({v['e1e_ref_kn']}); DeepSeek went from {kn('DeepSeek v3.2', 'E1/base', 'listed_refusal')} to
+{kn('DeepSeek v3.2', 'E1/explicit', 'listed_refusal')} (Figure 5, left). Refusals grow the further down the list the matching rule
+sits: {posr[0]:.0f}% when it is first and {posr[3]:.0f}% when it is last. They are three times as common with code-word names
+({surf['opaque']:.0f}%) as with department names ({surf['natural']:.0f}%).</p>
+{fig("f_refusal", "Left: how often models refused an allowed request in quick answers. The black tick shows how often the same model failed to find the same rules when asked directly \"is it on the list?\"; it is near zero, so the model can see the rule. Middle and right: refusals by where the matching rule sits in the list, for the four models that refuse most.", 5)}
+{star("A stricter rule made five models less useful.", "Refusals of allowed requests rose 9 to 17 points for Grok, DeepSeek, Llama, Qwen and Nova. A test that only counts wrongly allowed requests would call that an improvement.")}
 
-<h3>4.4 The parts are right and the whole is wrong</h3>
-<p>Role readout was correct in {roles_k:,}/{roles_n:,} answers and directed lookup in {lookup_lo:.0f}–{lookup_hi:.0f}% per model, on the same
-banks and in the same context as the decision (Figure 6). Of {wrong_tot:,} wrong direct decisions, {both_right:,} came from a model that
-answered both role questions and both lookup questions for that item correctly. The failure is in composing two things the model can
-do, not in either of them.</p>
-{fig("f6_know", "Left: accuracy on naming the roles, on finding the directed route, and on the decision itself (direct and with reasoning). Right: share of wrong direct decisions for which the model answered both component questions correctly.", 6)}
+<h3>4.4 Each step is right and the decision is wrong</h3>
+{short("models can name the sender and receiver and can find the rule on the list, and still decide wrongly.")}
+<p>Models named sender and receiver correctly in {roles_k:,} of {roles_n:,} answers and found the rule on the list
+{lookup_lo:.0f}–{lookup_hi:.0f}% of the time (Figure 6). Of {wrong_tot:,} wrong quick decisions, {both_right:,} came from a model that got
+both steps right for that very item. The failure is in putting the two steps together.</p>
+{fig("f_know", "Left: how often each model gets the two steps right (blue, green) compared with the final decision (yellow, orange). Right: of each model's wrong quick decisions, the share where it had answered both steps correctly.", 6)}
 
-<h3>4.5 Confidence and re-checks carry almost no information</h3>
-<p>Asked for confidence in the decision just given, models answered exactly 100 in {v['conf100']} of {v['confn']} cases. The AUROC of
-confidence for correctness was {min(auroc):.2f}–{max(auroc):.2f}; eight of nine models gave 90 or more on at least 96% of wrong decisions,
-and DeepSeek on 71% (Figure 7, left). Asked to re-check, Grok 4.3 kept all {recheck(grok, WRONG, 'KEEP')[0]} of its wrong decisions and
-GPT-4.1 kept {recheck(g, WRONG, 'KEEP')[0]} of {recheck(g, WRONG, 'KEEP')[1]}. Gemini 2.5 Flash changed
-{recheck(BY['Gemini 2.5 Flash'], WRONG, 'CHANGE')[0]} of {recheck(BY['Gemini 2.5 Flash'], WRONG, 'CHANGE')[1]} wrong decisions and also
-{recheck(BY['Gemini 2.5 Flash'], ['correct'], 'CHANGE')[0]:,} of {recheck(BY['Gemini 2.5 Flash'], ['correct'], 'CHANGE')[1]:,} correct ones;
-DeepSeek changed about half of both (Figure 7, right).</p>
-{fig("f5_conf", "Left: share of direct decisions given a stated confidence of 90 or more, when correct and when wrong. Right: share of decisions the model changed when asked to re-check; points on the diagonal change right and wrong answers equally.", 7)}
-{star("Neither safeguard separates right from wrong.", "Confidence is flat, and a re-check is either a rubber stamp or a coin-weighted flip. Confidence was elicited in a follow-up turn under a one-word instruction, which may flatten it further (Section 5).")}
+<h3>4.5 Models do not know when they are wrong</h3>
+{short("confidence is always high, and a double-check is either a rubber stamp or a coin flip.")}
+<p>Asked how confident they were, models said exactly 100 in {v['conf100']} of {v['confn']} cases. Eight of nine gave 90 or more on at
+least 96% of their wrong answers (Figure 7, left). Asked to double-check, Grok 4.3 kept all {recheck(grok, WRONG, 'KEEP')[0]} of its
+wrong answers and GPT-4.1 kept {recheck(g, WRONG, 'KEEP')[0]} of {recheck(g, WRONG, 'KEEP')[1]}. Gemini 2.5 Flash changed
+{recheck(BY['Gemini 2.5 Flash'], WRONG, 'CHANGE')[0]} of {recheck(BY['Gemini 2.5 Flash'], WRONG, 'CHANGE')[1]} wrong answers but also
+{recheck(BY['Gemini 2.5 Flash'], ['correct'], 'CHANGE')[0]:,} of {recheck(BY['Gemini 2.5 Flash'], ['correct'], 'CHANGE')[1]:,} right ones
+(Figure 7, right).</p>
+{fig("f_conf", "Left: share of answers given a confidence of 90 or more, for right answers (blue) and wrong answers (orange). The two nearly coincide, so confidence does not flag errors. Right: when asked to double-check, the share of wrong answers changed against the share of right answers changed. A useful check sits top left; models on the diagonal change both equally.", 7)}
 
-<h3>4.6 Fixes trade one error for the other</h3>
-<p>With the original wording, visible reasoning allowed more listed requests in {lst(reason_keep)} models and released more
-chain-reachable requests in {lst(reason_up)} (Figure 8). Restating the route first cut chain releases in {lst(restate_cut)} models, and a
-placebo line did so in {lst(placebo_cut)}; for listed requests, restating helped in {lst(restate_keep)} and the placebo in
-{lst(placebo_keep)}. So part of the benefit is from writing anything before the answer. With the clause, reasoning is the best single
-procedure: chain releases {v['e5e_chain']} and refusals of listed requests {v['e5e_ref']}.</p>
-{fig("f7_mitig", "Change against the direct answer on the same items, original wording. Left: chain-reachable requests released (lower is better). Right: listed requests allowed (higher is better). Bars are 95% intervals over banks.", 8)}
+<h3>4.6 Fixes swap one mistake for another</h3>
+{short("thinking step by step lets more allowed requests through but also chains more, unless the rule forbids chaining.")}
+<p>With the rule as first written, step-by-step answers allowed more of the allowed requests in {lst(reason_keep)} models and chained
+more in {lst(reason_up)} (Figure 8). Writing the rule first cut chaining in {lst(restate_cut)} models, but a meaningless filler line
+did so in {lst(placebo_cut)}, so part of the benefit comes from writing anything before answering. The best combination was the extra
+sentence plus step-by-step answers: {v['e5e_chain']} chaining and {v['e5e_ref']} refusals of allowed requests.</p>
+{fig("f_mitig", "Change from the quick answer when the model first writes the rule (blue), writes a filler line (yellow) or thinks step by step (green), with the rule as first written. Left: chained requests wrongly allowed, where left of zero is better. Right: allowed requests correctly allowed, where right of zero is better.", 8)}
 
 <h3>4.7 What did not hold</h3>
-<p>We predicted that symmetric and one-way requests would rank models differently. They do not (ρ = {H7['spearman_symmetric_vs_oneway']:.2f};
-{H7['pairs_that_swap_order']} of {H7['model_pairs']} pairs swap; Figure G2). We also audited public datasets for items whose role-swapped twin
-appears with a different label. The two we could audit (PrivacyLens, 493 items; a synthetic contextual-integrity set, 4,024 items)
-contain no such twin, so they cannot penalise direction errors; but swapping sender and recipient is often not meaningful there, so
-this is weak support. Ring policies remain harder than reciprocal ones as a description: accuracy on reciprocal policies was {bridge[('base', 'REC')]:.0f}%
-and on ring policies {bridge[('base', 'CYC')]:.0f}% with the original wording, {bridge[('explicit', 'REC')]:.0f}% and
-{bridge[('explicit', 'CYC')]:.0f}% with the clause.</p>
+<p>We predicted that one-way and two-way requests would rank the models differently. They do not (ρ = {H7['spearman_symmetric_vs_oneway']:.2f};
+Figure G3). We also checked public datasets for items whose sender and receiver are swapped elsewhere with a different answer. The
+two we could check (PrivacyLens, 493 items; a synthetic privacy set, 4,024 items) contain none, so they cannot detect direction
+mistakes; but swapping is often not meaningful there, so this is weak support. Ring rulebooks remain harder than two-way ones
+({bridge[('base', 'CYC')]:.0f}% against {bridge[('base', 'REC')]:.0f}% correct), now with a known reason.</p>
 
 <h2>5. Discussion and Limitations</h2>
-<p><b>5.1 What the evidence supports.</b> A single accuracy on one-way rules mixed three things. Chaining is a reading of an ambiguous
-word, closed by one sentence. Refusing listed requests is a failure of fast answers that depends on where the answer sits in the
-table and gets worse when the rule is tightened. Flat confidence means neither error announces itself. Each needs a different
-response: fix the specification, change how the decision is elicited, and stop treating self-report as a check.</p>
-<div class="warn"><b>⚠ What flatters the result.</b> (i) One prompt template per surface and four scopes per bank; the chaining effect
-depends on the word "route". (ii) Temperature 0 and a 16-token direct answer; longer answers behave differently, as the reasoning
-condition shows. (iii) Confidence was asked after the answer, under an instruction to reply with one listed word. (iv) The design
-changed after two pilots; the changes are dated and pilot data is excluded, but the six-cell design was not our first plan. (v) The
-GPT-4.1 role-order effect rests on 10 banks, two of them added after seeing the first six.</div>
-<p><b>5.2 Limitations.</b> Synthetic names and policies; nine models at one point in time through one router with default provider
-routing; decisions are words, not actions; no human baseline. The public-dataset audit covers two datasets. Appendix A gives the full list.</p>
+<p><b>5.1 What this means.</b> One accuracy score on one-way rules mixed three things. Chaining is a reading of an ambiguous word and is
+closed by one sentence. Refusing allowed requests is a failure of quick answers that depends on where the rule sits in the list and
+grows when the rule is tightened. Flat confidence means neither mistake announces itself. Each calls for a different response: fix
+the wording, change how the answer is asked for, and stop treating the model's own confidence as a check.</p>
+<div class="warn"><b>⚠ What flatters the result.</b> (i) One prompt layout per naming style and four names per rulebook; chaining depends on
+the word "route". (ii) Quick answers were limited to one word; longer answers behave differently. (iii) Confidence was asked right
+after the answer, under an instruction to reply with one word, which may push it to 100. (iv) The design changed after two trial
+runs; the changes are dated and trial data is excluded. (v) The GPT-4.1 finding rests on 10 name sets, four added after seeing the
+first six.</div>
+<p><b>5.2 Limitations.</b> Invented names and rules; nine models on one day through one provider gateway; answers are words, not actions;
+no human comparison. Appendix A gives the full list.</p>
 
 <h2>6. Conclusion</h2>
-<p>Accuracy on one-way authorization rules is not one quantity. In {v['n_resp']} responses, models rarely read a one-way permission as
-two-way. They chained permissions when the wording allowed it, refused listed requests when answering fast, and reported full
-confidence either way. A ring policy and a count of unauthorized releases would have shown only the first of these and called it
-direction confusion. <b>Theory of change:</b> a benchmark maintainer can adopt three cheap checks before publishing a mechanism:
-split each denominator until every cell has one explanation, re-run with the sentence that removes the most obvious ambiguity, and
-record what the model says about its own answer. Each changed a conclusion in this study.</p>
+<p>Accuracy on one-way permission rules is not one quantity. In {v['n_resp']} answers, models rarely went the wrong way round. They
+joined rules into chains when the wording allowed it, refused allowed requests when answering quickly, and claimed full confidence
+either way. <b>Theory of change:</b> anyone building such a test can add three cheap checks before explaining a score: split it until
+each part has one explanation, re-run it with the sentence that removes the most obvious ambiguity, and record what the model says
+about its own answer. Anyone writing rules for AI should state that permissions do not combine, and should not rely on the model's
+confidence or self-check as a safety net.</p>
 
-<div class="break"></div>
+"""
+
+BODY += f"""<div class="break"></div>
 <h2>References</h2>
 <ol class="refs">
 <li>Apart Research (2026). AI x Epistemics Research Sprint. apartresearch.com/sprints/ai-x-epistemics-research-sprint-2026-11-13-to-2026-11-15</li>
@@ -431,7 +447,7 @@ tokens with hidden reasoning switched off where the API allows; results for defa
 the re-check were asked in a follow-up turn of the same conversation, whose instruction asks for one listed word; this may push
 confidence to 100 and is not a calibrated elicitation. (6) The unit of replication is the bank (18 per model, 10 for GPT-4.1); many
 responses share a bank and are not independent. (7) The design was changed after two development pilots. (8) GPT-4.1 received two
-rounds after its first three were seen; its symmetric-reading index was 10 points [4, 17] on the pre-scheduled rounds and
+rounds (four name sets) after its first three were seen; its symmetric-reading index was 10 points [4, 17] on the pre-scheduled rounds and
 {100 * gsym['value']:.0f} [{100 * gsym['ci'][0]:.0f}, {100 * gsym['ci'][1]:.0f}] on all five. (9) Mistral Large was dropped: it was too slow
 to finish and failed the role-readout gate (73%). (10) No human baseline and no test of whether these errors occur in agents with
 tools. (11) The line-position analysis was declared exploratory.</p>
@@ -493,8 +509,9 @@ outcome for family and size coverage. Total model spend for this study was USD 1
 <p><b>Reasoning condition.</b> The final paragraph is replaced by: "{html.escape(ex5['messages'][1]['content'].split(chr(10))[-1])}" System: "{html.escape(ex5['messages'][0]['content'])}"</p>
 
 <h2>Appendix G. Additional Results</h2>
-{fig("a2_banks", "The two main effects by bank. Each dot is one bank's rate for one model.", "G1")}
-{fig("a3_rank", "Left: accuracy on symmetric requests against one-way requests, per model. Right: refusal of listed requests by surface.", "G2")}
+{fig("a_order", "Left: GPT-4.1's wrong quick decisions by which line was printed first, the sender or the receiver. Right: the same comparison for every model, all kinds of request together.", "G1")}
+{fig("a_banks", "The two main effects for each set of names. Each dot is one name set for one model.", "G2")}
+{fig("a_rank", "Left: each model's accuracy on two-way and unconnected requests against its accuracy on one-way requests. Right: refusals of allowed requests by naming style.", "G3")}
 {full_tbl}
 <p class="cap"><b>Table G1:</b> Key rates per model with 95% intervals over banks.</p>
 

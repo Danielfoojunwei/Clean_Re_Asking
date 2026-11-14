@@ -23,7 +23,7 @@ td { padding: 1.1mm 1.6mm; border-bottom: 0.5pt solid #d9d8d2; vertical-align: t
 table.small { font-size: 6.5pt; }
 table.ledger td:first-child { font-weight: 600; width: 21%; }
 table.ledger td:nth-child(2) { width: 25%; color: #333; }
-table.ledger td:nth-child(4) { width: 22%; }
+
 .star { background: #eef5fd; border-left: 2.2pt solid #2a78d6; padding: 1.6mm 2.4mm; margin: 2mm 0 2.6mm; font-family: "Inter", sans-serif; font-size: 8pt; line-height: 1.34; break-inside: avoid; }
 .star b { color: #1c5cab; }
 .warn { border: 0.8pt dashed #eb6834; background: #fef6f1; border-radius: 2mm; padding: 1.8mm 2.6mm; margin: 2mm 0 2.4mm; font-family: "Inter", sans-serif; font-size: 8pt; line-height: 1.34; break-inside: avoid; }
@@ -37,3 +37,19 @@ pre { font-family: "DejaVu Sans Mono", monospace; font-size: 7pt; line-height: 1
 code { font-family: "DejaVu Sans Mono", monospace; font-size: 8pt; }
 .break { break-before: page; }
 sup { font-size: 60%; }
+
+.short { font-family: "Inter", sans-serif; font-size: 8.4pt; background: #f4f4f1; border-radius: 1.5mm; padding: 1.2mm 2.2mm; margin: 0 0 1.8mm; text-align: left; }
+.short b { color: #1c5cab; }
+figure.narrow img { width: 88%; }
+figure.example { margin: 2mm 0 3mm; }
+.exwrap { display: flex; gap: 3mm; align-items: stretch; text-align: left; }
+.rulebook { flex: 0 0 31%; background: #f8fbff; border: 0.7pt solid #b7d3f6; border-radius: 2mm; padding: 2.2mm 2.6mm; font-family: "Inter", sans-serif; font-size: 7.8pt; line-height: 1.55; }
+.rbtitle { font-weight: 700; color: #1c5cab; font-size: 8.6pt; margin-bottom: 1mm; }
+.rbnote { margin-top: 1.4mm; color: #555; font-size: 7.2pt; }
+table.ex { margin: 0; font-size: 7.4pt; }
+table.ex td:first-child { font-weight: 600; white-space: nowrap; }
+.ok { color: #1c5cab; font-weight: 700; } .no { color: #b9461a; font-weight: 700; }
+.cards .big { font-size: 15pt; font-weight: 700; color: #111; line-height: 1.25; }
+table.ledger td:first-child { font-weight: 600; width: 30%; }
+table.ledger td:nth-child(2) { width: 22%; color: #111; }
+table.ledger td:nth-child(3) { width: auto; }

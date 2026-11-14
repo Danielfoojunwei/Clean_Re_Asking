@@ -5,6 +5,8 @@ Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
 
 - `paper/One_Score_Three_Failures.pdf` is the report. `paper/ABSTRACT.txt` is the abstract for the submission form.
 - `paper/` also holds the sources: `build_data.py` (numbers), `figs.py` (figures), `build_paper.py` and `render.js` (PDF).
+- `slides/One_Score_Three_Failures_slides.pdf` is the five-slide deck and `slides/SCRIPT.md` the speaker script
+  (rebuild with `build_slides.py` and `node render_slides.js slides.pdf` from `slides/`).
 - `benchmark_v2/` holds the benchmark generator (`gen.py`), runner (`run.py`), analysis (`analyze.py`), the pre-registered
   plan with its dated amendments (`PLAN.md`), results tables, the public-dataset audit and every raw response
   (`raw_responses.zip`).
