@@ -68,3 +68,4 @@ figure.flow { margin: 1.5mm 0 2mm; } .flowwrap { display: grid; gap: 1.5mm; text
 .wy { display: flex; align-items: center; gap: 1.6mm; background: #fff; border: 0.6pt solid #d5d9df; border-radius: 1.6mm; padding: 0.9mm 1.4mm; font-size: 6pt; line-height: 1.28; color: #3a4049; }
 .wy b { font-size: 10.5pt; white-space: nowrap; } .wy b.o { color: #b8430f; } .wy b.a { color: #8a6100; } .wy b.g { color: #14784f; }
 .wy u { text-decoration: none; font-weight: 700; color: #20262e; } .wy { align-items: flex-start; } .wy b { margin-top: 0.3mm; }
+table.split { break-inside: auto; } table.split tr { break-inside: avoid; } table.split thead { display: table-header-group; }
