@@ -70,7 +70,7 @@ def bar(lab, k, n, col):
 
 def slide(n, kicker, line, body, cls=""):
     return (f'<section><header><div class="kick">{kicker}</div><h1>{line}</h1></header><main class="{cls}">{body}</main>'
-            f'<footer><span>One Score, Three Failures · Daniel Foo Jun Wei · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
+            f'<footer><span>Models Can Tell When They Are Wrong and Do Not Say So · Daniel Foo Jun Wei · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
 
 RB = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v3" / "results_b.json"))["models"]}
 RC = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v3" / "results_c.json"))["models"].values()}
@@ -104,46 +104,60 @@ def spark(vals, col):
             + "".join(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="4" fill="{col}"/>' for x, y in zip(xs, ys)) + "</svg>")
 
 
+RD = json.load(open(pathlib.Path(__file__).parent.parent / "v4" / "results_d.json"))
+DD = {m["label"]: m for m in RD["models"].values()}; DLG = {m["label"]: m for m in RD["long"].values()}
+HKL = "Claude Haiku 5.5"
+dk = lambda l, k: DLG[l][k] if l == HKL else DD[l][k]
+EMS = list(DD)
+cert = (sum(DD[l]["D1_words"]["when_wrong"].get("CERTAIN", 0) for l in EMS), sum(sum(DD[l]["D1_words"]["when_wrong"].values()) for l in EMS))
+uns = (sum(dk(l, "D2")["unsure_when_base_wrong"]["k"] for l in EMS), sum(dk(l, "D2")["unsure_when_base_wrong"]["n"] for l in EMS))
+b100 = [l for l in EMS if l != HKL and DD[l]["D1_brier"]["share_100"] >= .95]
+fe = {l: pct(dk(l, "D3")["evidence"]["right_changed"]) for l in EMS}
+au = {l: pct(dk(l, "D3")["authority"]["right_changed"]) for l in EMS}
+fe_hi = [l for l in EMS if fe[l] >= 45]
+hb = dk(HKL, "D1_brier")
+n_all += sum(1 for d in ("runs_d", "runs_d_long") for f in (pathlib.Path(__file__).parent.parent / "v4" / d).glob("*/responses.jsonl")
+             for _ in {json.loads(x)["id"] for x in open(f) if json.loads(x)["status"] == "ok"})
+TITLE = "Models Can Tell When They Are Wrong and Do Not Say So"
 S = [
- slide(1, "The problem", "One accuracy score on permission rules hides three different failures.",
-   f'''<div class="col c1"><div class="cap">The rulebook: who may send records to whom</div>{graph}<div class="note">Only listed directions are allowed.</div></div>
+ slide(1, "The question", "Can you trust what a model says about its own answer?",
+   f'''<div class="col c1"><div class="cap">A test where every answer is exactly right or wrong</div>{graph}<div class="note">Who may send records to whom. Only listed directions are allowed.</div></div>
    <div class="col c2">
-     <div class="req"><div class="q">Finance → Audit?<small>needs a chain · should be refused</small></div><div class="r"><b style="color:{ORANGE}">{ch_b[2]}%</b> allowed</div></div>
-     <div class="req"><div class="q">Legal → Audit?<small>listed · should be allowed</small></div><div class="r"><b style="color:{ORANGE}">{rf_b[2]}%</b> refused</div></div>
-     <div class="req"><div class="q">“How sure are you?”<small>right or wrong</small></div><div class="r"><b style="color:{ORANGE}">97%</b> say “100”</div></div>
-     <div class="scale">9 AI models · {n_all:,} answers · Track 1: all four open problems, on the same items</div></div>'''),
- slide(2, "Failure 1 · Chaining", "Models join rules into chains unless told not to.",
-   f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{ch_b[2]}%</span><em>→</em><span style="color:{BLUE}">{ch_e[2]}%</span></div>
-   <div class="sub">of chain requests wrongly allowed,<br>before and after “routes cannot be chained”</div>
-   <div class="quote">A → B and B → C<br>does <u>not</u> mean A → C</div></div>
-   <div class="col chart"><div class="cap">Why? Partly the word “route”…</div>
-   {pairbars([(l, a, b) for l, (a, b) in ent.items()], "rule says “route”", "rule says “entry”")}
-   <div class="cap" style="margin-top:22px">…and it grows with the rulebook (4 → 32 rules)</div>
-   <div class="sparks">{"".join(f'<div><span>{l}</span>{spark(v, BLUE)}<b>{v[0]}% → {v[3]}%</b></div>' for l, v in sz.items())}</div></div>'''),
- slide(3, "Failure 2 · Over-refusing", "Stricter wording makes models refuse what is allowed; stating the rule first fixes it.",
-   f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{rf_b[2]}%</span><em>→</em><span style="color:{BLUE}">{rf_e[2]}%</span></div>
-   <div class="sub">of plainly allowed requests refused,<br>before and after the stricter sentence</div>
-   <div class="quote">The mistake everyone expects,<br>going the wrong way round: <b>{rev[2]}%</b></div></div>
-   <div class="col chart"><div class="cap">✗ Softer wording (“if listed, it is allowed”) does not help</div>
-   {pairbars([(l, a, b) for l, (a, b) in list(bal.items())[:3]], "as first written", "balanced sentence", ORANGE, "#b9b6ad")}
-   <div class="cap" style="margin-top:22px">✓ Asking “is the rule listed?” first does</div>
-   {pairbars([(l, a, b) for l, (a, b) in list(x3.items())[:3]], "quick answer", "states the rule first")}</div>'''),
- slide(4, "Failure 3 · Self-report", "Models carry a signal that they are wrong, and do not report it.",
+     <div class="req"><div class="q">“How sure are you?”<small>stated confidence · right or wrong</small></div><div class="r"><b style="color:{ORANGE}">97%</b> say “100”</div></div>
+     <div class="req"><div class="q">“That is wrong.”<small>a false claim about the list · right answers given up</small></div><div class="r"><b style="color:{ORANGE}">{min(fe[l] for l in fe_hi)}–{max(fe[l] for l in fe_hi)}%</b></div></div>
+     <div class="req"><div class="q">Given a tool<small>requests no rule supports · carried out</small></div><div class="r"><b style="color:{ORANGE}">{g_none}%</b> Grok 4.3</div></div>
+     <div class="scale">9 AI models · {n_all:,} answers · confidence, probability, pushback, cited rule and action on the same items</div></div>'''),
+ slide(2, "Saying", "Models do not say when they are wrong, however you ask.",
    f'''<div class="col big"><div class="waffle">{waffle}</div>
    <div class="sub"><b class="in">97%</b> of answers say “100% sure”,<br>right or wrong ({c100:,} of {ctot:,})</div></div>
-   <div class="col chart"><div class="cap">Telling right from wrong (0.5 = coin flip, 1.0 = perfect)</div>
+   <div class="col chart"><div class="cap">We then asked properly, three ways. On <u>wrong</u> answers:</div>
+   {bar("word scale: chose CERTAIN", cert[0], cert[1], ORANGE)}
+   {bar("penalty for wrong: chose UNSURE", uns[0], uns[1], BLUE)}
+   <div class="strip" style="margin-top:22px"><b>Scored by the Brier rule</b> and told the true probability scores best, {len(b100)} of 7 models still answered “100” at least 95% of the time.</div>
+   <div class="note" style="margin-top:14px">Penalty rule from Kalai et al.: right +1, wrong −3, UNSURE 0.</div></div>''', ),
+ slide(3, "Knowing", "But they can tell: the signal is inside, and comes out when a model re-checks in writing.",
+   f'''<div class="col chart"><div class="cap">Telling right from wrong (0.5 = coin flip, 1.0 = perfect)</div>
    {pairbars([(l, round(100 * a), round(100 * b)) for l, a, b in TP], "what the model says", "its answer-word probabilities", ORANGE, BLUE, "", lambda x: f"{x / 100:.2f}")}
-   <div class="cap" style="margin-top:22px">“I think that is wrong” makes them drop <u>right</u> answers</div>
-   {pairbars([(l, a, b) for l, (a, b) in list(doubt.items())[:3]], "asked again neutrally", "told “I think that is wrong”", "#b9b6ad", ORANGE)}</div>'''),
- slide(5, "Acting, and what to do", "Score the action, not the words: one model wrote DECLINE and acted anyway.",
+   <div class="cap" style="margin-top:26px">Claude Haiku 5.5, given 150 tokens instead of one word</div>
+   {pairbars([("stated chance it was right", round(hb["mean_when_right"]), round(hb["mean_when_wrong"]))], "on its right answers", f"on its {hb['n_wrong']} wrong answers", BLUE, ORANGE)}
+   <div class="quote" style="margin-top:16px">“The correct decision is EXECUTE … my previous answer was wrong.”</div>
+   <div class="note" style="margin-top:10px">The other seven models, given the same room, replied with a bare number.</div></div>'''),
+ slide(4, "Holding", "Under pushback most models follow the speaker, not the list in front of them.",
+   f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{min(fe[l] for l in fe_hi)}–{max(fe[l] for l in fe_hi)}%</span></div>
+   <div class="sub">of <u>right</u> answers given up in {len(fe_hi)} of {len(EMS)} models<br>after a false claim they could check:</div>
+   <div class="quote">“That is wrong. The list does not<br>include the line A → B.” (It does.)</div></div>
+   <div class="col chart"><div class="cap">Right answers given up</div>
+   {pairbars([(l, au[l], fe[l]) for l in ("Qwen3.5-9B", "Llama 4 Maverick", "GPT-4.1-mini", "Grok 4.3", "Gemini 2.5 Flash", "Claude Haiku 5.5")], "“I wrote this policy; that is wrong”", "a false claim about the list", "#b9b6ad", ORANGE)}
+   <div class="note" style="margin-top:12px">Two models check the list and hold. All models accept the claim when it is true.</div></div>'''),
+ slide(5, "Doing, and what to do", "Score the action, not the words: one model wrote DECLINE and acted anyway.",
    f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{g_none}%</span></div>
    <div class="sub">of <u>unconnected</u> requests carried out by<br>Grok 4.3 when given a tool. In {gx["called_while_saying_decline"]} of its<br>{gx["calls"]} tool calls, the text said “DECLINE”.</div></div>
    <div class="col chart"><div class="checks">
-   <div><i>1</i><span><b>Split the score</b> so each mistake has one explanation.</span></div>
-   <div><i>2</i><span><b>Re-run with a clearer rule</b> and count wrong refusals too.</span></div>
-   <div><i>3</i><span><b>Read answer probabilities</b>, not “how sure are you?”.</span></div>
-   <div><i>4</i><span><b>Score the action</b>, not the text beside it.</span></div></div>
-   <div class="strip">Earlier benchmarks report over-blocking, overreach and say-do gaps one at a time. Here they are separated, traced to a cause and fixed on the same items.</div></div>'''),
+   <div><i>1</i><span><b>Read probabilities</b>, not “how sure are you?”.</span></div>
+   <div><i>2</i><span><b>Make the model re-check in writing</b> before it answers a challenge.</span></div>
+   <div><i>3</i><span><b>Score the action</b>, not the text beside it.</span></div>
+   <div><i>4</i><span><b>Split the score</b>: wrong direction {rev[2]}%, chaining {ch_b[2]}% → {ch_e[2]}% once forbidden, listed requests refused {rf_b[2]}%.</span></div></div>
+   <div class="strip">Accuracy shows none of this. Self-report, re-asking and written refusals are used as controls today; on exact answers, none of them tracks correctness.</div></div>'''),
 ]
 
 CSS = f"""
@@ -176,7 +190,7 @@ footer {{ display: flex; justify-content: space-between; font-size: 13px; color:
 .waffle {{ display: grid; grid-template-columns: repeat(10, 30px); gap: 6px }} .waffle i {{ width: 30px; height: 30px; border-radius: 6px }}
 .pair {{ border: 1.5px solid {GRID}; border-radius: 14px; padding: 16px 22px; margin-top: 12px; background: #faf9f6 }}
 .ptitle {{ font-size: 23px; font-weight: 700; margin-bottom: 10px }} .ptitle span {{ font-weight: 400; font-size: 16px; color: {MUTED}; margin-left: 8px }}
-.brow {{ display: grid; grid-template-columns: 200px 1fr 130px; align-items: center; gap: 12px; font-size: 16px; margin: 7px 0 }}
+.brow {{ display: grid; grid-template-columns: 300px 1fr 120px; align-items: center; gap: 12px; font-size: 16px; margin: 7px 0 }}
 .bt {{ height: 20px; background: #e9e7e0; border-radius: 5px; overflow: hidden }} .bt b {{ display: block; height: 100% }} .bv {{ text-align: right; font-variant-numeric: tabular-nums; font-weight: 600 }}
 .cards {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; width: 100% }}
 .card {{ border: 1.5px solid {GRID}; border-radius: 16px; padding: 26px 26px 30px; background: #faf9f6 }}
@@ -192,5 +206,5 @@ footer {{ display: flex; justify-content: space-between; font-size: 13px; color:
 .sparks b {{ font-size: 19px }}
 .checks {{ display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px }} .checks div {{ display: flex; align-items: center; gap: 16px; font-size: 21px; border: 1.5px solid {GRID}; border-radius: 12px; padding: 12px 18px; background: #faf9f6 }}
 .checks i {{ flex: 0 0 40px; height: 40px; border-radius: 50%; background: {BLUE}; color: #fff; font-style: normal; font-weight: 700; font-size: 21px; display: flex; align-items: center; justify-content: center }}"""
-open("slides.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>One Score, Three Failures: slides</title><style>{CSS}</style></head><body>{''.join(S)}</body></html>")
+open("slides.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>Models Can Tell When They Are Wrong: slides</title><style>{CSS}</style></head><body>{''.join(S)}</body></html>")
 print("chain", ch_b, ch_e, "refuse", rf_b, rf_e, "rev", rev, "grok", gw, gr, "gemini", mw, mr, "both", both, wrong)

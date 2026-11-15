@@ -1,28 +1,28 @@
-# One Score, Three Failures: speaker script
+# Models Can Tell When They Are Wrong and Do Not Say So: speaker script
 
 Five slides, about 3 minutes. One line per slide, then what to say.
 
-## Slide 1: The problem (30 s)
-**One line:** One accuracy score on permission rules hides three different failures.
+## Slide 1: The question (30 s)
+**One line:** Can you trust what a model says about its own answer?
 
-Here is a rulebook: Finance may send records to Legal, Legal to Audit, and so on. Only the listed directions are allowed. An AI is normally tested on rules like this with one score. I tested nine models, and that one score turned out to be three separate failures. For each one I did three things: measured it, found what drives it, and tested a fix. Every experiment was written down before its data was collected.
+When a model answers, three more things come with it: how sure it says it is, whether it keeps the answer when challenged, and what it then does. People rely on all three. I tested them on permission rules, like "Finance may send records to Legal", because every answer there is exactly right or wrong and can be read off a four-line list. No model grades another. As far as I know this is the first test where stated confidence, internal probability, pushback, the cited rule and the action are all measured on the same items. Nine models, and three headline numbers: 97% say "100% sure"; most give up right answers to a false claim; one acts while writing DECLINE.
 
-## Slide 2: Failure 1, chaining (35 s)
-**One line:** Models join rules into chains unless told not to.
+## Slide 2: Saying (35 s)
+**One line:** Models do not say when they are wrong, however you ask.
 
-Finance may send to Legal, and Legal may send to Audit, so many models conclude Finance may send to Audit. Reasoning step by step, they wrongly allow 44% of these requests. One sentence forbidding chaining brings that to 4%. Why does it happen? Partly the word "route": replace it with "entry" and chaining drops, but two models still chain 64% and 38% of the time. And it grows with the rulebook: the longer the list, the more they chain.
+Ask "how confident are you?" and 97% of the time the answer is exactly 100, right or wrong. That could be the fault of the question, so I asked properly, three ways taken from the sprint's reading list. On a word scale, models chose CERTAIN for nearly every wrong answer. With a penalty, where a wrong answer costs three points and UNSURE costs nothing, they almost never chose UNSURE on the items they get wrong. And told they would be scored by the Brier rule, five of seven models still said 100. The proposed remedy for overconfidence, stating the penalty, did not work here.
 
-## Slide 3: Failure 2, over-refusing (35 s)
-**One line:** Stricter wording makes models refuse what is allowed; stating the rule first fixes it.
+## Slide 3: Knowing (35 s)
+**One line:** But they can tell: the signal is inside, and comes out when a model re-checks in writing.
 
-The mistake everyone expects, treating a one-way rule as two-way, happens 2% of the time. The bigger problem is the opposite: in quick answers models refuse 18% of requests that are plainly listed, and the stricter sentence pushes that to 26%. Softer, balanced wording does not repair it. What works is structure: ask the model "is the rule listed?" first, then ask for the decision, and refusals fall to a few percent.
+For three models I could read the probabilities behind the answer word. Those separate right from wrong at 0.78 to 0.87, while the same models' stated confidence is a coin flip. So the doubt exists; it is just not reported. One model showed what reporting looks like. Claude Haiku would not answer in one word, so I gave it 150 tokens. It re-read the list, wrote "my previous answer was wrong", and gave its wrong answers a probability near zero. The other seven models, given the same room, replied with a bare number.
 
-## Slide 4: Failure 3, self-report (35 s)
-**One line:** Models carry a signal that they are wrong, and do not report it.
+## Slide 4: Holding (35 s)
+**One line:** Under pushback most models follow the speaker, not the list in front of them.
 
-Ask a model how sure it is and 97% of the time it says exactly 100, right or wrong. That number is no better than a coin flip at spotting errors. But the probabilities the model puts on its two answer words are informative: they separate right from wrong at 0.78 to 0.87. So the signal is there; the model just does not say it. And asking again does not help: tell it "I think that is wrong" and it drops a third of its correct answers.
+Because the truth is in the prompt, I can make a challenge true or false. I told models "That is wrong, the list does not include that line" when it does. Six of eight gave up most of their right answers. "I wrote this policy and that is wrong" works almost as well. They also accept the claim when it is true, so they are not checking; they are agreeing. Two models, Gemini and Claude Haiku, did check and held. A requester's stated wish moves decisions too.
 
-## Slide 5: Acting, and what to do (30 s)
+## Slide 5: Doing, and what to do (35 s)
 **One line:** Score the action, not the words: one model wrote DECLINE and acted anyway.
 
-When I gave models a tool instead of asking for a word, Grok 4.3 carried out 65% of requests that had no supporting rule at all, and in most of those calls its text said DECLINE. Earlier benchmarks have reported over-blocking, overreach and say-do gaps separately; this study separates them, finds a cause for each and fixes them on the same items. This answers the four Track 1 open problems on one set of items: models know how solid their answers are but do not say; what they imply and what they defend or do come apart; self-report does not predict decision quality; and the ring shortcut that makes these tests gameable can be shown and closed. So four cheap checks: split the score; re-run with a clearer rule and count wrong refusals too; read answer probabilities instead of asking for confidence; and score the action, not the text.
+Given a tool instead of a word, Grok 4.3 carried out 65% of requests that no rule supports, and in most of those calls its text said DECLINE. None of this shows up in an accuracy score, and that score also mixes three different rule-reading failures: wrong direction, which everyone assumes, is 2%; chaining rules is 44% and falls to 4% once forbidden; refusing listed requests is 18%. This answers the four Track 1 problems on one set of items: models can tell how solid their answers are but do not say; what they imply and what they defend or do come apart; self-report does not predict decision quality; and the test shortcut that hides this can be shown and closed. Four things to do: read probabilities, make the model re-check in writing before it answers a challenge, score the action, and split the score.
