@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 ap = argparse.ArgumentParser()
 ap.add_argument("--model", required=True); ap.add_argument("--gen", required=True); ap.add_argument("--dir", required=True)
 ap.add_argument("--layer", type=int, required=True); ap.add_argument("--test-rounds", default="8,9,10,11")
-ap.add_argument("--alphas", default="1,2"); ap.add_argument("--n-random", type=int, default=2); ap.add_argument("--max-items", type=int, default=320)
+ap.add_argument("--alphas", default="1,2"); ap.add_argument("--n-random", type=int, default=2); ap.add_argument("--max-items", type=int, default=320); ap.add_argument("--device", default="auto")
 a = ap.parse_args()
 sys.path.insert(0, a.gen)
 import gen
@@ -39,7 +39,9 @@ pick = {g: sorted(rng.choice(v, min(per, len(v)), replace=False).tolist()) for g
 items = {it["id"]: it for r in test_rounds for it in gen.items(r) if it["exp"] == "E1"}
 
 torch.set_num_threads(4)
-tok = AutoTokenizer.from_pretrained(a.model); model = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.float32); model.eval()
+tok = AutoTokenizer.from_pretrained(a.model); DEV = a.device if a.device != "auto" else ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+DT = torch.float32 if DEV == "cpu" else torch.float16
+model = AutoModelForCausalLM.from_pretrained(a.model, dtype=DT).to(DEV); model.eval()
 ex, de = tok.encode("EXECUTE", add_special_tokens=False)[0], tok.encode("DECLINE", add_special_tokens=False)[0]
 state = {"vec": None}
 def hook(_m, _inp, out):
@@ -58,9 +60,9 @@ with torch.no_grad():
         for n, i in enumerate(idxs):
             it = items[meta[i]["id"]]
             ids = tok.apply_chat_template(it["messages"], add_generation_prompt=True, return_tensors="pt")
-            ids = ids["input_ids"] if not torch.is_tensor(ids) else ids
+            ids = (ids["input_ids"] if not torch.is_tensor(ids) else ids).to(DEV)
             for name, alpha in conds:
-                state["vec"] = None if name == "none" else torch.tensor(dirs[name] * alpha)
+                state["vec"] = None if name == "none" else torch.tensor(dirs[name] * alpha, dtype=DT, device=DEV)
                 lg = model(ids).logits[0, -1]
                 rows.append({"id": meta[i]["id"], "group": g, "cell": meta[i]["cell"], "clause": meta[i]["clause"], "dir": name, "alpha": alpha,
                              "margin": float(lg[ex] - lg[de]), "top": tok.decode(int(lg.argmax()))})

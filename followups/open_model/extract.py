@@ -7,14 +7,17 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--model", required=True); ap.add_argument("--gen", required=True); ap.add_argument("--out", required=True)
-ap.add_argument("--rounds", default="0-11"); ap.add_argument("--exps", default="E1,E7"); ap.add_argument("--limit", type=int, default=0); ap.add_argument("--dtype", default="float32")
+ap.add_argument("--rounds", default="0-11"); ap.add_argument("--exps", default="E1,E7"); ap.add_argument("--limit", type=int, default=0); ap.add_argument("--dtype", default="auto"); ap.add_argument("--device", default="auto")
 a = ap.parse_args()
 sys.path.insert(0, a.gen)
 import gen
 
 torch.set_num_threads(4); torch.manual_seed(0)
 tok = AutoTokenizer.from_pretrained(a.model)
-model = AutoModelForCausalLM.from_pretrained(a.model, torch_dtype=getattr(torch, a.dtype)); model.eval()
+DEV = a.device if a.device != "auto" else ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+DT = a.dtype if a.dtype != "auto" else ("float32" if DEV == "cpu" else "float16")
+model = AutoModelForCausalLM.from_pretrained(a.model, dtype=getattr(torch, DT)).to(DEV); model.eval()
+print("device", DEV, DT, flush=True)
 lo, _, hi = a.rounds.partition("-")
 EXPS = tuple(a.exps.split(","))
 WORDS = {"E1": ("EXECUTE", "DECLINE"), "E7": ("YES", "NO")}
@@ -32,7 +35,7 @@ for rnd in range(int(lo), int(hi or lo) + 1):  # one shard per round, so a stopp
   with torch.no_grad():
     for n, it in enumerate(items):
           ids = tok.apply_chat_template(it["messages"], add_generation_prompt=True, return_tensors="pt")
-          ids = ids["input_ids"] if not torch.is_tensor(ids) else ids
+          ids = (ids["input_ids"] if not torch.is_tensor(ids) else ids).to(DEV)
           o = model(ids, output_hidden_states=True)
           lg = o.logits[0, -1].float()
           w1, w2 = WORDS[it["exp"]]
@@ -41,7 +44,7 @@ for rnd in range(int(lo), int(hi or lo) + 1):  # one shard per round, so a stopp
           rec.update(logit=[lg[first[w1]].item(), lg[first[w2]].item()], logp=[lp[first[w1]].item(), lp[first[w2]].item()],
                      top=tok.decode(int(lg.argmax())), ntok=int(ids.shape[1]))
           meta.append(rec)
-          acts.append(torch.stack([h[0, -1] for h in o.hidden_states]).float().numpy().astype(np.float16))
+          acts.append(torch.stack([h[0, -1] for h in o.hidden_states]).float().cpu().numpy().astype(np.float16))
           if n % 100 == 0:
               print(rnd, n, len(items), round(time.time() - t0), flush=True)
   np.save(out / f"acts_{tag}.npy", np.stack(acts)); json.dump(meta, open(out / f"meta_{tag}.json", "w"))
