@@ -1,11 +1,11 @@
 # One Score, Three Failures: speaker script
 
-Five slides, about 2 minutes 45 seconds. One line per slide, then what to say.
+Five slides, about 3 minutes. One line per slide, then what to say.
 
 ## Slide 1: The problem (30 s)
 **One line:** One accuracy score on permission rules hides three different failures.
 
-Here is a rulebook: Finance may send records to Legal, Legal to Audit, and so on. Only the listed directions are allowed. An AI is normally tested on rules like this with one score. I tested nine models, and that one score turned out to be three separate failures. For each one I did three things: measured it, found what drives it, and tested a fix. Every experiment was written down before its data was collected.
+A fever is one number with many causes, and a good doctor does not treat the number. An accuracy score on permission rules is the same. Here is a rulebook: Finance may send records to Legal, Legal to Audit, and so on. Only the listed directions are allowed. An AI is normally tested on rules like this with one score. I tested nine models, and that one score turned out to be three separate failures. For each one I did three things: measured it, found what drives it, and tested a fix. Every experiment was written down before its data was collected.
 
 ## Slide 2: Failure 1, chaining (35 s)
 **One line:** Models join rules into chains unless told not to.
@@ -25,4 +25,4 @@ Ask a model how sure it is and 97% of the time it says exactly 100, right or wro
 ## Slide 5: Acting, and what to do (30 s)
 **One line:** Score the action, not the words: one model wrote DECLINE and acted anyway.
 
-When I gave models a tool instead of asking for a word, Grok 4.3 carried out 65% of requests that had no supporting rule at all, and in most of those calls its text said DECLINE. So four cheap checks: split the score; re-run with a clearer rule and count wrong refusals too; read answer probabilities instead of asking for confidence; and score the action, not the text.
+When I gave models a tool instead of asking for a word, Grok 4.3 carried out 65% of requests that had no supporting rule at all, and in most of those calls its text said DECLINE. Earlier benchmarks have reported over-blocking, overreach and say-do gaps separately; this study separates them, finds a cause for each and fixes them on the same items. So four cheap checks: split the score; re-run with a clearer rule and count wrong refusals too; read answer probabilities instead of asking for confidence; and score the action, not the text.

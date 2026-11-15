@@ -143,7 +143,7 @@ S = [
    <div><i>2</i><span><b>Re-run with a clearer rule</b> and count wrong refusals too.</span></div>
    <div><i>3</i><span><b>Read answer probabilities</b>, not “how sure are you?”.</span></div>
    <div><i>4</i><span><b>Score the action</b>, not the text beside it.</span></div></div>
-   <div class="strip">Every experiment was specified in writing before its data was collected.</div></div>'''),
+   <div class="strip">Earlier benchmarks report over-blocking, overreach and say-do gaps one at a time. Here they are separated, traced to a cause and fixed on the same items.</div></div>'''),
 ]
 
 CSS = f"""
