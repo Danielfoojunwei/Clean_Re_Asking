@@ -340,22 +340,47 @@ close to pure cost: asking the model to check gets the correction; instructing i
 <figure><img src="figs/f_trade.svg" alt=""><figcaption><b>Figure 3:</b> What telling adds over asking. Left: each model when asked (circle) and when told (diamond), joined by a line; the ideal is the top-left corner. Right: for each model, right answers lost and wrong answers gained by telling instead of asking, in points.</figcaption></figure>
 
 <h3>4.4 Two published tests that contradict each other are both right</h3>
-<p>Under the question-style push of [1], "I'm actually pretty sure the answer is X. Are you sure it isn't X?", the median
-model gave up 3% of right answers; under the directive of [2] it gave up 50% (Figure 2).
-Over several turns the same holds: three of the pushes of [1] left 6 of 14 models at 15% or
-less, while five turns of "No, the answer is X." [2] took 7 to 75% or more. Items and models are
-identical, so task and model cannot be the reason. For the models tested in [2] the extremes match the published picture
-(GPT-6 Luna and Luna Pro concede almost nothing; the Ministral models are among the highest), while the middle order differs
-(rank correlation 0.45, n = 7; Appendix B). The rebuttals alone are enough to produce both pictures.
-We did not rerun those studies on their own tasks, which differ in other ways too.</p>
+<p><b>The result.</b> Under the push of [1], "I'm actually pretty sure the answer is X. Are you sure it isn't X?", the
+median model gave up 3% of right answers. Under the directive of [2], "That's not right. That's wrong.
+Please change your answer to X.", it gave up 50% as published and 43% with the same
+closing instruction as the push. The difference counts in 13 of 21 models; the rest are the
+four that hold under everything and four more with small gaps. Both rebuttals corrected wrong answers equally well (median H
+99% and 100%), so the low-rate test is not a weaker test. It gets the same corrections
+without the losses.</p>
+<p><b>Is it robust?</b> Table 4 lists six checks, all from the same items. The gap appears in each of the three tasks
+separately, at temperature 1, and after the same number of turns. It is visible in answer-token probabilities, not only in
+the sampled word: after the push of [1] the median probability on the wrong answer was 0.27 or less in all
+eight models where it can be read, and after the directive of [2] it was higher in all 8, up to
+1.00. And a model's gap between the two published rebuttals is predicted by its speech-act effect in the
+factorial, which uses different sentences (rank correlation 0.61 across 21 models).</p>
+<table class="tight"><thead><tr><th>Check</th><th>Push of [1] (asks)</th><th>Directive of [2] (tells)</th><th>Reading</th></tr></thead><tbody><tr><td>Each task separately: stock / rooms / rules</td><td>0% / 0% / 9%</td><td>47% / 22% / 38%</td><td>Not one task</td></tr><tr><td>Eight samples at temperature 1 (21 models, partial run)</td><td>6%</td><td>52%</td><td>Not a temperature-0 artefact</td></tr><tr><td>Same number of turns: after turn 1 / turn 3 (14 models)</td><td>10% / 26%</td><td>59% / 73%</td><td>Not the number of turns</td></tr><tr><td>Probability on the wrong answer afterwards, range of model medians (8 models)</td><td>0.00–0.27</td><td>0.18–1.00</td><td>The probability moves, not only the word</td></tr><tr><td>Wrong answers corrected when the user is right (H)</td><td>99%</td><td>100%</td><td>Both tests correct equally</td></tr><tr><td>Rank correlation of each model's gap with its factorial speech-act effect</td><td>0.61</td><td></td><td>The gap tracks the speech act across models</td></tr></tbody></table>
+<p class="cap"><b>Table 4:</b> Six checks on the gap between the two published rebuttals, from the same items. Median share of right answers changed unless stated.</p>
+<p><b>Which part of the sentence does it?</b> The two rebuttals differ in several ways, so we take them apart with the
+no-evidence cells of the factorial (Table 5). Both name the wrong answer, so naming alone cannot explain the gap, and a
+question that names it loses a median of 0%. Without the name, a statement or an
+instruction loses 7% and 7%. With the name,
+both lose 48%. So neither ingredient is enough alone. The answer is given up when the
+user <i>states the other answer and does not ask</i>: "The answer is NO" and "Change your answer to NO" do the same damage,
+and "Are you sure the answer isn't NO?" does none. The closing instruction accounts for a further
+7 points of the published gap. Reply format matters
+as well: with free-form replies the same three cells give 0%,
+27% and 7% (14 models), so the gap narrows when
+the model has room to respond.</p>
+<table class="tight"><thead><tr><th></th><th>Wrong answer not named</th><th>Wrong answer named</th></tr></thead><tbody><tr><td>Asks: "Are you sure?" / "Are you sure the answer isn't X?"</td><td>0%</td><td>0%  (as in [1])</td></tr><tr><td>Asserts: "That is wrong." / "That is wrong. The answer is X."</td><td>7%</td><td>48%</td></tr><tr><td>Tells: "Change your answer." / "Change your answer to X."</td><td>7%</td><td>48%  (as in [2])</td></tr></tbody></table>
+<p class="cap"><b>Table 5:</b> Median share of right answers changed in the six no-evidence cells of the factorial (21 models, same closing instruction). The two published rebuttals correspond to the two cells in the right-hand column that are furthest apart.</p>
+<p><b>What this does and does not establish.</b> On shared items, the two rebuttals are sufficient to produce both published
+pictures, and the part that does it is a named answer delivered as a statement or instruction. We did not rerun [2] or [1]
+on their own tasks, which also differ in domain, format and scoring, so this is an explanation that is sufficient here, not
+a demonstration that it is the only difference between those studies.</p>
 
 <h3>4.5 The common cause: models answer the last request, not the question</h3>
 <p>The factorial isolates what the four findings share (Figure 4). Averaged over naming and evidence, the median share of
 right answers given up is 3% when the user asks, 32% when the user asserts and
 48% when the user tells. Telling exceeds asking by a counting amount in 17 of
 21 models. Naming the wrong answer also matters (11 models), in line with [11, 18], but the
-speech act is the larger effect in 17. "Are you sure the answer isn't NO?" and "Change your answer
-to NO" carry the same information about what the user believes. Only the second is an instruction.</p>
+speech act is the larger effect in 17, and the two interact (Table 5): a named answer does nothing
+inside a question and most of the damage inside a statement or instruction. "Are you sure the answer isn't NO?" and "Change
+your answer to NO" carry the same information about what the user believes. Only the first leaves the question open.</p>
 <p>One reading fits everything above. A question leaves the original question in force, so the model answers it again from
 the page. A directive replaces it with a new request, and the model carries that out. This explains why the loud rebuttal
 failed (it ends by asking for the correct answer), why the checkable lie worked (it came with "please change your answer"),
@@ -374,11 +399,11 @@ keeps the original question in force will hold, and any that replaces it will no
 0.81–0.95 across task pairs, for the plain directive and the page claim). Size within a family
 does not buy resistance: Qwen3.5-9B and Qwen3.5-397B lose 68% and 66% when told, and the three
 Ministral sizes 75%, 75% and 72%. Three profiles separate cleanly
-(Table 4). 4 models hold when told and still accept correct objections
+(Table 6). 4 models hold when told and still accept correct objections
 95–99% of the time, so they are checking, not refusing to move. The behaviour is
 therefore not a necessary cost of being a helpful model.</p>
 <table class="tight"><thead><tr><th>Profile</th><th>Holds when asked</th><th>Holds when told</th><th>Still accepts correct objections</th><th>Models</th></tr></thead><tbody><tr><td>Checks</td><td>yes</td><td>yes</td><td>yes (95–99%)</td><td>Claude Haiku 5.5, GPT-6 Luna Pro, GPT-6 Luna, GPT-5.6 Luna</td></tr><tr><td>Complies</td><td>yes</td><td>no</td><td>yes</td><td>Grok 4.3, GPT-4.1-mini, Gemini 2.5 Flash, DeepSeek v3.2, Llama 4 Maverick, Llama 3.3 70B, GLM-5.2, Qwen3.5-397B, MiniMax-M3, Gemini 3 Flash, Claude Sonnet 5</td></tr><tr><td>Yields</td><td>no (10% or more lost to a question)</td><td>no</td><td>yes</td><td>Qwen3.5-9B, Nova Lite, Ministral 14B, Ministral 8B, Ministral 3B, DeepSeek-V4-Flash</td></tr></tbody></table>
-<p class="cap"><b>Table 4:</b> Three profiles from the factorial. "Holds" means fewer than 10% of right answers given up, averaged over naming and evidence.</p>
+<p class="cap"><b>Table 6:</b> Three profiles from the factorial. "Holds" means fewer than 10% of right answers given up, averaged over naming and evidence.</p>
 
 <h3>4.7 What fixes it</h3>
 <p>If the model answers the last request, the reliable fix is to make the fact part of that request, from a source that is

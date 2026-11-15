@@ -125,3 +125,22 @@ pb["vig_H"] = [100 * PMM[l]["fact"]["H_all"] for l in pb["vigilant"]]
 pb["task_rho"] = {c: [spearman([PMM[l]["by_task"][a][c] for l in PL], [PMM[l]["by_task"][b][c] for l in PL]) for a, b in (("stock", "rooms"), ("stock", "rules"), ("rooms", "rules"))] for c in ("plain", "page_frame")}
 pb["rho_lo"] = min(min(v) for v in pb["task_rho"].values()); pb["rho_hi"] = max(max(v) for v in pb["task_rho"].values())
 FT = lambda l: f'{100 * _fa(l)["directive"]:.0f}%'
+# ---- why the two published tests differ: decomposition from existing runs
+_c = lambda l, k: PMM[l]["fact"]["cells"].get(k)
+cellmed = lambda k: 100 * _st.median([_c(l, k) for l in pb["FL"] if _c(l, k) is not None])
+pb["grid"] = {k: cellmed(k) for k in (f"{a}/{n}/none" for a in ("question", "assertion", "directive") for n in ("unnamed", "named"))}
+_gap = [PMM[l]["word_F"]["plain_dis"] - PMM[l]["word_F"]["push_dis"] for l in PL]
+pb["gap_med"] = 100 * _st.median(_gap)
+pb["gap_counts"] = [l for l in PL if gd(l, "plain_dis-push_dis") and gd(l, "plain_dis-push_dis")["counts"] and gd(l, "plain_dis-push_dis")["diff"] > 0]
+pb["gap_rho"] = spearman(_gap, [PMM[l]["fact"]["act"]["diff"] for l in PL])
+pb["gap_task"] = {t: (100 * _st.median([PMM[l]["by_task"][t]["push_dis"] for l in PL]), 100 * _st.median([PMM[l]["by_task"][t]["plain_dis"] for l in PL])) for t in ("stock", "rooms", "rules")}
+_tm = lambda k, i: 100 * _st.median([PMM[l]["H"]["turns"][k]["F"][i] for l in pb["HL"]])
+pb["turn3"] = (_tm("mt_yang", 2), _tm("mt_persist", 2)); pb["turn1"] = (_tm("mt_yang", 0), _tm("mt_persist", 0))
+_sp = [(PMM[l]["sample"]["cond"]["push"]["F"], PMM[l]["sample"]["cond"]["plain"]["F"]) for l in pb["SL"] if PMM[l]["sample"]["cond"].get("push") and PMM[l]["sample"]["cond"].get("plain")]
+pb["samp"] = (100 * _st.median([a for a, b in _sp]), 100 * _st.median([b for a, b in _sp]), len(_sp))
+_lp = {l: (PMM[l]["logprob"]["cond"]["push"]["median_p_wrong"], PMM[l]["logprob"]["cond"]["plain"]["median_p_wrong"]) for l in pb["LL"]}
+pb["lp_push"] = (min(a for a, b in _lp.values()), max(a for a, b in _lp.values())); pb["lp_plain"] = (min(b for a, b in _lp.values()), max(b for a, b in _lp.values()))
+pb["lp_higher"] = [l for l, (a, b) in _lp.items() if b > a]
+_ff = [l for l in PL if PMM[l].get("fact_free")]
+pb["free_grid"] = {a: 100 * _st.median([PMM[l]["fact_free"]["cells"][f"{a}/named/none"] for l in _ff]) for a in ("question", "assertion", "directive")}; pb["free_n"] = len(_ff)
+pb["H_two"] = (100 * _st.median([PMM[l]["word_H"]["push_dis"] for l in PL]), 100 * _st.median([PMM[l]["word_H"]["plain_dis"] for l in PL]))

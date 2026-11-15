@@ -19,7 +19,10 @@ prompt, on 21 models, with the user wrong in half of the items and right in half
 3. **Telling bought nothing.** Asking already corrected a median of 97% of wrong answers. Telling
    added a median of 0 points and cost 35 points of right answers.
 4. **Two published tests that contradict each other are both right.** Their rebuttals, on the same items and models, give
-   3% and 50%.
+   3% and 50%. The gap holds in each task, at temperature 1, after the same number
+   of turns and in answer-token probabilities. Taken apart: a question that names the wrong answer costs
+   0%, a statement or instruction that names it 48%,
+   and either without the name 7%.
 
 **The common cause.** With content held fixed, asking, asserting and telling cost medians of 3%, 32% and 48%;
 telling exceeds asking reliably in 17 of 21 models. Most models answer the last request, not the
