@@ -1,2 +1,5 @@
 figure img[src*="f_epi"] { width: 88%; }
 figure.item, figure.example { margin: 1.5mm 0 2mm; }
+figure img[src*="f_epi"] { width: 84%; } figure img[src*="f_why_chain"], figure img[src*="f_why_refuse"], figure img[src*="f_signal"], figure img[src*="f_act"], figure img[src*="f_clause"] { width: 78%; }
+figure img[src*="f_signal"], figure img[src*="f_act"] { width: 68%; } figure img[src*="f_why_chain"], figure img[src*="f_why_refuse"] { width: 72%; }
+figure img[src*="f_signal"] { width: 60%; } figure img[src*="f_epi"] { width: 80%; }

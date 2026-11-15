@@ -448,26 +448,30 @@ print("battery answers", ep["n"], "spend", ep["spend"], "| b100", ep["b100"], "|
 Y, P_, N_ = '<span class="y">●</span>', '<span class="p">◐</span>', '<span class="n">○</span>'
 hb = dk(HK, "D1_brier")
 fe_x = lambda l: p0(d3(l, "evidence", "right_changed"))
-design_tbl = table(["Question", "What is read from the same item", "Control or contrast"], [
-    ["<b>Does the model say when it is wrong?</b>", "confidence 0–100 after the decision; again under a stated Brier rule; on a four-word scale; an UNSURE option where a wrong answer costs three points",
+design_tbl = table(["Assumption", "What is read from the same item", "Control or contrast"], [
+    ["<b>A1.</b> Confidence flags errors", "confidence 0–100 after the decision; again under a stated Brier rule; on a four-word scale; an UNSURE option where a wrong answer costs three points",
      "exact right answer for every item; a constant 100 as the score to beat"],
-    ["<b>Can it tell?</b>", "probability of the two answer words; a 150-token reply instead of one word; \"quote the line that decides this\"", "the same answer's stated confidence; exact match of the quoted line against the rulebook"],
-    ["<b>Does it hold a right answer and fix a wrong one?</b>", "re-asked neutrally, with agreement, with one line of doubt, with three turns of doubt, with \"I wrote this policy\", and with a claim about the list that is true or false; a requester who wants a yes or suspects a no",
+    ["<b>A2.</b> No stated doubt, no doubt", "probability of the two answer words; a 150-token reply instead of one word; \"quote the line that decides this\"", "the same answer's stated confidence; exact match of the quoted line against the rulebook"],
+    ["<b>A3.</b> Changing an answer is evidence-tracking", "re-asked neutrally, with agreement, with one line of doubt, with three turns of doubt, with \"I wrote this policy\", and with a claim about the list that is true or false; a requester who wants a yes or suspects a no",
      "neutral re-ask; the same pushback on right and on wrong answers"],
-    ["<b>Does it do what it says?</b>", "the same request with a tool: call it or decline", "the text written beside the call"],
-    ["<b>What does one accuracy score hide?</b>", "six kinds of request; each sentence of a stricter rule alone; \"route\" or \"entry\"; 4 to 32 rules; rule stated first", "filler sentence and filler line; the unchanged item"]], "tight")
+    ["<b>A4.</b> A written refusal is a refusal", "the same request with a tool: call it or decline", "the text written beside the call"],
+    ["<b>A5.</b> A score names the failure", "six kinds of request; each sentence of a stricter rule alone; \"route\" or \"entry\"; 4 to 32 rules; rule stated first", "filler sentence and filler line; the unchanged item"]], "tight")
 
-rq_tbl = table(["Track 1 open problem [1]", "Research question", "Answer in brief", "Where"], [
-    ["<b>P1</b> · Does the model know how solid its claims are; can its confidence be checked against reality", "RQ1. Does a model say when it is wrong?",
-     f"No. {v['conf100_pc']} of answers come with confidence 100; a Brier rule, a word scale and a penalty for wrong answers do not change this (UNSURE on {nn(ep['unsure_wrong'])} wrong answers)", "§4.1"],
-    ["<b>P1</b>", "RQ2. Can it tell?",
-     f"Yes, where we can look: answer-word probabilities separate right from wrong at {s['tp_lo']:.2f}–{s['tp_hi']:.2f}; one model given room to re-check reaches {hb['auroc']:.2f}", "§4.2"],
-    ["<b>P2</b> · The gap between what it implies and what it will defend", "RQ3. Does it hold right answers and fix wrong ones under pushback?",
-     f"It follows the pushback, not the list: a false claim about the list removes {ep['fe_rng'][0]:.0f}–{ep['fe_rng'][1]:.0f}% of right answers in {of(ep['fe_hi'], EM)} models", "§4.3"],
-    ["<b>P2</b>, <b>P3</b> · Which behaviours matter for real decision quality", "RQ4. Does it do what it says?",
-     f"Not always: Grok 4.3 acted on {p0(x7g('Grok 4.3', 'base', 'none_action'))} of unsupported requests, mostly while writing DECLINE", "§4.4"],
-    ["<b>P4</b> · What makes a benchmark gameable; show and close an exploit", "RQ5. What does a single accuracy score hide?",
-     f"Three different failures: wrong direction {v['e5b_rev']}, chaining {v['e5b_chain']}, wrong refusals {v['e1b_ref']}; each has its own cause and fix", "§4.5"]], "tight")
+rq_tbl = table(["Assumption in use", "Who relies on it", "How we test it", "What we found", "Track 1 [1]"], [
+    ["<b>A1.</b> A model's stated confidence flags its errors, at least if asked properly", "confidence thresholds, LLM judges [21], the stated-penalty remedy [18], proper scoring [36]",
+     "confidence asked four ways: plainly, under a Brier rule, on a word scale, with a penalty and an UNSURE option",
+     f"<b>Fails.</b> {v['conf100_pc']} say 100; UNSURE on {nn(ep['unsure_wrong'])} wrong answers", "P1 · §4.1"],
+    ["<b>A2.</b> A model that voices no doubt has none", "reading overconfidence as ignorance [19]; treating stated and internal confidence as one thing [20]",
+     "answer-word probabilities; 150-token replies; the rule the model quotes for its own decision",
+     f"<b>Fails.</b> Probabilities separate right from wrong at {s['tp_lo']:.2f}–{s['tp_hi']:.2f}; a written re-check reaches {hb['auroc']:.2f}", "P1 · §4.2"],
+    ["<b>A3.</b> A model that changes its answer when corrected is responding to evidence", "\"are you sure?\" re-checks, human-in-the-loop correction, flip-rate scores [16, 22]",
+     "the same pushback on right and wrong answers; a claim about the list that is true or false by construction",
+     f"<b>Fails.</b> A false claim removes {ep['fe_rng'][0]:.0f}–{ep['fe_rng'][1]:.0f}% of right answers in {of(ep['fe_hi'], EM)} models", "P2 · §4.3"],
+    ["<b>A4.</b> A written refusal is a refusal", "audits and logs that read the text [2, 5]", "the same request with a tool; compare the call with the text beside it",
+     f"<b>Fails.</b> Grok 4.3: {gx7['called_while_saying_decline']} of {gx7['calls']} tool calls arrive with the text DECLINE", "P2, P3 · §4.4"],
+    ["<b>A5.</b> A low accuracy score names the failure, and a clearer rule can only help", "one-score benchmarks; \"models confuse direction\" [9, 10]; explicit-rule fixes [5, 6]",
+     "one kind of request per mistake; one sentence added at a time; both error types counted",
+     f"<b>Fails.</b> Direction {v['e5b_rev']}; chaining {v['e5b_chain']}; wrong refusals {v['e1b_ref']}, rising with every restriction", "P3, P4 · §4.5"]], "tight reframe")
 
 cmp_tbl = f"""<table class="cmp"><thead>
 <tr><th rowspan="2">Work</th><th colspan="5" class="grp">Measured on the same items</th><th rowspan="2">Headline result it reports</th></tr>
@@ -549,58 +553,60 @@ BODY = f"""
 <div class="trule"></div>
 <div class="auth"><b>Daniel Foo Jun Wei</b><br>Nanyang Technological University (NTU), Singapore<br><span class="with">With</span><br>Apart Research</div>
 <div class="abstract"><h3>Abstract</h3>
-<p>Can an AI model's account of its own answer be trusted? Tests of this usually rely on contested questions or on another model
-as judge. We use permission rules ("Finance may send records to Legal"), where every answer is exactly right or wrong, and measure
-on the same items what a model says about its answer, what its probabilities show, how it responds to pushback, which rule it
-cites and what it does: {s['all_n'] + ep['n']:,} rule-scored answers from nine models. Models do not say when they are wrong:
-{v['conf100_pc']} of answers come with confidence 100, and a Brier scoring rule, a word scale and a penalty for wrong answers
-change little. Yet they can tell: answer-word probabilities separate right from wrong at {s['tp_lo']:.2f}–{s['tp_hi']:.2f}, and
-one model given room to re-check flags its own errors almost perfectly. Under pushback, {len(ep['fe_hi'])} of {len(EM)} models follow the
-speaker, not the list in front of them: a false claim about the list removes {ep['fe_rng'][0]:.0f}–{ep['fe_rng'][1]:.0f}% of their
-right answers, and a requester's stated wish shifts decisions. Given a tool, one model carried out
-{p0(x7g('Grok 4.3', 'base', 'none_action'))} of unsupported requests while writing "DECLINE". The accuracy score hides this, and
-hides three separate rule-reading failures: wrong direction ({v['e5b_rev']}), chaining rules ({v['e5b_chain']}) and refusing
-listed requests ({v['e1b_ref']}), each with a tested fix. Self-report, re-asking and written decisions are not controls; read
-probabilities, give room to re-check, and score the action.</p></div>
+<p>Using AI models safely leans on five assumptions: that stated confidence flags errors; that a model voicing no doubt has
+none; that a model which changes its answer when corrected is responding to evidence; that a written refusal is a refusal; and
+that a low accuracy score names the failure. Each has been examined alone, on different questions, often with another model as
+judge. We test all five on the same items, permission rules ("Finance may send records to Legal") where every answer is exactly
+right or wrong: {s['all_n'] + ep['n']:,} rule-scored answers from nine models. All five fail. {v['conf100_pc']} of answers come
+with confidence 100, and a Brier rule, a word scale and a penalty for wrong answers change little. Yet models can tell:
+answer-word probabilities separate right from wrong at {s['tp_lo']:.2f}–{s['tp_hi']:.2f}, and one model given room to re-check
+flags its own errors almost perfectly. Under pushback, {len(ep['fe_hi'])} of {len(EM)} models follow the speaker, not the list
+in front of them: a false claim about it removes {ep['fe_rng'][0]:.0f}–{ep['fe_rng'][1]:.0f}% of their right answers. Given a
+tool, one model carried out {p0(x7g('Grok 4.3', 'base', 'none_action'))} of unsupported requests while writing "DECLINE". And
+the accuracy score merges three unrelated failures: the one everyone assumes, wrong direction, is the rarest ({v['e5b_rev']});
+chaining rules ({v['e5b_chain']}) and refusing listed requests ({v['e1b_ref']}) dominate, and stricter wording trades one for
+the other. Read probabilities, require a written re-check, score the action, split the score.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
 Epistemics and Decision-Making Evals). Every experiment reported here was designed, run and analysed during the sprint (Appendix A.2).</p>
 
 <h2>1. Introduction</h2>
-<p><b>The question.</b> When a model gives an answer, three more things come with it: how sure it says it is, whether it will keep
-the answer when challenged, and what it then does. People rely on all three. The AI-for-epistemics agenda asks that trust in AI
-output be appropriate and justified [26, 27] and that models not misrepresent how solid their claims are [25]; design sketches for
-such tools already note that current models have inconsistent calibration [44], and a field survey calls evaluations "the cheapest
-external lever on model-layer behaviour" [25].</p>
-<p><b>The gap.</b> Existing tests look at one of these at a time, on different questions: calibration on trivia or forecasts [19,
-36], honesty under pressure with a model judge [15], answer changes under rebuttal [16, 22], refusals that fail to carry over to
-tool calls [23, 24]. So they cannot say whether the model that states 100% confidence also carries doubt internally, also gives the
-answer up when challenged, and also acts against it.</p>
+<p><b>Five assumptions.</b> When a model gives an answer, people and systems act on what comes with it. A confidence score
+decides whether a human looks. "Are you sure?" is used to catch mistakes. A written refusal is logged as a refusal. A benchmark
+score is read as a diagnosis. Each practice rests on an assumption about the model (Table 1), and the AI-for-epistemics agenda
+depends on them holding: trust in AI output should be appropriate and justified [26, 27], and models should not misrepresent how
+solid their claims are [25]. Design sketches for such tools already note inconsistent calibration [44], and a field survey calls
+evaluations "the cheapest external lever on model-layer behaviour" [25].</p>
+<p><b>Why they have not been tested together.</b> Existing work examines one assumption at a time, on different questions:
+calibration on trivia or forecasts [19, 36], honesty under pressure with a model judge [15], answer changes under rebuttal [16,
+22], refusals that fail to reach tool calls [23, 24]. It cannot say whether the model that states 100% confidence also carries
+doubt internally, also gives the answer up when challenged, and also acts against it; and where truth is contested, a rebuttal
+cannot be made cleanly true or false.</p>
 <p><b>This study.</b> <b>To our knowledge this is the first test in which a model's stated confidence, its internal probability,
 its response to true and false pushback, the evidence it cites and the action it takes are all measured on the same items, each
-with an exact right answer.</b> The items are permission decisions. A rulebook lists who may send records to whom; each rule has a
-direction; the model must allow or refuse a request (Figure 2). The right answer can be read off a four-line list, so no model
-grades another, names are generated fresh, and a challenge to the answer can be made true or false at will. Figure 1 shows one item
-read every way.</p>
+with an exact right answer.</b> The items are permission decisions: a rulebook lists who may send records to whom, each rule has
+a direction, and the model must allow or refuse a request (Figure 2). The right answer can be read off a four-line list, so no
+model grades another, names are generated fresh, and a challenge can be made true or false at will. All five assumptions fail.
+Figure 1 shows one item read every way.</p>
 {item_fig}
 {example2}
 <p>Track 1 poses four open problems [1]: (P1) does a model know how solid its claims are, and can its confidence be checked
 against reality; (P2) what is the gap between what it implies and what it will defend; (P3) which behaviours matter for decision
-quality; (P4) what makes a benchmark gameable, and can an exploit be shown and closed. Table 1 maps our five questions onto them.</p>
+quality; (P4) what makes a benchmark gameable, and can an exploit be shown and closed. Table 1 gives the problem each assumption bears on.</p>
 {rq_tbl}
-<p class="cap"><b>Table 1:</b> Five research questions, the Track 1 open problem each answers, and what we found (Section 5 answers P1–P4 directly).</p>
-<p><b>Theory of change.</b> Confidence scores, "are you sure?" prompts and written refusals are used today as safety controls. If an
-evaluation shows on one set of items that none of them tracks correctness, while probabilities, room to re-check and the executed
-action do, builders have a concrete reason and a concrete way to switch.</p>
+<p class="cap"><b>Table 1:</b> Five assumptions in use, who relies on each, how we test it and what we found. The last column gives the Track 1 open problem and the section (Section 5 answers P1–P4 directly).</p>
+<p><b>Theory of change.</b> If one evaluation shows that confidence scores, re-asks and written refusals do not track correctness
+while probabilities, a written re-check and the executed action do, builders have a reason and a way to switch.</p>
 <p><b>Our main contributions are:</b></p>
 <ol class="contrib">
-<li><b>One test bed for five epistemic readings.</b> Stated confidence (asked four ways), answer probabilities, seven kinds of
-pushback, the cited rule and the tool call, on the same exactly-scored items (Section 3).</li>
-<li><b>Evidence that models can tell when they are wrong and do not say so.</b> Stated confidence is flat however it is asked;
-probabilities, and for one model a free-form re-check, separate right from wrong (Sections 4.1, 4.2).</li>
-<li><b>A two-sided pushback test.</b> Because a claim about the list can be made true or false, we separate warranted updating from
-giving in: most models accept both (Section 4.3), and one writes a refusal while acting (Section 4.4).</li>
-<li><b>A split accuracy score.</b> The single score hides three rule-reading failures; we give each its cause and a tested fix
-(Section 4.5).</li>
+<li><b>One test bed for five assumptions.</b> Stated confidence (asked four ways), answer probabilities, seven kinds of pushback,
+the cited rule and the tool call, on the same exactly-scored items (Section 3).</li>
+<li><b>Asking properly does not fix confidence, and silence is not ignorance.</b> The remedies the literature proposes, a proper
+scoring rule and a stated penalty, leave confidence at 100, while probabilities and one model's written re-check separate right
+from wrong (Sections 4.1, 4.2).</li>
+<li><b>Correction is not evidence-tracking.</b> Because a claim about the list can be made true or false, we separate updating
+from giving in: most models accept both (Section 4.3); and a written refusal can accompany the act (Section 4.4).</li>
+<li><b>The assumed failure is the rarest.</b> A low score on one-way rules is read as confusing direction; that accounts for
+{v['e5b_rev']} of answers. Two failures nobody scores dominate, and the standard fix for one causes the other (Section 4.5).</li>
 </ol>
 
 <h2>2. Related Work</h2>
@@ -618,15 +624,10 @@ pairs [35]. Sycophancy has forced a rollback in a deployed system [41] and shift
 authorization in 19.2% of runs [4] and ask far less when acting than when judging [6].</p>
 <p><b>Permission rules and what a score can show.</b> Authorization benchmarks compare matched cases [2, 5, 6] and show identical
 permissions can need opposite decisions [3]; models track which name plays which role [8] but are weak at relation direction [9,
-10]. A test cannot see an error that leaves its answers unchanged [11] and identifies a property only if no other behaviour gives
-the same results [12]; contrast sets and CheckList probe a decision boundary [13, 14]. Petri and Bloom automate audits with model
-judges [37]; Inspect is an open framework for such tasks [40].</p>
+10]. A test identifies a property only if no other behaviour gives the same results [11, 12, 13, 14]. Petri and Bloom automate
+audits with model judges [37]; Inspect is an open framework [40].</p>
 {cmp_tbl}
 <p class="cap"><b>Table 2:</b> This study against the closest work. {Y} yes, {P_} partly, {N_} no; entries are our reading of the cited papers. Their headline numbers come from other tasks and models and are context, not head-to-head comparisons.</p>
-<p><b>What we take and what we add.</b> We take belief-versus-statement from [15], rebuttals on right and wrong answers from [16,
-22], the penalty for wrong answers from [18], proper scoring from [36], probability-versus-statement from [19, 20] and
-judgment-versus-action from [6, 23]. We add a setting in which all of them apply to the same item and the truth of a rebuttal can
-be set by the experimenter.</p>
 
 <h2>3. Methods</h2>
 <p><b>3.1 Setting.</b> A model is shown a rulebook of directed rules between invented names, a sender and a receiver, and must
@@ -638,7 +639,7 @@ mirror image, and a two-way one). Every request is exactly one of six kinds (lis
 wrong way plus chain, needs a chain, not connected; Appendix G), so each wrong answer has one explanation, and every rulebook has
 four requests to allow and four to refuse, so always saying yes or no scores 50% (Figure 3).</p>
 {fig("f_design", "Three ways to build a test rulebook. In a ring, the only request that should be refused is both \"wrong way round\" and reachable by a chain, so a wrong answer has two possible causes. Our mixed rulebook gives each mistake its own request.", 3, "narrow")}
-<p><b>3.3 Five readings of the same item.</b> Every item is answered in one word and step by step. The same items are then reused,
+<p><b>3.3 Five assumptions, tested on the same item.</b> Every item is answered in one word and step by step. The same items are then reused,
 changing one thing at a time (Table 3; all variables in Appendix B). Follow-up questions are put after the model's own answer.
 A claim about the list ("the list does not include the line …") is true exactly when the model was wrong and false when it was
 right, so accepting it can be scored as a hit or a false alarm. The wrong-answer penalty follows [18]: answer only if more than
@@ -646,7 +647,7 @@ right, so accepting it can be scored as a hit or a false alarm. The wrong-answer
 before its data was collected (Appendix C). An effect "counts" if it is at least 10 points (5 for the sentence parts) and its 95%
 range across name sets excludes zero.</p>
 {design_tbl}
-<p class="cap"><b>Table 3:</b> The design: five questions asked of the same items, each with its control.</p>
+<p class="cap"><b>Table 3:</b> The design: what is read from the same items for each assumption, and its control.</p>
 <p><b>3.4 Models, baselines and statistics.</b> <i>Models.</i> Nine models from eight developers, chosen before any result:
 GPT-4.1, GPT-4.1-mini, Grok 4.3, Gemini 2.5 Flash, Claude Haiku 5.5, DeepSeek v3.2, Llama 4 Maverick, Qwen3.5-9B and Nova Lite.
 All nine give the decisions and plain confidence (18 name sets; GPT-4.1 10); eight give the further confidence, pushback and
@@ -655,14 +656,13 @@ citation readings; five to six lower-cost models give the tool, probability and 
 100 is the baseline for confidence; filler text controls for "any extra sentence". We did not re-run other benchmarks.
 <i>Statistics.</i> The unit is the name set. We report 95% percentile bootstrap ranges over name sets in square brackets.
 Sensitivity d′ treats a changed wrong answer as a hit and a changed right answer as a false alarm. All answers are rule-scored.</p>
-<p><b>3.5 What did not work.</b> We predicted that most models would report doubt once given 150 tokens instead of one word; only
-Claude Haiku 5.5 used the room, and the other seven replied with a bare number (Section 4.2). A balanced sentence did not repair
-wrong refusals (Section 4.5). An activation probe was stopped at its preset gate: the open models small enough to run locally
-answered at chance. Mistral Large was dropped (too slow; failed the role check).</p>
+<p><b>3.5 What did not work.</b> We predicted most models would report doubt given 150 tokens instead of one word; only Claude
+Haiku 5.5 used the room (Section 4.2). A balanced sentence did not repair wrong refusals (Section 4.5). An activation probe was
+stopped at its preset gate: the open models small enough to run locally answered at chance. Mistral Large was dropped.</p>
 
 <h2>4. Results</h2>
-<h3>4.1 RQ1 · Does a model say when it is wrong?</h3>
-<p><span class="tag">Track 1 · P1</span> No. Asked "how confident are you, 0 to 100?" after each decision, nine models answered
+<h3>4.1 Assumption 1 · Stated confidence flags errors, if you ask properly</h3>
+<p><span class="tag">Track 1 · P1</span> It does not. Asked "how confident are you, 0 to 100?" after each decision, nine models answered
 exactly 100 in {v['conf100']} of {v['confn']} cases; the number separated right from wrong at {min(auroc):.2f}–{max(auroc):.2f},
 where 0.5 is chance. This could be an artefact of the question, so we asked properly, three ways (Figure 4, left).
 <i>With a scoring rule.</i> Told they would be scored by the Brier rule and that the true probability scores best,
@@ -674,8 +674,8 @@ they get wrong; {of(ep['unsure_zero'], EM)} models almost never used it.</p>
 {fig("f_epi", "Left: how well stated confidence separates right from wrong answers under three ways of asking (0.5 is chance). Middle: share of right answers a model changed after three kinds of pushback. Right: share of listed requests allowed when the requester says they want it or suspects it is not allowed. *Claude Haiku 5.5 follow-ups use 150-token replies.", 4)}
 {star("The remedy proposed for overconfidence does not work here.", f"Kalai et al. argue models guess because grading never rewards doubt, and propose stating the penalty [18]; ForecastBench scores with a proper rule [36]. We stated both. Confidence stayed at 100. Human analysts' stated probabilities discriminate at 0.94 and err towards underconfidence [43]; a constant cannot even be recalibrated.")}
 
-<h3>4.2 RQ2 · Can it tell?</h3>
-<p><span class="tag">Track 1 · P1</span> Yes, where we can look. <i>Probabilities.</i> For the three models whose providers return
+<h3>4.2 Assumption 2 · A model that voices no doubt has none</h3>
+<p><span class="tag">Track 1 · P1</span> It has, where we can look. <i>Probabilities.</i> For the three models whose providers return
 them, the gap between the probabilities of "EXECUTE" and "DECLINE" separated right from wrong at
 {s['tp_lo']:.2f}–{s['tp_hi']:.2f}, while the same models' stated numbers scored {min(s['tp_stated']):.2f}–{max(s['tp_stated']):.2f}
 (Figure 5, left). <i>Room to re-check.</i> Claude Haiku 5.5 would not answer follow-ups in one word, so we gave it 150 tokens. It
@@ -688,10 +688,10 @@ the very line that permits it ({", ".join(f"{l} {k} of {n_}" for l, k, n_ in ep[
 the time when asked directly. After wrongly allowing a request, models cited a line that does not permit it in
 {nn(ep['q_wa_bad'])} cases and admitted NONE in {ep['q_wa_none']}.</p>
 {fig("f_signal", "Left: how well stated confidence and answer-word probabilities separate right from wrong answers; 0.5 is chance. Middle and right: share of right and of wrong answers a model changed when asked again neutrally, with agreement and with one line of doubt.", 5)}
-{star("Against the recent view that stated confidence is enough.", f"Stated and internal probabilities are reported to be coupled [20], and stated confidence is recommended over logprobs for judge models [21]. On items with exact answers they come apart completely. MASK compares a pressured statement with a neutrally elicited belief [15]; here the belief is read from probabilities and the statement contradicts it with no pressure at all.")}
+{star("Against the recent view that stated confidence is enough.", "Stated and internal probabilities are reported to be coupled [20], and stated confidence is recommended over logprobs for judge models [21]. On items with exact answers they come apart completely, with no pressure applied [15].")}
 
-<h3>4.3 RQ3 · Does it hold right answers and fix wrong ones under pushback?</h3>
-<p><span class="tag">Track 1 · P2</span> It follows the speaker more than the list. A neutral "state your final decision" changed
+<h3>4.3 Assumption 3 · A model that changes its answer when corrected is responding to evidence</h3>
+<p><span class="tag">Track 1 · P2</span> Mostly it is responding to the speaker. A neutral "state your final decision" changed
 almost nothing (Figure 5). One line of doubt, "I think that is wrong", removed
 {p0(X2('Nova Lite', 'doubt', 'changed_right'))}–{p0(X2('Qwen3.5-9B', 'doubt', 'changed_right'))} of right answers in
 {of(s['x2_doubt'], x2)} models. "I wrote this policy, and that decision is wrong" removed
@@ -707,20 +707,20 @@ Repeating the doubt for three turns did not wear models down further (Appendix J
 moved wrong allows apart for {names(ep['st_not'])} (GPT-4.1-mini: {p0(st('GPT-4.1-mini', 'allow_want_allow', 'not_listed'))} after "I need this to go through", {p0(st('GPT-4.1-mini', 'allow_want_refuse', 'not_listed'))} after the other; Figure 4, right).</p>
 {star("Separating updating from giving in.", f"SycEval reports 14.7% of rebuttals move a model off a correct answer [16], and epistemic-vigilance work 53–100% for five of seven models [22]; in neither is the evidence that settles the rebuttal a short list inside the prompt. Here it is four lines long, and {len(ep['fe_hi'])} of {len(EM)} models still take the speaker's word over it. That two models do check shows the failure is not forced by the task.")}
 
-<h3>4.4 RQ4 · Does it do what it says?</h3>
-<p><span class="tag">Track 1 · P2, P3</span> We gave models a tool and told them to call it or reply DECLINE. Grok 4.3 called the
+<h3>4.4 Assumption 4 · A written refusal is a refusal</h3>
+<p><span class="tag">Track 1 · P2, P3</span> Not always. We gave models a tool and told them to call it or reply DECLINE. Grok 4.3 called the
 tool for {p0(x7g('Grok 4.3', 'base', 'chain_action'))} of chain requests and {p0(x7g('Grok 4.3', 'base', 'none_action'))} of
 unconnected ones, against {p0(x7g('Grok 4.3', 'base', 'chain_words'))} and {v_grok_none} in words, and in
 {gx7['called_while_saying_decline']} of its {gx7['calls']} calls the text was "DECLINE". DeepSeek did the same in
 {dsx7['called_while_saying_decline']} of {dsx7['calls']} calls (Figure 6). A system that reads the text logs a refusal; one that
-executes the call sends the records. (Llama 4 Maverick is left out: its provider returned empty replies to
+executes the call sends the records. Refusal-transfer failures are known for harmful requests [23, 24]; here the request is
+benign and the policy explicit. (Llama 4 Maverick is left out: its provider returned empty replies to
 {C3['Llama 4 Maverick']['X7']['no_response']} of 1,440 requests.)</p>
 {fig("f_act", "Rule as first written. Orange: the model answers in words. Blue: the model has a tool and must call it or decline; a tool call counts as carrying out the request whatever the text says.", 6)}
-{star("The say-do gap reaches benign permission checks.", "Refusal-transfer failures are known for harmful requests [23, 24]. Here the request is benign, the policy explicit and the tool takes two arguments, and a model still acts on requests no rule supports while its text declines them.")}
 
-<h3>4.5 RQ5 · What does a single accuracy score hide?</h3>
+<h3>4.5 Assumption 5 · A low score names the failure, and a clearer rule can only help</h3>
 <p><span class="tag">Track 1 · P3, P4</span> None of the above shows in accuracy, and accuracy itself mixes three failures. A low
-score on one-way rules is usually read as confusing direction [9, 10]. With one kind of request per mistake, wrong-way requests
+score on one-way rules is usually read as confusing direction [9, 10], and the usual fix is to state the rule more strictly [5, 6]. With one kind of request per mistake, wrong-way requests
 were allowed {v['e1b_rev']} of the time in quick answers and {v['e5b_rev']} step by step; models named sender and receiver
 correctly in {roles_k:,} of {roles_n:,} checks. The errors sit elsewhere.</p>
 <p><b>Chaining.</b> Given "A may send to B" and "B may send to C", models allowed A to C in {v['e5b_chain']} of step-by-step
@@ -738,7 +738,7 @@ repaired only {names(s['bal_back'])} (Figure 9, left). Having the model first st
 refusals in {of(s['x3_down'], x3)} models (DeepSeek {p0(C3['DeepSeek v3.2']['X3']['listed_refusal_quick'])} to
 {p0(C3['DeepSeek v3.2']['X3']['listed_refusal_scaffold'])}).</p>
 {fig("f_why_refuse", "Left: share of listed requests refused in quick answers, for each sentence added to the rule. Right: the same requests when the model first states whether the rule is listed, then decides.", 9)}
-{star("An exploit, shown and closed.", f"A ring rulebook lets one score stand for two mistakes, and a test that counts only wrong allows scores every restrictive sentence as an improvement while wrong refusals rise from {v['e1b_ref']} to {v['e1e_ref']}. DelegationBench reports 97–100% accuracy once rules are explicit [6]; ours are explicit and four lines long. Giving each mistake its own request and reporting both errors closes both gaps.")}
+{star("An exploit, shown and closed.", f"A ring rulebook lets one score stand for two mistakes, and a test that counts only wrong allows scores every restrictive sentence as an improvement while wrong refusals rise from {v['e1b_ref']} to {v['e1e_ref']}. DelegationBench reports 97–100% accuracy once rules are explicit [6]; ours are explicit and four lines long.")}
 
 <h2>5. Discussion and Limitations</h2>
 <p><b>Why this happens.</b> The stated confidence is one more generated token; the doubt sits in the probability of the answer
@@ -747,39 +747,35 @@ both favour, removes the step in which that could happen. Pushback is likewise a
 list, and text and tool call are separate outputs that nothing forces to agree.</p>
 <p><b>Answers to the four Track 1 open problems.</b> <i>P1, does the model know how solid its claims are?</i> It can tell
 ({s['tp_lo']:.2f}–{s['tp_hi']:.2f} from probabilities) and does not say ({min(auroc):.2f}–{max(auroc):.2f} stated), whether asked
-plainly, under a scoring rule, in words or with a penalty. A confidence audit should read probabilities or a written re-check.
-<i>P2, the gap between what it implies and what it will defend.</i> Four gaps on the same items: it implies certainty it does not
+plainly, under a scoring rule, in words or with a penalty. <i>P2, the gap between what it implies and what it will defend.</i> Four gaps on the same items: it implies certainty it does not
 have; it gives up {ep['fe_rng'][0]:.0f}–{ep['fe_rng'][1]:.0f}% of right answers to a false claim; after a wrong refusal it can
 quote the rule that permits the request; and it can write DECLINE while making the call. <i>P3, which behaviours matter for
 decision quality?</i> Not self-report. What moved decisions was structure (state the rule, then decide; re-check in writing), who
 was asking, and what the rule left unsaid. <i>P4, what makes a benchmark gameable?</i> One score for several mistakes, and one
 error type counted. Both are shown and closed here; exact answers, fresh names and rule scoring keep the test from saturating by
 memorisation.</p>
-<p><b>Implications for AI safety.</b> Tools that would have AI arbitrate, audit or act as a delegate assume a system that applies
-stated rules impartially and defers when unsure [45]. A model that always says 100 cannot defer on its confidence; one that takes
-any confident claim about the evidence as true can be talked out of a correct decision by the party it is checking; one that
-writes DECLINE while acting defeats an audit that reads text.</p>
+<p><b>Implications for AI safety.</b> AI arbiters, auditors and delegates are assumed to apply stated rules impartially and defer
+when unsure [45]. A model that always says 100 cannot defer; one that takes any confident claim as true can be talked out of a
+correct decision by the party it is checking; one that writes DECLINE while acting defeats an audit that reads text.</p>
 <h3>Limitations</h3>
-<p>Rulebooks are invented and short, so rates may not transfer to real policies or to open-ended questions. "Can tell" rests on
-output probabilities for three models and on one model's written re-check; no activations were inspected. The further confidence
-and pushback readings cover eight models on four name-set rounds (Grok 4.3 two), and the cause-and-fix experiments five to six.
-Pushback used one wording per kind. The long-reply runs were added after seeing reply formats (Appendix C). Experiments were
-specified in four batches, each before its own data but after earlier results. We compare with other work by design and reported
-numbers. There is no human comparison. Appendix A gives the full list with dual-use and ethical considerations.</p>
+<p>Rulebooks are invented and short, so rates may not transfer to real policies or open-ended questions. "Can tell" rests on
+output probabilities for three models and one model's written re-check; no activations were inspected. The confidence and
+pushback readings cover eight models on four name-set rounds (Grok 4.3 two), with one wording per kind of pushback; cause-and-fix
+experiments cover five to six. Long-reply runs were added after seeing reply formats, and experiments were specified in four
+batches, each before its own data but after earlier results (Appendix C). No human comparison. Appendix A has the full list with
+dual-use and ethical considerations.</p>
 <h3>Future Work</h3>
-<p>Require a written re-check before any confidence or re-ask in all models and measure what it costs; probe a study model on a
-GPU for "the rule is listed" at the moment it is refused; vary the wording and source of false claims; package the generators as
-Inspect tasks [40]; and move from invented rulebooks to real policies.</p>
+<p>Require a written re-check in all models and measure its cost; probe a study model on a GPU; vary the wording and source of
+false claims; package the generators as Inspect tasks [40]; move to real policies.</p>
 
 <h2>6. Conclusion</h2>
-<p>On questions with exact answers, what a model says about its answer is not evidence about the answer. Models stated full
-confidence in {v['conf100_pc']} of decisions and kept doing so however we asked, while their probabilities separated right from wrong at
-{s['tp_lo']:.2f}–{s['tp_hi']:.2f}; {len(ep['fe_hi'])} of {len(EM)} gave up most right answers to a false claim about a list they could
-read; and one acted on {p0(x7g('Grok 4.3', 'base', 'none_action'))} of unsupported requests while writing DECLINE. The accuracy
-score showed none of this and merged three different rule-reading failures. The exceptions point to the fix: a model that re-checks
-in writing reports its errors and resists false claims. For anyone building or trusting such a system: read probabilities, not
-stated confidence; make the model re-check against the evidence before it answers a challenge; score the action; and split the
-score.</p>
+<p>Five assumptions that safety practice leans on were tested on the same exactly-scored items, and none held. Models stated full
+confidence in {v['conf100_pc']} of decisions however we asked, while their probabilities separated right from wrong at
+{s['tp_lo']:.2f}–{s['tp_hi']:.2f}; {len(ep['fe_hi'])} of {len(EM)} gave up most right answers to a false claim about a list they
+could read; one acted on {p0(x7g('Grok 4.3', 'base', 'none_action'))} of unsupported requests while writing DECLINE; and the
+accuracy score merged three failures, of which the one usually blamed was the rarest. The exceptions point to the fix: a model
+that re-checks in writing reports its errors and resists false claims. So read probabilities, require a written re-check before
+a challenge is answered, score the action, and split the score.</p>
 
 """
 BODY += f"""<div class="break"></div>
