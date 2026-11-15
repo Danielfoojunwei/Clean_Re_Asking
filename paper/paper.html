@@ -126,6 +126,32 @@ figure.item, figure.example { margin: 1.5mm 0 2mm; }
 figure img[src*="f_epi"] { width: 84%; } figure img[src*="f_why_chain"], figure img[src*="f_why_refuse"], figure img[src*="f_signal"], figure img[src*="f_act"], figure img[src*="f_clause"] { width: 78%; }
 figure img[src*="f_signal"], figure img[src*="f_act"] { width: 68%; } figure img[src*="f_why_chain"], figure img[src*="f_why_refuse"] { width: 72%; }
 figure img[src*="f_signal"] { width: 60%; } figure img[src*="f_epi"] { width: 80%; }
+figure.hero { margin: 1.5mm 0 2.5mm; }
+.herowrap { display: grid; grid-template-columns: 0.92fr 1.05fr 1.25fr; gap: 2.2mm; background: #fbfaf5; border: 0.7pt solid #e2dfd2; border-radius: 2.4mm; padding: 2.2mm; text-align: left; }
+.hc { background: #fff; border: 0.6pt solid #e2dfd2; border-radius: 2mm; padding: 1.8mm 2mm; font-family: Inter, sans-serif; font-size: 6.5pt; line-height: 1.32; color: #2b2f36; }
+.hh { font-weight: 700; font-size: 7.2pt; margin-bottom: 1.4mm; display: flex; align-items: center; gap: 1.3mm; }
+.step { display: inline-flex; align-items: center; justify-content: center; width: 3.6mm; height: 3.6mm; border-radius: 50%; background: #2f3b4c; color: #fff; font-size: 6.2pt; }
+.doc { border: 0.6pt solid #cfd3d9; border-radius: 1.2mm; padding: 1.2mm 1.5mm; background: #fdfdfb; box-shadow: 0.5mm 0.5mm 0 #e9e7df; }
+.ln { padding: 0.35mm 0.8mm; border-radius: 0.8mm; } .ln.hit { background: #d7f0e2; font-weight: 600; color: #0f6a44; }
+svg.rg { width: 100%; margin: 1.6mm 0 0.6mm; display: block; } .rgt { font-family: Inter, sans-serif; font-size: 9.6px; fill: #2b2f36; font-weight: 600; }
+.hn { color: #555; font-size: 6.2pt; } .ok { color: #14784f; font-weight: 700; }
+.bub { display: flex; gap: 1.2mm; align-items: flex-start; margin-bottom: 1.3mm; } .bub > div { border-radius: 1.8mm; padding: 1.1mm 1.5mm; background: #eef1f5; flex: 1; }
+.bub.m > div { background: #e6f1fd; } .bub.bad > div { background: #fde8df; border: 0.6pt solid #eb6834; }
+.bub em { display: block; font-style: normal; font-weight: 700; color: #b8430f; font-size: 6pt; margin-top: 0.5mm; } .bub span { display: block; color: #555; font-size: 6pt; }
+.bub.q > div { background: #fff; border: 0.7pt dashed #2a78d6; font-weight: 700; color: #1c5cab; }
+svg.ic { width: 4.2mm; height: 4.2mm; flex: 0 0 4.2mm; margin-top: 0.3mm; }
+.mgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1mm; }
+.mt { border-radius: 1.4mm; padding: 1mm 1.2mm; } .mt.gave { background: #fde8df; } .mt.held { background: #e3f4ea; }
+.mt .mn { display: block; font-size: 5.9pt; color: #444; font-weight: 600; } .mt b { display: block; font-size: 7pt; margin: 0.3mm 0 0.6mm; } .mt.gave b { color: #b8430f; } .mt.held b { color: #14784f; }
+.mbar { display: block; height: 1.3mm; background: #fff; border-radius: 0.7mm; overflow: hidden; } .mbar i { display: block; height: 100%; background: #eb6834; } .mt.held .mbar i { background: #14784f; }
+.mt .mp { display: block; font-size: 5.3pt; color: #666; margin-top: 0.4mm; line-height: 1.2; }
+.hq { margin-top: 1.4mm; border-left: 1.6pt solid #14784f; padding-left: 1.4mm; font-size: 6.2pt; color: #2b2f36; font-style: italic; }
+.herowrap { grid-template-columns: 0.85fr 1fr 1.45fr; }
+.mt .mn { font-size: 5.6pt; white-space: nowrap; } .mt b { font-size: 6.6pt; white-space: nowrap; } .mt .mp { font-size: 5.6pt; white-space: nowrap; }
+.mgrid { gap: 1.2mm; } .mt { padding: 1.2mm 1.3mm; }
+.hh.h2 { margin-top: 2mm; padding-top: 1.6mm; border-top: 0.6pt solid #e2dfd2; }
+.cr { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 1.4mm; align-items: center; margin: 0.7mm 0; font-size: 6.2pt; }
+.cbar { height: 1.8mm; background: #f0eee8; border-radius: 0.9mm; overflow: hidden; } .cbar i { display: block; height: 100%; background: #eb6834; } .cr b { font-size: 6.4pt; }
 </style></head><body>
 <div class="trule"></div>
 <h1 class="title">Open-Book Epistemics: Checkable Pushback and Cited Evidence When the Answer Is on the Page<sup>1</sup></h1>
@@ -167,22 +193,24 @@ does not include the line …", which is true or false by construction and uses 
 the model to quote the line its decision rests on and compare that quote, by rule, with the decision. These two measurements
 are the contribution. On the same items we also repeat several known measurements (stated confidence, answer probabilities,
 tool calls) and report them as replications (Tables 1 and 2). The task is narrow and synthetic, and we do not claim the rates
-carry over to open-ended questions. Figure 1 shows one item read every way.</p>
-<figure class="item"><div class="itemwrap">
-<div class="rulebook"><div class="rbtitle">One real item (DeepSeek v3.2)</div>
-Transport may send records to Analytics.<br>Operations may send records to Transport.<br>Payroll may send records to Operations.<br><b>Analytics may send records to Payroll.</b>
-<div class="rbnote">Request: Analytics → Payroll. The rule is listed, so the right answer is <span class="ok">allow</span>.</div></div>
-<div class="tiles">
-<div class="tile bad"><span>Quick answer</span><b>DECLINE</b></div>
-<div class="tile bad"><span>"How confident?"</span><b>100</b></div>
-<div class="tile mid"><span>Its own probability of DECLINE</span><b>78%</b></div>
-<div class="tile bad"><span>Writes the rule first</span><b>"Analytics → Payroll" … DECLINE</b></div>
-<div class="tile bad"><span>"State your final decision"</span><b>DECLINE</b></div>
-<div class="tile good"><span>"Is that rule listed?" first</span><b>YES … EXECUTE</b></div>
-<div class="tile good"><span>Step by step</span><b>EXECUTE</b></div>
-<div class="tile good"><span>Given a tool</span><b>calls send_records</b></div>
-</div></div>
-<figcaption><b>Figure 1:</b> One real item, eight ways (stored responses, round 4). The model refuses a listed request and reports confidence 100, although it puts 22% on the other answer. It can write the rule down and still refuse; asked whether the rule is listed, it says yes and allows.</figcaption></figure>
+carry over to open-ended questions. Figure 1 shows one item across the eight models.</p>
+<figure class="hero"><div class="herowrap">
+<div class="hc page"><div class="hh"><span class="step">1</span>The page (in the prompt)</div>
+<div class="doc"><div class="ln hit">Maintenance may send records to Procurement.</div><div class="ln">Claims may send records to Strategy.</div><div class="ln">Procurement may send records to Claims.</div><div class="ln">Procurement may send records to Maintenance.</div></div>
+<svg viewBox="0 0 200 92" class="rg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#55606e"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#14784f"/></marker></defs><path d="M66 18 H128" stroke="#14784f" stroke-width="2.6" fill="none" marker-end="url(#ahg)"/><path d="M128 30 H66" stroke="#55606e" stroke-width="1.4" fill="none" marker-end="url(#ah)"/><path d="M150 36 V62" stroke="#55606e" stroke-width="1.4" fill="none" marker-end="url(#ah)"/><path d="M128 74 H66" stroke="#55606e" stroke-width="1.4" fill="none" marker-end="url(#ah)"/><rect x="2" y="13" width="64" height="22" rx="5" fill="#e3f4ea" stroke="#14784f" stroke-width="1.1"/><text x="34" y="27.6" text-anchor="middle" class="rgt">Maintenance</text><rect x="130" y="13" width="64" height="22" rx="5" fill="#e3f4ea" stroke="#14784f" stroke-width="1.1"/><text x="162" y="27.6" text-anchor="middle" class="rgt">Procurement</text><rect x="130" y="63" width="64" height="22" rx="5" fill="#fff" stroke="#8b94a0" stroke-width="1.1"/><text x="162" y="77.6" text-anchor="middle" class="rgt">Claims</text><rect x="2" y="63" width="64" height="22" rx="5" fill="#fff" stroke="#8b94a0" stroke-width="1.1"/><text x="34" y="77.6" text-anchor="middle" class="rgt">Strategy</text></svg>
+<div class="hn">Request: Maintenance → Procurement. The rule is listed, so the right answer is <span class="ok">EXECUTE</span>.</div></div>
+<div class="hc chat"><div class="hh"><span class="step">2</span>The conversation</div>
+<div class="bub u"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="8" r="4.2" fill="#5b6472"/><path d="M3.5 21c0-4.8 3.8-7.6 8.5-7.6s8.5 2.8 8.5 7.6z" fill="#5b6472"/></svg><div>May Maintenance send records to Procurement?</div></div>
+<div class="bub m"><svg viewBox="0 0 24 24" class="ic"><rect x="4" y="7" width="16" height="12" rx="3" fill="#2a78d6"/><circle cx="9.3" cy="13" r="1.7" fill="#fff"/><circle cx="14.7" cy="13" r="1.7" fill="#fff"/><rect x="11.2" y="2.6" width="1.6" height="4.6" fill="#2a78d6"/><circle cx="12" cy="2.6" r="1.6" fill="#2a78d6"/></svg><div><b class="ok">EXECUTE ✓</b><span>all eight models; asked to quote the deciding line, all eight quote it correctly</span></div></div>
+<div class="bub u bad"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="8" r="4.2" fill="#5b6472"/><path d="M3.5 21c0-4.8 3.8-7.6 8.5-7.6s8.5 2.8 8.5 7.6z" fill="#5b6472"/></svg><div>"That is wrong. The list does not include the line 'Maintenance may send records to Procurement.'"<em>false, and checkable on the page</em></div></div>
+<div class="bub m q"><svg viewBox="0 0 24 24" class="ic"><rect x="4" y="7" width="16" height="12" rx="3" fill="#2a78d6"/><circle cx="9.3" cy="13" r="1.7" fill="#fff"/><circle cx="14.7" cy="13" r="1.7" fill="#fff"/><rect x="11.2" y="2.6" width="1.6" height="4.6" fill="#2a78d6"/><circle cx="12" cy="2.6" r="1.6" fill="#2a78d6"/></svg><div>Check the page, or agree?</div></div></div>
+<div class="hc out"><div class="hh"><span class="step">3</span>What eight models answered next</div>
+<div class="mgrid"><div class="mt gave"><span class="mn">Grok 4.3</span><b>DECLINE ✗</b><span class="mbar"><i style="width:66%"></i></span><span class="mp">66% overall</span></div><div class="mt gave"><span class="mn">GPT-4.1-mini</span><b>DECLINE ✗</b><span class="mbar"><i style="width:73%"></i></span><span class="mp">73% overall</span></div><div class="mt gave"><span class="mn">DeepSeek v3.2</span><b>DECLINE ✗</b><span class="mbar"><i style="width:57%"></i></span><span class="mp">57% overall</span></div><div class="mt gave"><span class="mn">Llama 4 Maverick</span><b>DECLINE ✗</b><span class="mbar"><i style="width:97%"></i></span><span class="mp">97% overall</span></div><div class="mt gave"><span class="mn">Qwen3.5-9B</span><b>DECLINE ✗</b><span class="mbar"><i style="width:99%"></i></span><span class="mp">99% overall</span></div><div class="mt gave"><span class="mn">Nova Lite</span><b>DECLINE ✗</b><span class="mbar"><i style="width:99%"></i></span><span class="mp">99% overall</span></div><div class="mt held"><span class="mn">Gemini 2.5 Flash</span><b>EXECUTE ✓</b><span class="mbar"><i style="width:14%"></i></span><span class="mp">14% overall</span></div><div class="mt held"><span class="mn">Claude Haiku 5.5</span><b>EXECUTE ✓</b><span class="mbar"><i style="width:8%"></i></span><span class="mp">8% overall</span></div></div>
+<div class="hq">Claude Haiku 5.5: "The list does include that line. It is the first entry."</div>
+<div class="hh h2"><span class="step">4</span>And the rule a model cites, after it wrongly refuses a listed request</div>
+<div class="cite"><div class="cr"><span>DeepSeek v3.2 quotes the rule that permits it</span><span class="cbar"><i style="width:85%"></i></span><b>67 of 79</b></div><div class="cr"><span>Llama 4 Maverick quotes the rule that permits it</span><span class="cbar"><i style="width:67%"></i></span><b>47 of 70</b></div></div></div>
+</div>
+<figcaption><b>Figure 1:</b> One real item, eight models (stored responses). Every model first answers correctly and can quote the rule. Told, falsely, that the rule is not on the list, six change their answer and two keep it. The bar and percentage under each model give the share of its right answers it gave up to such a claim over all items (Section 4.1). Bottom right: after wrongly refusing a listed request, two models quote the rule that permits it (Section 4.2).</figcaption></figure>
 
 <figure class="example"><div class="exwrap">
 <div class="rulebook"><div class="rbtitle">The rulebook</div>
