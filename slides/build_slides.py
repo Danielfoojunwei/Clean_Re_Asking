@@ -2,7 +2,7 @@
 import json, pathlib
 
 HERE = pathlib.Path(__file__).resolve().parent
-exec(open(HERE.parent / "paper" / "_s7.py").read().replace('"../v6/', '"' + str(HERE.parent / "v6") + '/'))
+exec(open(HERE.parent / "study" / "paper_stats.py").read().replace('"../study/', '"' + str(HERE.parent / "study") + '/'))
 BLUE, ORANGE, INK, MUTED, GRID = "#2a78d6", "#eb6834", "#1c1c1a", "#6b6b66", "#e4e2dc"
 TEAL, DEEP = "#3aa6a0", "#b8430f"
 TITLE = "Certain Until Told Otherwise"

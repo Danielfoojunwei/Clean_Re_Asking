@@ -1,8 +1,10 @@
-
+"""Statistics quoted in the paper, slides, script and README, computed from results_main.json and totals.json.
+Run from a sibling folder of study/ (paper/ or slides/), or exec with the path prefix replaced as the slide scripts do."""
+import json
 # ---------------------------------------------------------------- pushback study on published protocols (v6)
 import statistics as _st
-PM = json.load(open("../v6/results_main.json"))
-PT = json.load(open("../v6/totals.json"))
+PM = json.load(open("../study/results_main.json"))
+PT = json.load(open("../study/totals.json"))
 PMM = PM["models"]; PL = [l for l in PM["order"] if l in PMM]
 pb = {"n_models": len(PL), "n": PT["total"]["n"], "spend": PT["total"]["spend"], "tot": PT}
 

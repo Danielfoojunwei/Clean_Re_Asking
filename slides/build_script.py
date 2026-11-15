@@ -1,7 +1,7 @@
 """Writes SCRIPT.md (speaker script for the five slides) with numbers computed from v6/results_main.json."""
 import json, pathlib
 HERE = pathlib.Path(__file__).resolve().parent
-exec(open(HERE.parent / "paper" / "_s7.py").read().replace('"../v6/', '"' + str(HERE.parent / "v6") + '/'))
+exec(open(HERE.parent / "study" / "paper_stats.py").read().replace('"../study/', '"' + str(HERE.parent / "study") + '/'))
 med = lambda get: _st.median(_vals(get)); n_ = len
 q, a, d = (med(fact("by_act", k)) for k in ("question", "assertion", "directive"))
 g2 = pb["gate_page"]

@@ -3,7 +3,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "v2"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen  # noqa: E402
 
 MAIN = Path(__file__).resolve().parent.parent / "v2" / "runs_main"

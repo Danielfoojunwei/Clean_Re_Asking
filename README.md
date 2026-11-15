@@ -3,12 +3,17 @@
 Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
 *Certain Until Told Otherwise: Why Pushback Benchmarks Disagree*.
 
-A model with good epistemics updates for reasons and holds against pressure. Published tests of this disagree: one reports
-that current models almost never give up a well-anchored fact (Yang et al. 2026), another that models of the same generation
-concede most correct answers (Basta et al. 2026). This study shows the tests measure two different things. It runs the
+Author: Daniel Foo, Nanyang Technological University (NTU), Singapore, with Apart Research.
+
+**In one sentence:** models that can see the right answer and are sure of it will still drop it when a user states a
+different answer instead of asking, and that explains why two published pushback tests disagree.
+
+When a user insists that a model is wrong, a good model changes its answer if the user is right and keeps it if the user is
+wrong. Published tests of this disagree: one reports that current models almost never give up a well-anchored fact (Yang et
+al. 2026), another that models of the same generation concede most correct answers (Basta et al. 2026). This study runs the
 rebuttals of five published protocols, word for word, on three open-book tasks where the answer is on a four-line list in the
-prompt, on 21 models, with the user wrong in half of the items and right in half. Scoring is by rule.
-370,170 scored answers.
+prompt, on 21 models, with the user wrong in half of the items and right in half. Scoring is by rule; no model grades
+another. 370,170 scored answers.
 
 **Four findings that run against intuition**
 
@@ -25,8 +30,8 @@ prompt, on 21 models, with the user wrong in half of the items and right in half
    and either without the name 7%.
 
 **The common cause.** With content held fixed, asking, asserting and telling cost medians of 3%, 32% and 48%;
-telling exceeds asking reliably in 17 of 21 models. Most models answer the last request, not the
-question. Claude Haiku 5.5, GPT-6 Luna Pro, GPT-6 Luna and GPT-5.6 Luna do not, and still accept correct objections; model order agrees across three unrelated
+telling exceeds asking reliably in 17 of 21 models. The answer is given up when the user states the other answer and does
+not ask: most models answer the last request, not the question. Claude Haiku 5.5, GPT-6 Luna Pro, GPT-6 Luna and GPT-5.6 Luna do not, and still accept correct objections; model order agrees across three unrelated
 tasks (rank correlation 0.81–0.95). A fact computed outside the model held the rate at 10% or
 less in 11 of 14 models.
 
@@ -40,19 +45,44 @@ and their outcomes are listed in the paper (Table B3).
 
 ## What is here
 
-- `paper/Epistemics_Sprint_Paper.pdf` is the report (`.docx` is a copy for pasting into the sprint template) and
-  `paper/ABSTRACT.txt` the title and abstract. `paper/paper.html` is the source the PDF is rendered from
-  (`node render.js paper.pdf`); `figs6.py` draws Figures 2 to 5 from `study/results_main.json`.
-- `slides/Epistemics_Sprint_Slides.pdf` is the five-slide deck and `slides/SCRIPT.md` the speaker script
-  (`build_slides.py`, `build_script.py`, `node render_slides.js slides.pdf`).
-- `study/` holds the experiments: four plans with dated amendments (`PLAN_G.md` to `PLAN_J.md`), generators (`gen_g.py`,
-  `gen_h.py`, `gen_i.py`, `gen_q.py`; `gen_f.py` is the task generator they import), runners (`run_g.py`, `run_h.py`,
-  `run_j.py`), analyses (`analyze_g.py` to `analyze_j.py`, `summary.py`, `totals.py`), the statistics used in the text
-  (`paper_stats.py`), results (`results_*.json`, `totals.json`) and every raw response (`raw_responses.zip`). Rebuttal wording
-  and its source are in `gen_g.py`.
+| Path | Contents |
+|---|---|
+| `paper/Epistemics_Sprint_Paper.pdf` | The report: 8 pages of main text, 26 references, three appendices (17 pages in all). |
+| `paper/Epistemics_Sprint_Paper.docx` | The same text for pasting into the sprint template. |
+| `paper/ABSTRACT.txt` | Title and abstract for the submission form. |
+| `paper/paper.html`, `paper/render.js` | The source the PDF is rendered from (`node render.js paper.pdf`). |
+| `paper/figs6.py`, `paper/figs.py`, `paper/figs/` | Figures 2 to 5 and the script that draws them from `study/results_main.json`. |
+| `slides/Epistemics_Sprint_Slides.pdf` | Five-slide deck. |
+| `slides/SCRIPT.md` | Speaker script, about three minutes. |
+| `slides/build_slides.py`, `slides/build_script.py`, `slides/render_slides.js` | Deck and script sources; every number is computed from `study/`. |
+| `study/PLAN_G.md` to `PLAN_J.md` | The four plans, each written with file hashes before its data, with dated amendments. |
+| `study/gen_*.py` | Item generators. Rebuttal wording and the paper each sentence comes from are in `gen_g.py`; the factorial is `gen_i.py` and `gen_q.py`; fixes and multi-turn runs are `gen_h.py`; `gen_f.py` builds the three tasks. |
+| `study/run_*.py`, `study/launch_*.sh`, `study/lib/` | Runners, the commands used to launch them, and the request helpers they import. |
+| `study/analyze_*.py`, `summary.py`, `totals.py`, `paper_stats.py` | Analysis: rates with bootstrap intervals, the cross-model summary, counts and spend, and the statistics quoted in the text. |
+| `study/results_*.json`, `study/totals.json` | Results. `results_main.json` is the file the paper, slides and README read. |
+| `study/raw_responses.zip` | Every raw model response with provider metadata. |
+
+The plan files are the dated records as written during the sprint and are left unedited so that their hashes stay valid;
+they refer to this study's parts as G, H, I and J.
 
 ## Rebuilding
 
-Unzip `study/raw_responses.zip` inside `study/`, then run `python3 analyze_g.py`, `analyze_h.py`, `analyze_i.py`,
-`analyze_j.py`, `summary.py` and `totals.py`. `study/lib/` holds the request helpers the runners import (run with
-`PYTHONPATH=lib`). Running the hosted experiments needs an OpenRouter key in `OPENROUTER_API_KEY`; the archive contains model outputs and provider metadata only.
+```bash
+cd study && unzip -q raw_responses.zip
+```
+
+```bash
+python3 analyze_g.py && python3 analyze_h.py && python3 analyze_i.py && python3 analyze_j.py && python3 summary.py && python3 totals.py
+```
+
+```bash
+cd ../paper && python3 figs6.py
+```
+
+```bash
+cd ../slides && python3 build_slides.py && python3 build_script.py && node render_slides.js slides.pdf
+```
+
+The analyses need only the Python standard library; the figures need matplotlib; the PDFs need Node with Playwright.
+Re-running the hosted experiments needs an OpenRouter key in `OPENROUTER_API_KEY` (`python3 run_g.py --model <id> --cap <usd>`);
+the archive contains model outputs and provider metadata only.

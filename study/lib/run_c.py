@@ -5,7 +5,7 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "v2"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen_c, run  # noqa: E402
 
 LOCK = threading.Lock()

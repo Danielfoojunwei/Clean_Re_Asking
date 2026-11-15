@@ -1,4 +1,4 @@
-"""Figures for the pushback study on published protocols (v6/results_main.json). Same style as the other figures."""
+"""Figures 2 to 5 of the paper, drawn from study/results_main.json. Run from paper/."""
 import json
 from pathlib import Path
 import numpy as np
@@ -6,7 +6,7 @@ import figs
 from figs import plt, BLUE, ORANGE, AQUA, INK, MUTED, AXIS, SURF, save, pct_axis
 from matplotlib.colors import LinearSegmentedColormap
 
-R = json.load(open(Path("../v6/results_main.json")))
+R = json.load(open(Path("../study/results_main.json")))
 M, ORDER, GR = R["models"], R["order"], R["groups"]
 CM = LinearSegmentedColormap.from_list("wo", ["#f7f6f0", "#fbe3c8", "#f3a56f", "#eb6834", "#b8430f"])
 PURPLE = "#8a5cc7"

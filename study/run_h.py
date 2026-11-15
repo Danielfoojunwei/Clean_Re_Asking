@@ -3,7 +3,7 @@ import argparse, json, sys, threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "v2")); sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "v3"))
+sys.path.insert(0, str(Path(__file__).resolve().parent / "lib"))
 import gen_g, gen_h, gen_i, run, run_c  # noqa: E402
 
 LOCK = threading.Lock()
