@@ -1,7 +1,7 @@
 # Open-Book Epistemics
 
 Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
-*Open-Book Epistemics: Checkable Pushback, Cited Evidence, and a Guard for Agent Harnesses*.
+*Open-Book Epistemics: Checkable Pushback, Cited Evidence, and a Claim Check for Agent Harnesses*.
 
 The study uses an open-book task (one-way permission rules, where the right answer can be read off a short list in the prompt
 and no model grades another) to make two measurements we did not find in prior work:
@@ -11,11 +11,14 @@ and no model grades another) to make two measurements we did not find in prior w
    whose objections the model cannot verify.
 2. **The rule a model cites.** The line a model quotes for its decision is compared, by rule, with the decision itself.
 
-It then tests what an agent harness can do about the first, and ends with six guidelines and a mock-up of a harness layer:
+It then tests what an agent harness can do about the first, and proposes one feature, a **claim check**:
 
 3. **Harness-side fix.** When the harness checks the claim against the list and attaches the result, right answers given up fall
-   below 10% in six of eight models; asking the model to check for itself helps less. Two models still give way.
-4. **Checks on stored responses.** Comparing the quoted line with the decision flags every wrong allow (266 of 266).
+   below 10% in six of eight models. Asking the model to check for itself helps less, and its check is often wrong. Two models
+   still give way, so there the harness has to hold the decision.
+4. **The claim check.** When a user or agent disputes a decision by saying something about context the harness holds, the
+   harness verifies the claim itself: true claims are passed on with the evidence, false ones are shown to the user with the
+   contradicting line, and uncheckable ones go to a person. It is a design and was not built.
 
 On the same items it replicates known results on stated confidence, stated penalties, answer probabilities and the mismatch
 between written refusals and tool calls, and splits the accuracy score into the separate errors it combines. The rulebooks are

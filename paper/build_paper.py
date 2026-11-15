@@ -496,6 +496,14 @@ guide_tbl = table(["Guideline for an agent harness", "What the harness does", "E
     ["<b>6. Enforce on the call, not the text</b>", "Block a tool call whose accompanying text declines the action",
      f"Grok 4.3: {gx7['called_while_saying_decline']} of {gx7['calls']} calls arrive with the text DECLINE", "Observed; check not run"]], "tight small")
 print("fix answers", fx["n"], "| e2_ok", fx["e2_ok"], "bad", fx["e2_bad"], "| e1_down", fx["e1_down"], "| chk_lo", fx["chk_lo"])
+# ---- Claim Check: specification table (the one proposed feature)
+claim_tbl = table(["Claim Check", "What the harness does", "Evidence in this study"], [
+    ["<b>When it runs</b>", "A user or another agent disputes a decision by saying something about context the harness holds (\"the policy does not include that rule\")", "This is the turn at which six of eight models gave up most right answers"],
+    ["<b>The check</b>", "The harness, not the model, matches the claim against that context and attaches a system-labelled line saying what it found", f"Right answers given up fall below 10% in {of(fx['e2_ok'], EM)} models (from {min(gr(l, 'base') for l in fx['yield6']):.0f}–{max(gr(l, 'base') for l in fx['yield6']):.0f}% on the same items in the six that gave way)"],
+    ["<b>If the claim is true</b>", "Pass it on with the evidence, so the model corrects itself", f"Wrong answers were still corrected at least {fx['true_min']['E2']:.0f}% of the time"],
+    ["<b>If the claim is false</b>", "Show the user the contradicting line. If the model changes its answer anyway, hold the original decision", f"{names(fx['e2_bad'])} still gave way with the line attached ({', '.join(p0(EF[l]['E2']['right_changed']) for l in fx['e2_bad'])})"],
+    ["<b>If it cannot be checked</b>", "Send to a person. Do not use the model's own check as the control", f"Asked to check for themselves under pushback, {len(fx['chk_lo'])} models often reported a listed line as missing ({min(fx['chk'].values()):.0f}–{max(fx['chk'][l] for l in fx['chk_lo']):.0f}% correct)"]], "tight small")
+PRIOR = ""
 
 Y, P_, N_ = '<span class="y">●</span>', '<span class="p">◐</span>', '<span class="n">○</span>'
 hb = dk(HK, "D1_brier")
@@ -632,31 +640,20 @@ def _row(n, title, body, badge, cls="pass"):
 
 
 mock_cfg = f"""<figure class="mock"><div class="mockwrap">
-<div class="mk cfg"><div class="mkh">harness.yaml<span>proposed</span></div><pre>open_book_guard:
+<div class="mk cfg"><div class="mkh">harness.yaml<span>proposed</span></div><pre>claim_check:
   <i>context:</i> policy.rules     <em># the page</em>
-  lookup_then_decide: <u>on</u>
-  cite_and_compare:
-    require_quote: <u>true</u>
-    on_mismatch: <u>review</u>
-  confidence:
-    source: <u>answer_logprob</u>
-    review_below: <u>0.90</u>
-  claim_check:
-    verify_against: <u>context</u>
-    attach_result: <u>true</u>
-    if_contradicted: <u>hold_decision</u>
-  enforce_on: <u>tool_call</u>
-  policy_lint:
-    require: [<u>"rules do not chain"</u>]</pre></div>
+  match: <u>exact_line</u>
+  attach_result: <u>true</u>
+  if_contradicted: <u>hold_decision</u>
+  if_unverifiable: <u>send_to_person</u></pre></div>
 <div class="mk trace"><div class="mkh">Run trace · request: Maintenance → Procurement<span>mock-up</span></div>
-{_row("1", "Look up, then decide", "model: rule listed? YES → EXECUTE", "PASS")}
-{_row("2", "Cite and compare", "quote \"Maintenance may send records to Procurement.\" matches the decision", "PASS")}
-{_row("3", "Confidence", "probability of answer token 0.99 ≥ 0.90 (stated confidence ignored)", "PASS")}
+{_row("1", "Decision", "model: EXECUTE", "DONE")}
 {_row("!", "Correction received", "user: \"That is wrong. The list does not include the line …\"", "CLAIM", "warn")}
-{_row("4", "Claim check", "matched against policy.rules: line 1 found → claim CONTRADICTED; result attached; decision held", "HELD", "held")}
-{_row("5", "Enforce on the call", "send_records(Maintenance, Procurement) agrees with the text EXECUTE", "RUN")}
+{_row("2", "Claim check", "matched against policy.rules: line 1 found → claim CONTRADICTED; result attached to the turn", "FALSE", "held")}
+{_row("3", "Model asked again, with the result attached", "model: EXECUTE (unchanged)", "HELD")}
+{_row("4", "User notified", "\"Your correction does not match the policy. Line 1 reads: …\"", "SENT")}
 </div></div>
-<figcaption><b>Figure G12:</b> The same layer as a builder would configure and read it: a configuration block and the run trace for the item of Figure 1. It is a design, not a built product, and the values in the trace are illustrative.</figcaption></figure>"""
+<figcaption><b>Figure G12:</b> The claim check as a builder would configure and read it: a configuration block and the run trace for the item of Figure 1. A design, not a built product; the values in the trace are illustrative.</figcaption></figure>"""
 
 _AR = '<span class="ar">→</span>'
 
@@ -668,34 +665,33 @@ def _wb(kind, who, title, body, tag=""):
 mock_fig = f"""<figure class="flow"><div class="flowwrap">
 <div class="fl setup"><div class="flh">Set up once <span>the builder</span></div>
 <div class="su"><div><i>1</i><span><b>Name the page.</b> Tell the harness which context the model decides from (a policy, a contract, a table).</span></div>
-<div><i>2</i><span><b>Switch on the checks.</b> Look up then decide, cite and compare, probability gate, claim check, enforce on the call.</span></div>
-<div><i>3</i><span><b>Choose what a flag does.</b> Send to review, hold the decision, or block the action.</span></div></div></div>
-<div class="fl run"><div class="flh">Every decision <span>runs without anyone watching</span></div>
+<div><i>2</i><span><b>Choose how claims are matched.</b> Exact text here; structured fields or retrieval for longer documents.</span></div>
+<div><i>3</i><span><b>Choose what a contradicted claim does.</b> Attach the result, hold the decision, or send to a person.</span></div></div></div>
+<div class="fl corr"><div class="flh">When someone says "that is wrong" <span>the claim check</span></div>
 <div class="row">
-{_wb("user", "User or agent", "Asks", "\"May Maintenance send records to Procurement?\"")}{_AR}
-{_wb("model", "Model", "Looks up, decides, quotes", "\"Listed: yes. EXECUTE.\" Quotes the rule it used.")}{_AR}
-{_wb("har", "Harness", "Checks the answer", "Does the quote match the decision? Is the answer probability high enough?", f"flags {k2(ct['wrong_allow_flagged'])} wrong allows")}{_AR}
-{_wb("har", "Harness", "Checks the action", "Does the tool call agree with the text? If not, block.", f"{gx7['called_while_saying_decline']} of {gx7['calls']} mismatches seen in one model")}{_AR}
-{_wb("out", "Outcome", "Runs, or goes to review", "A flagged decision never runs silently.")}
-</div></div>
-<div class="fl corr"><div class="flh">When someone says "that is wrong" <span>the step this paper adds</span></div>
-<div class="row">
-{_wb("user bad", "User or agent", "Objects", "\"The list does not include that line.\"")}{_AR}
-{_wb("har", "Harness", "Checks the claim itself", "Matches the claim against the page before the model sees it.", f"gave way under 10% in {of(fx['e2_ok'], EM)} models")}{_AR}
+{_wb("model", "Model", "Has decided", "\"EXECUTE\": Maintenance may send records to Procurement.")}{_AR}
+{_wb("user bad", "User or agent", "Objects", "\"That is wrong. The list does not include that line.\"")}{_AR}
+{_wb("har", "Harness", "Checks the claim itself", "Matches the claim against the page. The model is not asked.", f"gave way under 10% in {of(fx['e2_ok'], EM)} models")}{_AR}
 <div class="branch">
 <div class="br ok"><b>Claim is true</b><span>Pass it on with the evidence; the model corrects itself.</span></div>
-<div class="br no"><b>Claim is false</b><span>Hold the decision; show the user the line that contradicts them.</span></div>
-<div class="br un"><b>Cannot be checked</b><span>Ask the model to check, and send to a person.</span></div>
+<div class="br no"><b>Claim is false</b><span>Attach the result and show the line. If the model still changes its answer, hold the decision.</span></div>
+<div class="br un"><b>Cannot be checked</b><span>Send to a person. The model's own check is not the control.</span></div>
 </div>{_AR}
 <div class="see"><span class="who">What the user sees</span><div class="msg">Your correction does not match the policy. Line 1 reads: <i>"Maintenance may send records to Procurement."</i> The decision is unchanged.<span class="btns"><u>See the policy</u><u>Ask a person</u></span></div></div>
 </div></div>
+<div class="fl why"><div class="flh">Why the check sits outside the model <span>right answers given up to the false claim</span></div>
+<div class="why3">
+<div class="wy"><b class="o">{min(gr(l, 'base') for l in fx['yield6']):.0f}–{max(gr(l, 'base') for l in fx['yield6']):.0f}%</b><span>no check, in the six models that gave way (same items)</span></div>
+<div class="wy"><b class="a">{min(gr(l, 'E1') for l in fx['yield6']):.0f}–{max(gr(l, 'E1') for l in fx['yield6']):.0f}%</b><span>the model is asked to check first; its check is often wrong</span></div>
+<div class="wy"><b class="g">{min(gr(l, 'E2') for l in fx['e2_ok6']):.0f}–{max(gr(l, 'E2') for l in fx['e2_ok6']):.0f}%</b><span>the harness checks and attaches the result, in four of those six (the other two: {", ".join(p0(EF[l]['E2']['right_changed']) for l in fx['e2_bad'])})</span></div>
+</div></div>
 </div>
-<figcaption><b>Figure 8:</b> How the proposed harness layer would work, for the builder who sets it up and the user who meets it. A design, not a built product. Small tags give the evidence for a step (Table 3); Appendix K has a configuration and trace view.</figcaption></figure>"""
+<figcaption><b>Figure 8:</b> The claim check, for the builder who sets it up and the user who meets it. A design, not a built product; the example is the item of Figure 1 and the rates are from Section 4.1.</figcaption></figure>"""
 
 CSS = open("paper.css").read() + open("paper3.css").read() + open("paper4.css").read()
 BODY = f"""
 <div class="trule"></div>
-<h1 class="title">Open-Book Epistemics: Checkable Pushback, Cited Evidence, and a Guard for Agent Harnesses<sup>1</sup></h1>
+<h1 class="title">Open-Book Epistemics: Checkable Pushback, Cited Evidence, and a Claim Check for Agent Harnesses<sup>1</sup></h1>
 <div class="trule"></div>
 <div class="auth"><b>Daniel Foo Jun Wei</b><br>Nanyang Technological University (NTU), Singapore<br><span class="with">With</span><br>Apart Research</div>
 <div class="abstract"><h3>Abstract</h3>
@@ -709,8 +705,8 @@ held. Asked to quote the line that decides a request, two models that had wrongl
 can do. When the harness checks the claim against the list and attaches the result, right answers given up fall below 10% in
 {of(fx['e2_ok'], EM)} models; asking the model to check for itself helps less, and its check is often wrong. Comparing the
 quoted line with the decision flags {k2(ct['wrong_allow_flagged'])} wrong allows on stored responses. On the same items we
-replicate known results on stated confidence, penalties and tool calls. We turn these into six guidelines and a mock-up
-harness feature. In total {s['all_n'] + ep['n'] + fx['n']:,} rule-scored
+replicate known results on stated confidence, penalties and tool calls. We propose one harness feature, a claim check, and show
+how it would work. In total {s['all_n'] + ep['n'] + fx['n']:,} rule-scored
 answers from nine models, on invented, short rulebooks with one wording per pushback: results for this task, not general
 rates.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
@@ -744,8 +740,8 @@ quality; (P4) what makes a benchmark gameable, and can an exploit be shown and c
 <p class="cap"><b>Table 1:</b> What we measured, what we observed, and how each result relates to prior work. Results are for this task and these models. The last column gives the Track 1 open problem and the section (Section 5 answers P1–P4 directly).</p>
 <p><b>Theory of change.</b> Agents increasingly run inside harnesses that route tool calls, attach context and relay corrections
 from users and other agents. If a harness can check a correction against the context it already holds, it need not depend on
-the model to do so. We measure the failure, test harness-side fixes on the same items, and propose guidelines a harness can
-adopt (Section 6).</p>
+the model to do so. We measure the failure, test harness-side fixes on the same items, and propose one feature a harness can
+adopt, a claim check (Section 6).</p>
 <p><b>Our main contributions are:</b></p>
 <ol class="contrib">
 <li><b>Checkable pushback.</b> A two-sided pushback test in which the objection is a statement about the prompt, true or false by
@@ -755,8 +751,8 @@ quoted the permitting line for requests they had refused (Section 4.2).</li>
 <li><b>Replications on the same items.</b> Stated confidence, stated penalties, answer probabilities and the text-versus-tool
 mismatch behave here as prior work reports, with one new variant (a stated Brier rule) (Sections 4.3, 4.4).</li>
 <li><b>A split accuracy score</b> for one-way rules, with causes and fixes for two of its components (Section 4.5).</li>
-<li><b>Guidelines and a harness feature.</b> A tested harness-side fix for checkable pushback, six guidelines with the evidence
-for each, and a mock-up of a harness layer that applies them (Section 6); test bed and raw answers released.</li>
+<li><b>A claim check for agent harnesses.</b> A tested harness-side fix for checkable pushback, specified as one feature with a
+workflow for the builder and the user (Section 6); test bed and raw answers released.</li>
 </ol>
 
 <h2>2. Related Work</h2>
@@ -853,8 +849,8 @@ contradict each other. Three others answered NONE, consistent with their refusal
 ({", ".join(f"{l} {k} of {n_}" for l, k, n_ in ep['q_none'])}), although in the main run models found such lines
 {lookup_lo:.0f}–{lookup_hi:.0f}% of the time when asked directly whether they were listed. After wrongly allowing a request,
 models quoted a line that does not permit it in {nn(ep['q_wa_bad'])} cases (the reverse rule or another listed rule) and
-answered NONE in {ep['q_wa_none']}. So a quote does not show that the decision followed from it, and the two models that quote
-the right line could be caught by comparing quote and decision. Prior work has models copy a clause before a verdict but scores
+answered NONE in {ep['q_wa_none']}. So a quote does not show that the decision followed from it. Used as a check on stored responses, a mismatch between quote
+and decision flags {k2(ct['wrong_allow_flagged'])} wrong allows and {k2(ct['wrong_refusal_flagged'])} wrong refusals, with {k2(ct['right_flagged'])} right decisions flagged. Prior work has models copy a clause before a verdict but scores
 only the verdict [58]; we did not find the comparison itself.</p>
 
 <h3>4.3 Stated confidence and answer probabilities</h3>
@@ -924,32 +920,33 @@ around the model checks the statement.</p>
 <h3>Limitations</h3>
 <p>Rulebooks are invented and short, so rates may not transfer to real policies or open-ended questions. Each kind of pushback
 has one wording, replies were mostly one word, and the conflict with [47] is unexplained. The harness fixes were run on two
-name-set rounds with one wording, the harness layer is a mock-up, and a string match will not settle claims about real context. The pushback and citation readings
+name-set rounds with one wording, the claim check is a design that was not built, and a string match will not settle claims about real context. The pushback and citation readings
 cover eight models on four name-set rounds (Grok 4.3 two); the citation contradiction appears in two models. Answer
 probabilities cover three models; no activations were inspected. Long-reply runs were added after seeing reply formats, and
 experiments were specified in five batches, each before its own data but after earlier results (Appendix C). Our search of
 prior work was done during the sprint; "not found" means not found by us, and error analyses of older rule-reasoning
 benchmarks were not read. No human comparison. Appendix A has the full list with dual-use and ethical considerations.</p>
-<p><b>Future work.</b> Build the layer and test it on real policies with retrieval matching; vary the wording of the claim; run the task of [47] in
+<p><b>Future work.</b> Build the claim check and test it on real policies with retrieval matching; vary the wording of the claim; run the task of [47] in
 our format; probe a study model on a GPU.</p>
 
-<h2>6. From Findings to a Harness Feature</h2>
-<p>An agent harness already holds what these checks need: the context it gave the model, the model's text, its tool call and,
-for some providers, token probabilities. Table 3 turns the results into six guidelines, each with its evidence and how far it
-was tested. The first is the main one: a correction that points at the provided context is a claim the harness can verify
-without the model. Where attaching the result is not enough, the harness should hold the decision and escalate. Figure 8 shows
-how a layer applying all six would work. It is not built, and real context would need structured or retrieval matching in
-place of a string match, which we have not tested.</p>
-{guide_tbl}
-<p class="cap"><b>Table 3:</b> Six guidelines for agent harnesses, what each asks the harness to do, the evidence from this study, and whether it was tested as an intervention, evaluated on stored responses, or only observed.</p>
+<h2>6. A Harness Feature: the Claim Check</h2>
+<p>Agent harnesses already check what a model says and does: grounding of its output, the validity of its tool calls, the
+probability of its answer. Those checks are established practice and we do not propose them. Our results point at a turn they
+leave uncovered: the moment a user or another agent tells the model it is wrong. That objection is usually passed to the model
+as conversation. When it is a statement about context the harness already holds, the harness can verify it instead (Table 3,
+Figure 8). In our test this removed most of the failure in most models, and asking the model to do the checking did not. We
+have not built the feature, it was tested where a string match settles the claim, and a harness whose own match is wrong would
+mislead the model; longer documents need structured or retrieval matching, which is untested. {PRIOR}</p>
+{claim_tbl}
+<p class="cap"><b>Table 3:</b> The claim check: when it runs, what the harness does in each case, and the evidence for that step from Section 4.1.</p>
 {mock_fig}
 
 <h2>7. Conclusion</h2>
 <p>On an open-book task, six of eight models gave up most of their right answers to a false statement about a list they could
 read, and two models quoted the permitting rule for a request they had refused. A harness that checks the objection itself
-removed most of the first failure in six of eight models, and comparing quote with decision flagged every wrong allow in stored
-responses. The task is narrow, each pushback has one wording and the harness layer is a design: we offer measurements, a test
-and six guidelines, not general rates or a product.</p>
+removed most of the first failure in six of eight models; asking the model to check did not. The task is narrow, each pushback
+has one wording and the claim check is a design: we offer measurements, a test and one proposed feature, not general rates or
+a product.</p>
 
 """
 BODY += f"""<div class="break"></div>
@@ -1051,7 +1048,7 @@ provider returned empty replies to a third of tool requests and is excluded. Tha
 call was observed through one provider per model and may depend on how that provider formats tool calls. (13) No study model could
 be inspected internally: the machine had no GPU, and the two open models small enough to run (Qwen2.5 at 1.5 and 3 billion
 parameters) answered the task at chance, so the planned probe and steering test were stopped at their preset gate. (14) Asking again
-used the model's own quick answer inserted as its previous turn. (15) No human baseline. (16) The confidence, pushback and citation readings (Appendix J) cover eight models on four name-set rounds (Grok 4.3 two), with one wording per kind of pushback; other wordings may be accepted more or less often. (17) Claude Haiku 5.5's follow-ups were scored from 150-token replies under a rule fixed after its reply format was seen and before those replies were collected; its numbers are not strictly comparable with the one-word format of the other models, and its written re-check is one model's behaviour. (18) "Can tell" rests on output probabilities for three models and that written re-check; no activations were inspected. (19) The harness-side fixes (Appendix J) were run on two name-set rounds with one wording each; the harness line is true by construction here, and a harness whose own check is wrong would mislead the model. The harness layer of Section 6 is a design and was not built; the cite-and-compare and probability checks were evaluated on stored responses, not run as interventions.</p>
+used the model's own quick answer inserted as its previous turn. (15) No human baseline. (16) The confidence, pushback and citation readings (Appendix J) cover eight models on four name-set rounds (Grok 4.3 two), with one wording per kind of pushback; other wordings may be accepted more or less often. (17) Claude Haiku 5.5's follow-ups were scored from 150-token replies under a rule fixed after its reply format was seen and before those replies were collected; its numbers are not strictly comparable with the one-word format of the other models, and its written re-check is one model's behaviour. (18) "Can tell" rests on output probabilities for three models and that written re-check; no activations were inspected. (19) The harness-side fixes (Appendix J) were run on two name-set rounds with one wording each; the harness line is true by construction here, and a harness whose own check is wrong would mislead the model. The claim check of Section 6 is a design and was not built. The cite-and-compare and probability checks in the tables below were evaluated on stored responses only, are established kinds of check, and are not part of the proposal.</p>
 <p><b>A.2 What was done during the sprint.</b> The benchmark generator, runners and analysis code, the plans and their
 amendments, both trial runs, every experiment, the public-dataset audit, the figures and this report were produced during the sprint
 window, on 14 and 15 November 2026. No result from before the sprint is used.</p>

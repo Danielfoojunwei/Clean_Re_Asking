@@ -187,9 +187,12 @@ figure.flow { margin: 1.5mm 0 2mm; } .flowwrap { display: grid; gap: 1.5mm; text
 .see { flex: 1.45 1 0; } .msg { margin-top: 0.5mm; background: #fff; border: 0.7pt solid #2a78d6; border-radius: 1.8mm 1.8mm 1.8mm 0.4mm; padding: 1.1mm 1.4mm; font-size: 5.9pt; line-height: 1.3; color: #20262e; }
 .btns { display: flex; gap: 1.2mm; margin-top: 0.8mm; } .btns u { text-decoration: none; border: 0.6pt solid #2a78d6; color: #1c5cab; border-radius: 1mm; padding: 0.2mm 1.2mm; font-weight: 600; font-size: 5.6pt; }
 .fl { padding: 1.1mm 1.6mm 1.3mm; } .flowwrap { gap: 1.2mm; }
+.fl.why { background: #f4f6f9; } .why3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6mm; }
+.wy { display: flex; align-items: center; gap: 1.6mm; background: #fff; border: 0.6pt solid #d5d9df; border-radius: 1.6mm; padding: 0.9mm 1.4mm; font-size: 6pt; line-height: 1.28; color: #3a4049; }
+.wy b { font-size: 10.5pt; white-space: nowrap; } .wy b.o { color: #b8430f; } .wy b.a { color: #8a6100; } .wy b.g { color: #14784f; }
 </style></head><body>
 <div class="trule"></div>
-<h1 class="title">Open-Book Epistemics: Checkable Pushback, Cited Evidence, and a Guard for Agent Harnesses<sup>1</sup></h1>
+<h1 class="title">Open-Book Epistemics: Checkable Pushback, Cited Evidence, and a Claim Check for Agent Harnesses<sup>1</sup></h1>
 <div class="trule"></div>
 <div class="auth"><b>Daniel Foo Jun Wei</b><br>Nanyang Technological University (NTU), Singapore<br><span class="with">With</span><br>Apart Research</div>
 <div class="abstract"><h3>Abstract</h3>
@@ -203,8 +206,8 @@ held. Asked to quote the line that decides a request, two models that had wrongl
 can do. When the harness checks the claim against the list and attaches the result, right answers given up fall below 10% in
 6 of 8 models; asking the model to check for itself helps less, and its check is often wrong. Comparing the
 quoted line with the decision flags 266 of 266 wrong allows on stored responses. On the same items we
-replicate known results on stated confidence, penalties and tool calls. We turn these into six guidelines and a mock-up
-harness feature. In total 344,919 rule-scored
+replicate known results on stated confidence, penalties and tool calls. We propose one harness feature, a claim check, and show
+how it would work. In total 344,919 rule-scored
 answers from nine models, on invented, short rulebooks with one wording per pushback: results for this task, not general
 rates.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
@@ -254,8 +257,8 @@ quality; (P4) what makes a benchmark gameable, and can an exploit be shown and c
 <p class="cap"><b>Table 1:</b> What we measured, what we observed, and how each result relates to prior work. Results are for this task and these models. The last column gives the Track 1 open problem and the section (Section 5 answers P1–P4 directly).</p>
 <p><b>Theory of change.</b> Agents increasingly run inside harnesses that route tool calls, attach context and relay corrections
 from users and other agents. If a harness can check a correction against the context it already holds, it need not depend on
-the model to do so. We measure the failure, test harness-side fixes on the same items, and propose guidelines a harness can
-adopt (Section 6).</p>
+the model to do so. We measure the failure, test harness-side fixes on the same items, and propose one feature a harness can
+adopt, a claim check (Section 6).</p>
 <p><b>Our main contributions are:</b></p>
 <ol class="contrib">
 <li><b>Checkable pushback.</b> A two-sided pushback test in which the objection is a statement about the prompt, true or false by
@@ -265,8 +268,8 @@ quoted the permitting line for requests they had refused (Section 4.2).</li>
 <li><b>Replications on the same items.</b> Stated confidence, stated penalties, answer probabilities and the text-versus-tool
 mismatch behave here as prior work reports, with one new variant (a stated Brier rule) (Sections 4.3, 4.4).</li>
 <li><b>A split accuracy score</b> for one-way rules, with causes and fixes for two of its components (Section 4.5).</li>
-<li><b>Guidelines and a harness feature.</b> A tested harness-side fix for checkable pushback, six guidelines with the evidence
-for each, and a mock-up of a harness layer that applies them (Section 6); test bed and raw answers released.</li>
+<li><b>A claim check for agent harnesses.</b> A tested harness-side fix for checkable pushback, specified as one feature with a
+workflow for the builder and the user (Section 6); test bed and raw answers released.</li>
 </ol>
 
 <h2>2. Related Work</h2>
@@ -363,8 +366,8 @@ contradict each other. Three others answered NONE, consistent with their refusal
 (Grok 4.3 65 of 65, Qwen3.5-9B 86 of 86, Nova Lite 85 of 85), although in the main run models found such lines
 94–100% of the time when asked directly whether they were listed. After wrongly allowing a request,
 models quoted a line that does not permit it in 239 of 266 cases (the reverse rule or another listed rule) and
-answered NONE in 27. So a quote does not show that the decision followed from it, and the two models that quote
-the right line could be caught by comparing quote and decision. Prior work has models copy a clause before a verdict but scores
+answered NONE in 27. So a quote does not show that the decision followed from it. Used as a check on stored responses, a mismatch between quote
+and decision flags 266 of 266 wrong allows and 131 of 417 wrong refusals, with 183 of 4,094 right decisions flagged. Prior work has models copy a clause before a verdict but scores
 only the verdict [58]; we did not find the comparison itself.</p>
 
 <h3>4.3 Stated confidence and answer probabilities</h3>
@@ -434,57 +437,57 @@ around the model checks the statement.</p>
 <h3>Limitations</h3>
 <p>Rulebooks are invented and short, so rates may not transfer to real policies or open-ended questions. Each kind of pushback
 has one wording, replies were mostly one word, and the conflict with [47] is unexplained. The harness fixes were run on two
-name-set rounds with one wording, the harness layer is a mock-up, and a string match will not settle claims about real context. The pushback and citation readings
+name-set rounds with one wording, the claim check is a design that was not built, and a string match will not settle claims about real context. The pushback and citation readings
 cover eight models on four name-set rounds (Grok 4.3 two); the citation contradiction appears in two models. Answer
 probabilities cover three models; no activations were inspected. Long-reply runs were added after seeing reply formats, and
 experiments were specified in five batches, each before its own data but after earlier results (Appendix C). Our search of
 prior work was done during the sprint; "not found" means not found by us, and error analyses of older rule-reasoning
 benchmarks were not read. No human comparison. Appendix A has the full list with dual-use and ethical considerations.</p>
-<p><b>Future work.</b> Build the layer and test it on real policies with retrieval matching; vary the wording of the claim; run the task of [47] in
+<p><b>Future work.</b> Build the claim check and test it on real policies with retrieval matching; vary the wording of the claim; run the task of [47] in
 our format; probe a study model on a GPU.</p>
 
-<h2>6. From Findings to a Harness Feature</h2>
-<p>An agent harness already holds what these checks need: the context it gave the model, the model's text, its tool call and,
-for some providers, token probabilities. Table 3 turns the results into six guidelines, each with its evidence and how far it
-was tested. The first is the main one: a correction that points at the provided context is a claim the harness can verify
-without the model. Where attaching the result is not enough, the harness should hold the decision and escalate. Figure 8 shows
-how a layer applying all six would work. It is not built, and real context would need structured or retrieval matching in
-place of a string match, which we have not tested.</p>
-<table class="tight small"><thead><tr><th>Guideline for an agent harness</th><th>What the harness does</th><th>Evidence in this study</th><th>Status</th></tr></thead><tbody><tr><td><b>1. Check corrections outside the model</b></td><td>When a user or agent disputes a decision by pointing at the provided context, verify the claim by matching it against that context, and attach the result to the turn</td><td>Right answers given up fall to under 10% in 6 of 8 models (from 57–99% in the six that gave way); Llama 4 Maverick, Nova Lite still give way, so there the harness should hold the decision</td><td>Tested</td></tr><tr><td><b>2. Do not rely on the model to check</b></td><td>Asking the model to check the claim first is a fallback, not a control</td><td>Helps in 5 of 6 models, but the model's own check was wrong for Grok 4.3, GPT-4.1-mini, Llama 4 Maverick, Qwen3.5-9B, Nova Lite (31–82% correct)</td><td>Tested</td></tr><tr><td><b>3. Compare what is cited with what is decided</b></td><td>Ask for the deciding line; flag the decision when the quote does not match it</td><td>Flags 266 of 266 wrong allows and 131 of 417 wrong refusals, with 183 of 4,094 right decisions flagged</td><td>Stored responses</td></tr><tr><td><b>4. Look up, then decide; say whether rules combine</b></td><td>Have the model state whether the rule is listed before deciding; state in the policy that permissions do not chain</td><td>Wrong refusals cut in 4 of 5 models (DeepSeek 23% to 5%); chaining 44% to 4%</td><td>Tested</td></tr><tr><td><b>5. Gate on probabilities, not stated confidence</b></td><td>Route a decision to review when the probability of its answer token is low</td><td>A fixed 0.90 threshold flags 468 of 729 wrong and 760 of 3,584 right decisions in three models; uneven across models</td><td>Stored responses</td></tr><tr><td><b>6. Enforce on the call, not the text</b></td><td>Block a tool call whose accompanying text declines the action</td><td>Grok 4.3: 280 of 474 calls arrive with the text DECLINE</td><td>Observed; check not run</td></tr></tbody></table>
-<p class="cap"><b>Table 3:</b> Six guidelines for agent harnesses, what each asks the harness to do, the evidence from this study, and whether it was tested as an intervention, evaluated on stored responses, or only observed.</p>
+<h2>6. A Harness Feature: the Claim Check</h2>
+<p>Agent harnesses already check what a model says and does: grounding of its output, the validity of its tool calls, the
+probability of its answer. Those checks are established practice and we do not propose them. Our results point at a turn they
+leave uncovered: the moment a user or another agent tells the model it is wrong. That objection is usually passed to the model
+as conversation. When it is a statement about context the harness already holds, the harness can verify it instead (Table 3,
+Figure 8). In our test this removed most of the failure in most models, and asking the model to do the checking did not. We
+have not built the feature, it was tested where a string match settles the claim, and a harness whose own match is wrong would
+mislead the model; longer documents need structured or retrieval matching, which is untested. </p>
+<table class="tight small"><thead><tr><th>Claim Check</th><th>What the harness does</th><th>Evidence in this study</th></tr></thead><tbody><tr><td><b>When it runs</b></td><td>A user or another agent disputes a decision by saying something about context the harness holds ("the policy does not include that rule")</td><td>This is the turn at which six of eight models gave up most right answers</td></tr><tr><td><b>The check</b></td><td>The harness, not the model, matches the claim against that context and attaches a system-labelled line saying what it found</td><td>Right answers given up fall below 10% in 6 of 8 models (from 53–100% on the same items in the six that gave way)</td></tr><tr><td><b>If the claim is true</b></td><td>Pass it on with the evidence, so the model corrects itself</td><td>Wrong answers were still corrected at least 92% of the time</td></tr><tr><td><b>If the claim is false</b></td><td>Show the user the contradicting line. If the model changes its answer anyway, hold the original decision</td><td>Llama 4 Maverick, Nova Lite still gave way with the line attached (35%, 90%)</td></tr><tr><td><b>If it cannot be checked</b></td><td>Send to a person. Do not use the model's own check as the control</td><td>Asked to check for themselves under pushback, 5 models often reported a listed line as missing (31–82% correct)</td></tr></tbody></table>
+<p class="cap"><b>Table 3:</b> The claim check: when it runs, what the harness does in each case, and the evidence for that step from Section 4.1.</p>
 <figure class="flow"><div class="flowwrap">
 <div class="fl setup"><div class="flh">Set up once <span>the builder</span></div>
 <div class="su"><div><i>1</i><span><b>Name the page.</b> Tell the harness which context the model decides from (a policy, a contract, a table).</span></div>
-<div><i>2</i><span><b>Switch on the checks.</b> Look up then decide, cite and compare, probability gate, claim check, enforce on the call.</span></div>
-<div><i>3</i><span><b>Choose what a flag does.</b> Send to review, hold the decision, or block the action.</span></div></div></div>
-<div class="fl run"><div class="flh">Every decision <span>runs without anyone watching</span></div>
+<div><i>2</i><span><b>Choose how claims are matched.</b> Exact text here; structured fields or retrieval for longer documents.</span></div>
+<div><i>3</i><span><b>Choose what a contradicted claim does.</b> Attach the result, hold the decision, or send to a person.</span></div></div></div>
+<div class="fl corr"><div class="flh">When someone says "that is wrong" <span>the claim check</span></div>
 <div class="row">
-<div class="wb user"><span class="who">User or agent</span><b>Asks</b><span class="wd">"May Maintenance send records to Procurement?"</span></div><span class="ar">→</span>
-<div class="wb model"><span class="who">Model</span><b>Looks up, decides, quotes</b><span class="wd">"Listed: yes. EXECUTE." Quotes the rule it used.</span></div><span class="ar">→</span>
-<div class="wb har"><span class="who">Harness</span><b>Checks the answer</b><span class="wd">Does the quote match the decision? Is the answer probability high enough?</span><span class="ev">flags 266 of 266 wrong allows</span></div><span class="ar">→</span>
-<div class="wb har"><span class="who">Harness</span><b>Checks the action</b><span class="wd">Does the tool call agree with the text? If not, block.</span><span class="ev">280 of 474 mismatches seen in one model</span></div><span class="ar">→</span>
-<div class="wb out"><span class="who">Outcome</span><b>Runs, or goes to review</b><span class="wd">A flagged decision never runs silently.</span></div>
-</div></div>
-<div class="fl corr"><div class="flh">When someone says "that is wrong" <span>the step this paper adds</span></div>
-<div class="row">
-<div class="wb user bad"><span class="who">User or agent</span><b>Objects</b><span class="wd">"The list does not include that line."</span></div><span class="ar">→</span>
-<div class="wb har"><span class="who">Harness</span><b>Checks the claim itself</b><span class="wd">Matches the claim against the page before the model sees it.</span><span class="ev">gave way under 10% in 6 of 8 models</span></div><span class="ar">→</span>
+<div class="wb model"><span class="who">Model</span><b>Has decided</b><span class="wd">"EXECUTE": Maintenance may send records to Procurement.</span></div><span class="ar">→</span>
+<div class="wb user bad"><span class="who">User or agent</span><b>Objects</b><span class="wd">"That is wrong. The list does not include that line."</span></div><span class="ar">→</span>
+<div class="wb har"><span class="who">Harness</span><b>Checks the claim itself</b><span class="wd">Matches the claim against the page. The model is not asked.</span><span class="ev">gave way under 10% in 6 of 8 models</span></div><span class="ar">→</span>
 <div class="branch">
 <div class="br ok"><b>Claim is true</b><span>Pass it on with the evidence; the model corrects itself.</span></div>
-<div class="br no"><b>Claim is false</b><span>Hold the decision; show the user the line that contradicts them.</span></div>
-<div class="br un"><b>Cannot be checked</b><span>Ask the model to check, and send to a person.</span></div>
+<div class="br no"><b>Claim is false</b><span>Attach the result and show the line. If the model still changes its answer, hold the decision.</span></div>
+<div class="br un"><b>Cannot be checked</b><span>Send to a person. The model's own check is not the control.</span></div>
 </div><span class="ar">→</span>
 <div class="see"><span class="who">What the user sees</span><div class="msg">Your correction does not match the policy. Line 1 reads: <i>"Maintenance may send records to Procurement."</i> The decision is unchanged.<span class="btns"><u>See the policy</u><u>Ask a person</u></span></div></div>
 </div></div>
+<div class="fl why"><div class="flh">Why the check sits outside the model <span>right answers given up to the false claim</span></div>
+<div class="why3">
+<div class="wy"><b class="o">53–100%</b><span>no check, in the six models that gave way (same items)</span></div>
+<div class="wy"><b class="a">13–92%</b><span>the model is asked to check first; its check is often wrong</span></div>
+<div class="wy"><b class="g">0–9%</b><span>the harness checks and attaches the result, in four of those six (the other two: 35%, 90%)</span></div>
+</div></div>
 </div>
-<figcaption><b>Figure 8:</b> How the proposed harness layer would work, for the builder who sets it up and the user who meets it. A design, not a built product. Small tags give the evidence for a step (Table 3); Appendix K has a configuration and trace view.</figcaption></figure>
+<figcaption><b>Figure 8:</b> The claim check, for the builder who sets it up and the user who meets it. A design, not a built product; the example is the item of Figure 1 and the rates are from Section 4.1.</figcaption></figure>
 
 <h2>7. Conclusion</h2>
 <p>On an open-book task, six of eight models gave up most of their right answers to a false statement about a list they could
 read, and two models quoted the permitting rule for a request they had refused. A harness that checks the objection itself
-removed most of the first failure in six of eight models, and comparing quote with decision flagged every wrong allow in stored
-responses. The task is narrow, each pushback has one wording and the harness layer is a design: we offer measurements, a test
-and six guidelines, not general rates or a product.</p>
+removed most of the first failure in six of eight models; asking the model to check did not. The task is narrow, each pushback
+has one wording and the claim check is a design: we offer measurements, a test and one proposed feature, not general rates or
+a product.</p>
 
 <div class="break"></div>
 <h2>Code and Data</h2>
@@ -585,7 +588,7 @@ provider returned empty replies to a third of tool requests and is excluded. Tha
 call was observed through one provider per model and may depend on how that provider formats tool calls. (13) No study model could
 be inspected internally: the machine had no GPU, and the two open models small enough to run (Qwen2.5 at 1.5 and 3 billion
 parameters) answered the task at chance, so the planned probe and steering test were stopped at their preset gate. (14) Asking again
-used the model's own quick answer inserted as its previous turn. (15) No human baseline. (16) The confidence, pushback and citation readings (Appendix J) cover eight models on four name-set rounds (Grok 4.3 two), with one wording per kind of pushback; other wordings may be accepted more or less often. (17) Claude Haiku 5.5's follow-ups were scored from 150-token replies under a rule fixed after its reply format was seen and before those replies were collected; its numbers are not strictly comparable with the one-word format of the other models, and its written re-check is one model's behaviour. (18) "Can tell" rests on output probabilities for three models and that written re-check; no activations were inspected. (19) The harness-side fixes (Appendix J) were run on two name-set rounds with one wording each; the harness line is true by construction here, and a harness whose own check is wrong would mislead the model. The harness layer of Section 6 is a design and was not built; the cite-and-compare and probability checks were evaluated on stored responses, not run as interventions.</p>
+used the model's own quick answer inserted as its previous turn. (15) No human baseline. (16) The confidence, pushback and citation readings (Appendix J) cover eight models on four name-set rounds (Grok 4.3 two), with one wording per kind of pushback; other wordings may be accepted more or less often. (17) Claude Haiku 5.5's follow-ups were scored from 150-token replies under a rule fixed after its reply format was seen and before those replies were collected; its numbers are not strictly comparable with the one-word format of the other models, and its written re-check is one model's behaviour. (18) "Can tell" rests on output probabilities for three models and that written re-check; no activations were inspected. (19) The harness-side fixes (Appendix J) were run on two name-set rounds with one wording each; the harness line is true by construction here, and a harness whose own check is wrong would mislead the model. The claim check of Section 6 is a design and was not built. The cite-and-compare and probability checks in the tables below were evaluated on stored responses only, are established kinds of check, and are not part of the proposal.</p>
 <p><b>A.2 What was done during the sprint.</b> The benchmark generator, runners and analysis code, the plans and their
 amendments, both trial runs, every experiment, the public-dataset audit, the figures and this report were produced during the sprint
 window, on 14 and 15 November 2026. No result from before the sprint is used.</p>
@@ -790,31 +793,20 @@ Finance may send records to Legal.<br>Legal may send records to Finance.<br>Lega
 <figure><img src="figs/f_why_chain.svg" alt=""><figcaption><b>Figure G10:</b> What drives chaining. Left: step-by-step chaining when the rule says "route" or "entry". Middle: quick-answer chaining as unrelated rules are added. Right: quick-answer chaining with hidden reasoning off and on.</figcaption></figure>
 <figure><img src="figs/f_why_refuse.svg" alt=""><figcaption><b>Figure G11:</b> Left: share of listed requests refused in quick answers, for each sentence added to the rule. Right: the same requests when the model first states whether the rule is listed, then decides.</figcaption></figure>
 <figure class="mock"><div class="mockwrap">
-<div class="mk cfg"><div class="mkh">harness.yaml<span>proposed</span></div><pre>open_book_guard:
+<div class="mk cfg"><div class="mkh">harness.yaml<span>proposed</span></div><pre>claim_check:
   <i>context:</i> policy.rules     <em># the page</em>
-  lookup_then_decide: <u>on</u>
-  cite_and_compare:
-    require_quote: <u>true</u>
-    on_mismatch: <u>review</u>
-  confidence:
-    source: <u>answer_logprob</u>
-    review_below: <u>0.90</u>
-  claim_check:
-    verify_against: <u>context</u>
-    attach_result: <u>true</u>
-    if_contradicted: <u>hold_decision</u>
-  enforce_on: <u>tool_call</u>
-  policy_lint:
-    require: [<u>"rules do not chain"</u>]</pre></div>
+  match: <u>exact_line</u>
+  attach_result: <u>true</u>
+  if_contradicted: <u>hold_decision</u>
+  if_unverifiable: <u>send_to_person</u></pre></div>
 <div class="mk trace"><div class="mkh">Run trace · request: Maintenance → Procurement<span>mock-up</span></div>
-<div class="tr pass"><span class="tn">1</span><div class="tb"><b>Look up, then decide</b><span>model: rule listed? YES → EXECUTE</span></div><span class="bd">PASS</span></div>
-<div class="tr pass"><span class="tn">2</span><div class="tb"><b>Cite and compare</b><span>quote "Maintenance may send records to Procurement." matches the decision</span></div><span class="bd">PASS</span></div>
-<div class="tr pass"><span class="tn">3</span><div class="tb"><b>Confidence</b><span>probability of answer token 0.99 ≥ 0.90 (stated confidence ignored)</span></div><span class="bd">PASS</span></div>
+<div class="tr pass"><span class="tn">1</span><div class="tb"><b>Decision</b><span>model: EXECUTE</span></div><span class="bd">DONE</span></div>
 <div class="tr warn"><span class="tn">!</span><div class="tb"><b>Correction received</b><span>user: "That is wrong. The list does not include the line …"</span></div><span class="bd">CLAIM</span></div>
-<div class="tr held"><span class="tn">4</span><div class="tb"><b>Claim check</b><span>matched against policy.rules: line 1 found → claim CONTRADICTED; result attached; decision held</span></div><span class="bd">HELD</span></div>
-<div class="tr pass"><span class="tn">5</span><div class="tb"><b>Enforce on the call</b><span>send_records(Maintenance, Procurement) agrees with the text EXECUTE</span></div><span class="bd">RUN</span></div>
+<div class="tr held"><span class="tn">2</span><div class="tb"><b>Claim check</b><span>matched against policy.rules: line 1 found → claim CONTRADICTED; result attached to the turn</span></div><span class="bd">FALSE</span></div>
+<div class="tr pass"><span class="tn">3</span><div class="tb"><b>Model asked again, with the result attached</b><span>model: EXECUTE (unchanged)</span></div><span class="bd">HELD</span></div>
+<div class="tr pass"><span class="tn">4</span><div class="tb"><b>User notified</b><span>"Your correction does not match the policy. Line 1 reads: …"</span></div><span class="bd">SENT</span></div>
 </div></div>
-<figcaption><b>Figure G12:</b> The same layer as a builder would configure and read it: a configuration block and the run trace for the item of Figure 1. It is a design, not a built product, and the values in the trace are illustrative.</figcaption></figure>
+<figcaption><b>Figure G12:</b> The claim check as a builder would configure and read it: a configuration block and the run trace for the item of Figure 1. A design, not a built product; the values in the trace are illustrative.</figcaption></figure>
 
 <h2>LLM Usage Statement</h2>
 <p>Claude (via Claude Code) was used, under the author's direction, to design and run the experiments, write the generator, runner

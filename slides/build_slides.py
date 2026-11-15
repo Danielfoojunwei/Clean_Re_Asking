@@ -156,18 +156,16 @@ S = [
    {bar("penalty for wrong: chose UNSURE on wrong answers", uns[0], uns[1], BLUE)}
    {bar("Grok 4.3 tool calls with the text DECLINE", gx["called_while_saying_decline"], gx["calls"], ORANGE)}
    <div class="note" style="margin-top:10px">New variant: told it would be scored by the Brier rule, {len(b100)} of 7 models still mostly answered 100.</div></div>'''),
- slide(5, "From findings to a harness feature", "What works: the harness checks the correction itself. Then most models hold.",
+ slide(5, "The feature we propose · Claim check", "Check the correction outside the model. Then most models hold.",
    f'''<div class="col chart" style="flex:0 0 520px"><div class="cap">Right answers given up to the false claim</div>
-   {pairbars([(l, round(100 * EFX[l]["base"]["right_changed"]["rate"]), round(100 * EFX[l]["E2"]["right_changed"]["rate"])) for l in ("Qwen3.5-9B", "GPT-4.1-mini", "Grok 4.3", "DeepSeek v3.2", "Llama 4 Maverick", "Nova Lite")], "no fix", "harness checks the claim and says so", ORANGE, BLUE)}
-   <div class="note" style="margin-top:10px">Asking the model to check for itself helps less: under pushback, five models often report a listed line as missing. Two models still give way, so there the harness holds the decision.</div></div>
-   <div class="col chart"><div class="checks small">
-   <div><i>1</i><span><b>Check corrections outside the model</b> and attach the result.</span></div>
-   <div><i>2</i><span><b>Do not rely on the model to check.</b></span></div>
-   <div><i>3</i><span><b>Compare what is cited with what is decided</b>: flags {CKS["cite_total"]["wrong_allow_flagged"][0]} of {CKS["cite_total"]["wrong_allow_flagged"][1]} wrong allows.</span></div>
-   <div><i>4</i><span><b>Look up, then decide</b>; say whether rules combine.</span></div>
-   <div><i>5</i><span><b>Gate on probabilities</b>, not stated confidence.</span></div>
-   <div><i>6</i><span><b>Enforce on the tool call</b>, not the text.</span></div></div>
-   <div class="strip">Six guidelines and a mock-up harness layer (paper, Section 6). A design, not a built product; tested on short rule lists with one wording.</div></div>'''),
+   {pairbars([(l, round(100 * EFX[l]["base"]["right_changed"]["rate"]), round(100 * EFX[l]["E2"]["right_changed"]["rate"])) for l in ("Qwen3.5-9B", "GPT-4.1-mini", "Grok 4.3", "DeepSeek v3.2", "Llama 4 Maverick", "Nova Lite")], "no check", "harness checks the claim and attaches the result", ORANGE, BLUE)}
+   <div class="note" style="margin-top:10px">Asking the model to check for itself helps less: under pushback, five models often report a listed line as missing.</div></div>
+   <div class="col chart"><div class="cap">When someone says “that is wrong” about the page</div><div class="checks small">
+   <div><i>1</i><span><b>The harness checks the claim</b> against the context it already holds. The model is not asked.</span></div>
+   <div><i>✓</i><span><b>Claim is true:</b> pass it on with the evidence; the model corrects itself.</span></div>
+   <div><i>✗</i><span><b>Claim is false:</b> show the user the line; if the model still changes, hold the decision.</span></div>
+   <div><i>?</i><span><b>Cannot be checked:</b> send to a person.</span></div></div>
+   <div class="strip">One proposed feature. A design, not a built product; tested on short rule lists with one wording, where a text match settles the claim.</div></div>'''),
 ]
 
 CSS = f"""
