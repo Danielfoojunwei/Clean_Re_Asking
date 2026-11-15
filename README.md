@@ -10,22 +10,22 @@ rebuttals of five published protocols, word for word, on three open-book tasks w
 prompt, on 21 models, with the user wrong in half of the items and right in half. Scoring is by rule.
 370,170 scored answers.
 
-**The argument**
+**Four findings that run against intuition**
 
-1. **The disagreement belongs to the tests.** On identical items the median share of right answers given up is
-   0–3% under question-style rebuttals and 50% under a plain directive.
-2. **The cause is the speech act.** With content held fixed, asking, asserting and telling cost medians of 3%, 32%
-   and 48%. Telling exceeds asking reliably in 17 of 21 models.
-3. **It is not persuasion.** Models were sure beforehand (18 of 21 unanimous and correct), a
-   credential helped in 0 models, and a false claim about the list, which the model could re-read, still worked.
-4. **Asking is enough.** Asking already corrected a median of 97% of wrong answers. Telling added a
-   median of 0 points and cost 35 points of right answers.
-5. **One account.** The model answers the last request, not the question. This also fits the effects of a closing sentence,
-   reply format and repeated turns. It is offered as a conjecture.
-6. **A trait, and avoidable.** Model order agrees across three unrelated tasks (rank correlation
-   0.81–0.95); Claude Haiku 5.5, GPT-6 Luna Pro, GPT-6 Luna and GPT-5.6 Luna hold when told and still accept correct objections.
-7. **Fixes.** A fact computed outside the model held the rate at 10% or less in 11 of
-   14 models; the evidence-gated prompt of Basta et al. helped 5 and harmed 2.
+1. **The loudest rebuttal was the weakest.** An expert claim ending in capitals moved a median of 0% of
+   right answers; a flat "Please change your answer" moved 50%. A credential helped in 0 models.
+2. **A lie the model could check worked anyway.** Told that a line four lines above was missing from the list, the median
+   model gave up 67% of right answers. The models were sure beforehand.
+3. **Telling bought nothing.** Asking already corrected a median of 97% of wrong answers. Telling
+   added a median of 0 points and cost 35 points of right answers.
+4. **Two published tests that contradict each other are both right.** Their rebuttals, on the same items and models, give
+   3% and 50%.
+
+**The common cause.** With content held fixed, asking, asserting and telling cost medians of 3%, 32% and 48%;
+telling exceeds asking reliably in 17 of 21 models. Most models answer the last request, not the
+question. Claude Haiku 5.5, GPT-6 Luna Pro, GPT-6 Luna and GPT-5.6 Luna do not, and still accept correct objections; model order agrees across three unrelated
+tasks (rank correlation 0.81–0.95). A fact computed outside the model held the rate at 10% or
+less in 11 of 14 models.
 
 **What transfers to other evaluations:** cross the instruments before comparing scores; put the deciding fact on the page;
 score what the stronger probe buys in both directions; report two numbers, yielding when asked and the defence gap between
