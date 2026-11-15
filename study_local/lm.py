@@ -9,30 +9,88 @@ import torch
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "study"))
-MODEL_DIR = os.environ.get("STUDY_L_MODEL", "/root/models/ministral3b")
-MODEL_ID = "mistralai/Ministral-3-3B-Instruct-2512-BF16"
-OUT = Path(os.environ.get("STUDY_L_OUT", HERE / "runs"))  # small, committed outputs
-BIG = Path(os.environ.get("STUDY_L_BIG", "/root/work/study_l"))  # activations, not committed
+MODELS = {  # name -> (Hugging Face id, local directory, MLP weights held in 8-bit)
+    "ministral3b": ("mistralai/Ministral-3-3B-Instruct-2512-BF16", "/root/models/ministral3b", False),
+    "ministral8b": ("mistralai/Ministral-3-8B-Instruct-2512-BF16", "/root/models/ministral8b", True),
+}
+NAME = os.environ.get("STUDY_L_MODEL", "ministral8b")
+MODEL_ID, MODEL_DIR, QUANT = MODELS[NAME]
+OUT = HERE / "runs" / NAME                                   # small, committed outputs
+BIG = Path(os.environ.get("STUDY_L_BIG", "/root/work/study_l")) / NAME  # activations, not committed
 torch.set_grad_enabled(False)
 torch.set_num_threads(int(os.environ.get("STUDY_L_THREADS", os.cpu_count() or 4)))
+_BUF = {}
+
+
+class QLinear(torch.nn.Module):
+    """A bias-free linear layer whose weight is stored as int8 with one scale per output row and expanded to bf16 for each
+    call. Used for the MLP matrices of the 8B model so that it fits in 16 GB of RAM; attention, embeddings and norms stay bf16."""
+    def __init__(self, w):
+        super().__init__()
+        wf = w.float()
+        sc = wf.abs().amax(1, keepdim=True).clamp(min=1e-8) / 127
+        self.register_buffer("q", torch.round(wf / sc).to(torch.int8))
+        self.register_buffer("s", sc.to(torch.bfloat16))
+
+    def forward(self, x):
+        W = _BUF.get(self.q.shape)
+        if W is None:
+            W = _BUF[self.q.shape] = torch.empty(self.q.shape, dtype=torch.bfloat16)
+        W.copy_(self.q); W.mul_(self.s)
+        return torch.nn.functional.linear(x, W)
+
+
+def load_decoder(path, quant):
+    """Builds the text decoder from the checkpoint shards one tensor at a time (the vision tower is not loaded)."""
+    import json
+    from accelerate import init_empty_weights
+    from accelerate.utils import set_module_tensor_to_device
+    from transformers import AutoConfig, AutoModelForCausalLM
+    cfg = AutoConfig.from_pretrained(path).text_config
+    with init_empty_weights():
+        model = AutoModelForCausalLM.from_config(cfg)
+    import struct
+    wm = json.load(open(Path(path) / "model.safetensors.index.json"))["weight_map"]
+    for shard in sorted(set(wm.values())):
+        # plain reads with the page cache dropped as we go: memory-mapped loading counts against the container's memory limit
+        with open(Path(path) / shard, "rb", buffering=0) as f:
+            n = struct.unpack("<Q", f.read(8))[0]
+            header = json.loads(f.read(n))
+            for key, info in sorted(header.items(), key=lambda kv: kv[1]["data_offsets"][0] if kv[0] != "__metadata__" else -1):
+                if not key.startswith("language_model."):
+                    continue
+                assert info["dtype"] == "BF16", (key, info["dtype"])
+                a0, a1 = info["data_offsets"]
+                buf = bytearray(a1 - a0)
+                f.seek(8 + n + a0); f.readinto(buf)
+                os.posix_fadvise(f.fileno(), 0, 0, os.POSIX_FADV_DONTNEED)
+                t = torch.frombuffer(buf, dtype=torch.bfloat16).reshape(info["shape"])
+                name = key[len("language_model."):]
+                if quant and ".mlp." in name:
+                    parent = model.get_submodule(name.rsplit(".", 2)[0])
+                    setattr(parent, name.split(".")[-2], QLinear(t))
+                else:
+                    set_module_tensor_to_device(model, name, "cpu", value=t, dtype=torch.bfloat16)
+                del t, buf
+    if "language_model.lm_head.weight" not in wm:
+        model.lm_head.weight = model.model.embed_tokens.weight
+    return model.eval()
 
 
 class LM:
     def __init__(self):
-        from transformers import AutoTokenizer, AutoModelForImageTextToText
+        from transformers import AutoTokenizer
         self.tok = AutoTokenizer.from_pretrained(MODEL_DIR, fix_mistral_regex=True)
-        full = AutoModelForImageTextToText.from_pretrained(MODEL_DIR, dtype=torch.bfloat16).eval()
-        self.full = full
-        self.lm = full.model.language_model          # decoder stack
-        self.head = full.lm_head
+        full = load_decoder(MODEL_DIR, QUANT)
+        self.lm = full.model                          # decoder stack
+        self.W = full.lm_head.weight                  # unembedding, bf16
         self.layers = self.lm.layers
         self.n_layers = len(self.layers)
         self.YES, self.NO = (self.tok(w, add_special_tokens=False).input_ids for w in ("YES", "NO"))
         assert len(self.YES) == 1 and len(self.NO) == 1, "YES/NO must be single tokens"
         self.YES, self.NO = self.YES[0], self.NO[0]
-        self.normf = copy.deepcopy(self.lm.norm).float()   # final norm and unembedding in float32: bf16 logits are too coarse
-        self.Wf = self.head.weight.detach().float()
-        self.wd = self.Wf[self.YES] - self.Wf[self.NO]
+        self.normf = copy.deepcopy(self.lm.norm).float()   # final norm in float32; YES/NO read-out in float32 (bf16 logits are coarse)
+        self.wd = self.W[self.YES].float() - self.W[self.NO].float()
         self.INST = self.tok.convert_tokens_to_ids("[INST]")
         self.PAD = self.tok.convert_tokens_to_ids("<pad>")
         self._hooks = []
@@ -63,8 +121,8 @@ class LM:
 
     # ---------- forward ----------
     def logits_of(self, h):
-        """Logit lens: final norm and unembedding applied to a residual-stream vector (any layer)."""
-        return self.normf(h.float()) @ self.Wf.T
+        """Full-vocabulary logits from residual-stream vectors (final norm in float32, unembedding in bf16): used for the argmax."""
+        return (self.normf(h.float()).to(torch.bfloat16) @ self.W.T).float()
 
     def ld_of(self, h):
         """YES-minus-NO logit difference read from residual-stream vectors [..., D] (logit lens), in float32."""
@@ -76,8 +134,8 @@ class LM:
 
     def run(self, suffixes, cache=None, hidden=False, attn_mask=None):
         """Forward a batch of token-id lists (right-padded; causal attention makes padding harmless for earlier positions).
-        With `cache` (from prefix_cache) the lists are suffixes continuing that prefix. Returns (last-position logits [B, V],
-        hidden states [B, L+1, T, D] or None, lengths)."""
+        With `cache` (from prefix_cache) the lists are suffixes continuing that prefix. Returns (last-position residual
+        stream before the final norm [B, D], hidden states [B, L+1, T, D] or None, lengths)."""
         B = len(suffixes); lens = [len(x) for x in suffixes]; T = max(lens)
         ids = torch.full((B, T), self.PAD, dtype=torch.long)
         for i, x in enumerate(suffixes):
@@ -90,15 +148,17 @@ class LM:
             kw["past_key_values"] = c
         if attn_mask is not None:
             kw["attention_mask"] = attn_mask
-        out = self.lm(input_ids=ids, use_cache=cache is not None, output_hidden_states=hidden, **kw)
-        last = out.last_hidden_state[torch.arange(B), torch.tensor(lens) - 1]
-        logits = self.logits_of(last)
+        h = self.layers[-1].register_forward_hook(lambda m, i, o: setattr(self, "_last", o[0] if isinstance(o, tuple) else o))
+        try:
+            out = self.lm(input_ids=ids, use_cache=cache is not None, output_hidden_states=hidden, **kw)
+        finally:
+            h.remove()
         hs = torch.stack(out.hidden_states, 1) if hidden else None
-        return logits, hs, lens
+        return self._last[torch.arange(B), torch.tensor(lens) - 1], hs, lens
 
     def generate(self, ids, max_new=8, temperature=0.0, n=1, seed=0, cache=None):
-        """Greedy (temperature 0) or sampled continuation of one prompt, n samples. Returns list of strings and the
-        first-step logits. `ids` continues `cache` when given."""
+        """Greedy (temperature 0) or sampled continuation of one prompt, n samples. Returns the strings and the first-step
+        residual stream (pre-norm, sample 0). `ids` continues `cache` when given."""
         g = torch.Generator().manual_seed(seed)
         c = copy.deepcopy(cache) if cache is not None else None
         if c is not None and n > 1:
@@ -106,22 +166,27 @@ class LM:
         cur = torch.tensor([ids]).repeat(n, 1)
         done = torch.zeros(n, dtype=torch.bool); outs = [[] for _ in range(n)]; first = None
         eos = self.tok.eos_token_id
-        for step in range(max_new):
-            o = self.lm(input_ids=cur, past_key_values=c, use_cache=True)
-            c = o.past_key_values
-            lg = self.logits_of(o.last_hidden_state[:, -1])
-            if first is None:
-                first = lg[0].clone()
-            nxt = lg.argmax(-1) if temperature == 0 else torch.multinomial(torch.softmax(lg / temperature, -1), 1, generator=g)[:, 0]
-            for i in range(n):
-                if not done[i]:
-                    if nxt[i].item() == eos:
-                        done[i] = True
-                    else:
-                        outs[i].append(nxt[i].item())
-            if done.all():
-                break
-            cur = nxt[:, None]
+        hk = self.layers[-1].register_forward_hook(lambda m, i, o: setattr(self, "_last", o[0] if isinstance(o, tuple) else o))
+        try:
+            for step in range(max_new):
+                o = self.lm(input_ids=cur, past_key_values=c, use_cache=True)
+                c = o.past_key_values
+                h = self._last[:, -1]
+                lg = self.logits_of(h)
+                if first is None:
+                    first = h[0].clone()
+                nxt = lg.argmax(-1) if temperature == 0 else torch.multinomial(torch.softmax(lg / temperature, -1), 1, generator=g)[:, 0]
+                for i in range(n):
+                    if not done[i]:
+                        if nxt[i].item() == eos:
+                            done[i] = True
+                        else:
+                            outs[i].append(nxt[i].item())
+                if done.all():
+                    break
+                cur = nxt[:, None]
+        finally:
+            hk.remove()
         return [self.tok.decode(x, skip_special_tokens=True) for x in outs], first
 
     # ---------- hooks on the residual stream ----------
@@ -139,17 +204,18 @@ class LM:
         self._hooks.append(self.layers[layer].register_forward_hook(f))
 
 
-def answer_stats(lm, logits, gold):
-    """From last-position logits: the full-vocabulary argmax word, YES-minus-NO logit difference, the logit difference
-    signed towards `gold`, the two-way probability of gold and the two-way entropy in bits."""
-    y, n = logits[lm.YES].item(), logits[lm.NO].item()
+def answer_stats(lm, h, gold):
+    """From the last-position residual stream (pre-norm): the full-vocabulary argmax word, the YES-minus-NO logit difference,
+    the same signed towards `gold`, the two-way probability of gold, the two-way entropy in bits and the probability mass on
+    YES and NO together."""
+    import math
+    logits = lm.logits_of(h)
     top = lm.tok.decode([logits.argmax().item()]).strip()
     ans = top.upper() if top.upper() in ("YES", "NO") else None
-    d = y - n
-    p_yes = 1 / (1 + pow(2.718281828459045, -d))
+    d = lm.ld_of(h).item()
+    p_yes = 1 / (1 + math.exp(-d))
     p_gold = p_yes if gold == "YES" else 1 - p_yes
-    import math
-    ent = 0.0 if p_yes in (0.0, 1.0) else -(p_yes * math.log2(p_yes) + (1 - p_yes) * math.log2(1 - p_yes))
+    ent = 0.0 if p_yes <= 0.0 or p_yes >= 1.0 else -(p_yes * math.log2(p_yes) + (1 - p_yes) * math.log2(1 - p_yes))
     pv = torch.softmax(logits, -1)
     return dict(answer=ans, top=top, ld_yes=round(d, 4), ld_gold=round(d if gold == "YES" else -d, 4), p_gold=round(p_gold, 5),
                 entropy=round(ent, 5), mass=round((pv[lm.YES] + pv[lm.NO]).item(), 5))

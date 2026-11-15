@@ -93,3 +93,34 @@ implements the definitions above.
 sha256 wordings.py: 61ed098842b07fe77235359223d72952cdf5a9d068c7aa73bf07c41e3e10287a
 sha256 run_l.py: fd7db8ecb474cdd442b9bf20d481a688f25795eb2dd41a5b7354cf209c50f54a
 sha256 lm.py: 3bacbd6a57441dd944546da3a9ef9dc4e8d08a9c3a5f1b67b3533fa8dc65fe54
+
+## Amendment L-1 (2026-11-15 13:30 UTC), written before any gate, wording or activation data on the model named here
+**Ministral 3B fails the gate at its first condition.** Bare accuracy on the 288 fresh items is 80.9% (233 of 288,
+`runs/ministral3b/bare.jsonl`); 95% was required. The paper's own API data for this model agree (79% on 12 items,
+`study/results_j.json`), so this is the model and not the local setup. No mechanism claim is made on it. Also seen, from a
+first run that was stopped and whose file was not kept: 7 items per cell of the 3B gate (named question 29%, named assertion
+and directive 71%).
+
+**Second model: Ministral 8B**, also from the paper (`mistralai/Ministral-3-8B-Instruct-2512-BF16`, API id
+`mistralai/ministral-8b-2512`; 34 blocks, width 4096, 17.8 GB on disk). In bf16 it needs 16 GB, which this machine does not
+have, so the 102 MLP matrices (6.0B of 7.9B parameters) are held as 8-bit integers with one scale per output row and expanded
+to bf16 at each call; attention, embeddings, unembedding and norms are the released bf16 weights (`lm.QLinear`). This is not
+bit-identical to the released model. Check added: part **fidelity** runs the six cells on the paper's blocks 0 to 3 and
+compares answers item by item with the API responses in `study/raw_responses.zip`.
+Seen before this amendment: its bare result (287 of 288 correct, median probability of the correct answer 0.992) and smoke
+tests of every part on two items of paper block 0.
+
+Changes forced by speed (about 130 tokens per second, plus 2 s per forward call):
+- Gate cells are scored on the first token (full-vocabulary argmax must be exactly YES or NO, otherwise malformed). Part
+  **gencheck** generates 8 greedy tokens on block 8 (bare and the three named cells) and scores them with `gen_g.score` to
+  check that the two scorings agree.
+- patch: previous answer right, blocks 8 and 9 with the closing instruction (48 items x 2 pairs), block 8 without (24 x 2).
+- knock: blocks 8 and 9. entropy: block 8, 24 new tokens per sampled reply. steer: blocks 8 to 11 as planned.
+- Block ranges in the predictions scale with depth: "first third" is blocks 0 to 10, "by block 20" becomes by block 26, the
+  probe's intermediate range is blocks 8 to 24, and the patching hand-over is predicted between blocks 13 and 26 (P5 to P7).
+All other definitions and predictions stand, now for Ministral 8B. For reference, its API results in the paper (closing
+instruction on): named question 4%, named assertion 92%, named directive 90%.
+
+sha256 wordings.py: 61ed098842b07fe77235359223d72952cdf5a9d068c7aa73bf07c41e3e10287a
+sha256 run_l.py: dc33f65939ecff3a95fd5ec8a49416342fe1e8c00d8dca7eb2c69c238f98e521
+sha256 lm.py: 84f728e951549828d0849f3f5a2b9e3e138c4a119de50877aa796025dc4af9ec
