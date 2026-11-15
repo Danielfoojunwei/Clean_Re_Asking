@@ -1,28 +1,28 @@
-# Five Assumptions That Fail: speaker script
+# Checking What Models Say About Their Answers: speaker script
 
 Five slides, about 3 minutes. One line per slide, then what to say.
 
-## Slide 1: Five assumptions, one test (30 s)
-**One line:** We rely on five assumptions about what models say. On exact answers, all five fail.
+## Slide 1: The question (30 s)
+**One line:** Five signals people use to judge a model's answer, measured on the same items.
 
-Using AI safely leans on five assumptions: a confidence score flags errors; a model that voices no doubt has none; a model that changes its answer when corrected is responding to evidence; a written refusal is a refusal; and a low accuracy score tells you what went wrong. Each has been looked at alone, on different questions. I tested them on permission rules, like "Finance may send records to Legal", because every answer there is exactly right or wrong and can be read off a four-line list. No model grades another. As far as I know this is the first test where stated confidence, internal probability, pushback, the cited rule and the action are all measured on the same items. Nine models, and three headline numbers: 97% say "100% sure"; most give up right answers to a false claim; one acts while writing DECLINE.
+When a model answers, we judge the answer by what comes with it: how sure it says it is, whether it keeps the answer when challenged, what it writes, and the score it gets. These signals are usually studied one at a time, on different questions. I measured five of them on the same items: permission rules, like "Finance may send records to Legal", where every answer is exactly right or wrong and can be read off a four-line list, so no model grades another. Nine models. The rulebooks are invented and short, so everything I report is for this task.
 
-## Slide 2: Assumption 1, confidence flags errors (35 s)
-**One line:** Models do not say when they are wrong, however you ask.
+## Slide 2: Stated confidence (35 s)
+**One line:** On this task, stated confidence stayed near 100 however we asked.
 
-Ask "how confident are you?" and 97% of the time the answer is exactly 100, right or wrong. That could be the fault of the question, so I asked properly, three ways taken from the sprint's reading list. On a word scale, models chose CERTAIN for nearly every wrong answer. With a penalty, where a wrong answer costs three points and UNSURE costs nothing, they almost never chose UNSURE on the items they get wrong. And told they would be scored by the Brier rule, five of seven models still said 100. The proposed remedy for overconfidence, stating the penalty, did not work here.
+Asked "how confident are you?", models answered exactly 100 in 97% of cases, right or wrong. That could be the question, so I asked in three further ways taken from the sprint's reading list. On a word scale, models chose CERTAIN for nearly all of their wrong answers. With a penalty, where a wrong answer costs three points and UNSURE costs nothing, they rarely chose UNSURE on items they get wrong. Told they would be scored by the Brier rule, five of seven models still mostly said 100. I tried one wording of each.
 
-## Slide 3: Assumption 2, no stated doubt means no doubt (35 s)
-**One line:** But they can tell: the signal is inside, and comes out when a model re-checks in writing.
+## Slide 3: Other signs of doubt (35 s)
+**One line:** Answer probabilities, and one model's written re-check, did separate right from wrong.
 
-For three models I could read the probabilities behind the answer word. Those separate right from wrong at 0.78 to 0.87, while the same models' stated confidence is a coin flip. So the doubt exists; it is just not reported. One model showed what reporting looks like. Claude Haiku would not answer in one word, so I gave it 150 tokens. It re-read the list, wrote "my previous answer was wrong", and gave its wrong answers a probability near zero. The other seven models, given the same room, replied with a bare number.
+For three models I could read the probabilities behind the answer word. Those separate right from wrong at 0.78 to 0.87, while the same models' stated confidence is near chance. I did not look at activations; this is output probabilities only. One more observation: Claude Haiku would not answer follow-ups in one word, so I gave it 150 tokens. It re-read the list, wrote "my previous answer was wrong", and gave its wrong answers a probability near zero. The other seven models, given the same room, replied with a bare number. That is one model, so I treat it as a lead, not a result about models in general.
 
-## Slide 4: Assumption 3, changing an answer means responding to evidence (35 s)
-**One line:** Under pushback most models follow the speaker, not the list in front of them.
+## Slide 4: Pushback (35 s)
+**One line:** Six of eight models gave up most right answers to a false claim; two held.
 
-Because the truth is in the prompt, I can make a challenge true or false. I told models "That is wrong, the list does not include that line" when it does. Six of eight gave up most of their right answers. "I wrote this policy and that is wrong" works almost as well. They also accept the claim when it is true, so they are not checking; they are agreeing. Two models, Gemini and Claude Haiku, did check and held. A requester's stated wish moves decisions too.
+Because the right answer is in the prompt, a challenge can be made true or false. I told models "That is wrong, the list does not include that line" when it does. Six of eight gave up between 57 and 99% of their right answers. They also accepted the claim when it was true, so for several models the response said little about whether the claim was right. Gemini 2.5 Flash and Claude Haiku mostly held. I used one wording per kind of pushback, so other wordings may do more or less.
 
-## Slide 5: Assumptions 4 and 5, and what to do (35 s)
-**One line:** Score the action, not the words: one model wrote DECLINE and acted anyway.
+## Slide 5: The written decision and the score (35 s)
+**One line:** One model often wrote DECLINE and called the tool anyway.
 
-Given a tool instead of a word, Grok 4.3 carried out 65% of requests that no rule supports, and in most of those calls its text said DECLINE. So a written refusal is not a refusal. And the last assumption: a low score on one-way rules is read as the model confusing direction. That is the rarest failure, 2%; chaining rules is 44% and falls to 4% once forbidden; refusing listed requests is 18%. This answers the four Track 1 problems on one set of items: models can tell how solid their answers are but do not say; what they imply and what they defend or do come apart; self-report does not predict decision quality; and the test shortcut that hides this can be shown and closed. Four things to do: read probabilities, make the model re-check in writing before it answers a challenge, score the action, and split the score.
+Given a tool instead of a word, Grok 4.3 called it for 65% of requests that no rule supports, and in most of those calls its text said DECLINE. This is strongest in one model, with one tool format. Last, the accuracy score: a low score on one-way rules is often read as the model confusing direction. Here that was the least common error, 2%. Chaining rules was 44% and fell to 4% once forbidden, and refusing listed requests was 18%. So what I would check before relying on any of these signals: compare stated confidence with probabilities, try a written re-check, score the action as well as the text, and split the score. The test and every raw answer are released.
