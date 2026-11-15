@@ -50,3 +50,8 @@ figure.item .rulebook { font-size: 6.8pt; line-height: 1.35; }
 figure img[src*="f_why_chain"], figure img[src*="f_why_refuse"], figure img[src*="f_signal"], figure img[src*="f_act"] { width: 90%; }
 
 .tag { font-family: Inter, sans-serif; font-size: 6.3pt; font-weight: 700; color: #1c5cab; background: #e6f1fd; border-radius: 1mm; padding: 0.2mm 1.2mm; margin-right: 1mm; white-space: nowrap; }
+
+ol.contrib { margin: 1mm 0 2mm 5mm; padding-left: 3mm; } ol.contrib li { margin-bottom: 0.8mm; }
+ul.cd { margin: 1mm 0 2mm 5mm; padding-left: 3mm; } h3 { margin-top: 3mm; }
+figure img[src*="f_why_chain"], figure img[src*="f_why_refuse"], figure img[src*="f_signal"], figure img[src*="f_act"], figure img[src*="f_clause"] { width: 82%; }
+figure.narrow img[src*="f_design"] { width: 74%; }
