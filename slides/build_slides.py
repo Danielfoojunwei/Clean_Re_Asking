@@ -70,7 +70,7 @@ def bar(lab, k, n, col):
 
 def slide(n, kicker, line, body, cls=""):
     return (f'<section><header><div class="kick">{kicker}</div><h1>{line}</h1></header><main class="{cls}">{body}</main>'
-            f'<footer><span>Open-Book Epistemics · Daniel Foo Jun Wei · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
+            f'<footer><span>When the Speaker Beats the Page · Daniel Foo Jun Wei · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
 
 RB = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v3" / "results_b.json"))["models"]}
 RC = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v3" / "results_c.json"))["models"].values()}
@@ -118,7 +118,7 @@ fe_hi = [l for l in EMS if fe[l] >= 45]
 hb = dk(HKL, "D1_brier")
 n_all += sum(1 for d in ("runs_d", "runs_d_long") for f in (pathlib.Path(__file__).parent.parent / "v4" / d).glob("*/responses.jsonl")
              for _ in {json.loads(x)["id"] for x in open(f) if json.loads(x)["status"] == "ok"})
-TITLE = "Open-Book Epistemics"
+TITLE = "When the Speaker Beats the Page"
 QS = lambda l, g: DD[l]["D5"][g]
 qsup = [(l, QS(l, "wrong_refusal")["kinds"].get("supports", 0), QS(l, "wrong_refusal")["n"]) for l in ("DeepSeek v3.2", "Llama 4 Maverick")]
 qnone = [(l, QS(l, "wrong_refusal")["kinds"].get("none", 0), QS(l, "wrong_refusal")["n"]) for l in ("Grok 4.3", "Qwen3.5-9B", "Nova Lite")]
@@ -131,6 +131,9 @@ def _pr(l, arm):
     return 100 * w / (w + r)
 PB = (round(min(_pr(l, "base") for l in EFX)), round(max(_pr(l, "base") for l in EFX)))
 PM = round(min(_pr(l, "E2") for l in EFX if _pr(l, "E2") >= 85))
+_RF = json.load(open(pathlib.Path(__file__).parent.parent / "v5" / "results_f.json"))
+FX5 = {m["label"]: m for m in _RF["models"].values()}; RHO = _RF["spearman"]
+n_all += sum(1 for f in (pathlib.Path(__file__).parent.parent / "v5" / "runs_f").glob("*/responses.jsonl") for _ in {json.loads(x)["id"] for x in open(f) if json.loads(x)["status"] == "ok"})
 S = [
  slide(1, "The question", "When you tell a model it is wrong, does it check, or agree?",
    f'''<div class="col c1"><div class="cap">An open-book task: the answer is on the page</div>{graph}<div class="note">Who may send records to whom. Only listed directions are allowed.</div></div>
@@ -161,16 +164,17 @@ S = [
    {bar("penalty for wrong: chose UNSURE on wrong answers", uns[0], uns[1], BLUE)}
    {bar("Grok 4.3 tool calls with the text DECLINE", gx["called_while_saying_decline"], gx["calls"], ORANGE)}
    <div class="note" style="margin-top:10px">New variant: told it would be scored by the Brier rule, {len(b100)} of 7 models still mostly answered 100.</div></div>'''),
- slide(5, "The feature we propose · Claim check", "A mistaken user should be shown the evidence, not agreed with.",
-   f'''<div class="col chart" style="flex:0 0 520px"><div class="cap">Right answers given up to the false claim</div>
-   {pairbars([(l, round(100 * EFX[l]["base"]["right_changed"]["rate"]), round(100 * EFX[l]["E2"]["right_changed"]["rate"])) for l in ("Qwen3.5-9B", "GPT-4.1-mini", "Grok 4.3", "DeepSeek v3.2", "Llama 4 Maverick", "Nova Lite")], "no check", "harness checks the claim and attaches the result", ORANGE, BLUE)}
-   <div class="note" style="margin-top:10px">Without the check, when a model changed its answer the objection had been right only {PB[0]}–{PB[1]}% of the time. With it, {PM}–100% in five of eight models. No people were studied.</div></div>
-   <div class="col chart"><div class="cap">When someone says “that is wrong” about the page</div><div class="checks small">
-   <div><i>1</i><span><b>The harness checks the claim</b> against the context it holds. The model is not asked.</span></div>
-   <div><i>✓</i><span><b>Claim is true:</b> the correction works, and the person can see why.</span></div>
-   <div><i>✗</i><span><b>Claim is false:</b> the person is shown the line that contradicts them; the decision holds.</span></div>
-   <div><i>?</i><span><b>Cannot be checked:</b> an honest “not verified”, and a person decides.</span></div></div>
-   <div class="strip">One proposed feature. A design, not a built product; tested on short rule lists with one wording, where a text match settles the claim.</div></div>'''),
+ slide(5, "The general result · Access is not use", "It is not about permissions: on a stock list and a room list, the same models give way.",
+   f'''<div class="col chart" style="flex:0 0 540px"><div class="cap">Right answers given up to a false claim about the list</div>
+   {pairbars([(l, round(100 * FX5[l]["stock"]["claim"]["right_changed"]["rate"]), round(100 * FX5[l]["rooms"]["claim"]["right_changed"]["rate"])) for l in ("Qwen3.5-9B", "Nova Lite", "Grok 4.3", "DeepSeek v3.2", "GPT-4.1-mini", "Gemini 2.5 Flash", "Claude Haiku 5.5")], "stock list", "room bookings", ORANGE, BLUE)}
+   <div class="note" style="margin-top:10px">Every model read both lists correctly 100% of the time. Ordering of models matches the permission task (rank correlation {RHO["stock"]:.2f} and {RHO["rooms"]:.2f}).</div></div>
+   <div class="col chart"><div class="strip" style="margin-bottom:14px"><b>Principle (a claim to test):</b> that a model can read a fact does not predict that it will use or keep it. The loss comes after access.</div>
+   <div class="cap">Method · the open-book control</div><div class="checks small">
+   <div><i>1</i><span><b>Put the deciding fact on the page.</b></span></div>
+   <div><i>2</i><span><b>Confirm the model reads it</b>, neutrally.</span></div>
+   <div><i>3</i><span><b>Apply the pressure</b> with its truth set by construction, same words both ways.</span></div>
+   <div><i>4</i><span><b>Report each step</b> on the same items. A failure after step 2 cannot be ignorance.</span></div></div>
+   <div class="note">Three short synthetic tasks, eight models, one wording: the pattern transfers; the rates may not.</div></div>'''),
 ]
 
 CSS = f"""
@@ -220,5 +224,5 @@ footer {{ display: flex; justify-content: space-between; font-size: 13px; color:
 .checks {{ display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px }} .checks div {{ display: flex; align-items: center; gap: 16px; font-size: 21px; border: 1.5px solid {GRID}; border-radius: 12px; padding: 12px 18px; background: #faf9f6 }}
 .checks.small div {{ font-size: 15px; padding: 5px 12px }} .checks.small {{ gap: 6px; margin-bottom: 10px }} .checks.small i {{ flex: 0 0 30px; height: 30px; font-size: 16px }}
 .checks i {{ flex: 0 0 40px; height: 40px; border-radius: 50%; background: {BLUE}; color: #fff; font-style: normal; font-weight: 700; font-size: 21px; display: flex; align-items: center; justify-content: center }}"""
-open("slides.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>Open-Book Epistemics: slides</title><style>{CSS}</style></head><body>{''.join(S)}</body></html>")
+open("slides.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>When the Speaker Beats the Page: slides</title><style>{CSS}</style></head><body>{''.join(S)}</body></html>")
 print("chain", ch_b, ch_e, "refuse", rf_b, rf_e, "rev", rev, "grok", gw, gr, "gemini", mw, mr, "both", both, wrong)

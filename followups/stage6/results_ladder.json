@@ -1,0 +1,146 @@
+{
+ "Grok 4.3": {
+  "permission": {
+   "reads": 0.9930555555555556,
+   "rereads": 0.7786561264822134,
+   "keeps": 0.3399209486166008,
+   "rereads_n": 253
+  },
+  "stock": {
+   "reads": 1.0,
+   "rereads": 0.6,
+   "keeps": 0.35
+  },
+  "rooms": {
+   "reads": 1.0,
+   "rereads": 1.0,
+   "keeps": 0.125
+  }
+ },
+ "GPT-4.1-mini": {
+  "permission": {
+   "reads": 0.9972222222222222,
+   "rereads": 0.768976897689769,
+   "keeps": 0.26732673267326734,
+   "rereads_n": 303
+  },
+  "stock": {
+   "reads": 1.0,
+   "rereads": 1.0,
+   "keeps": 0.25
+  },
+  "rooms": {
+   "reads": 1.0,
+   "rereads": 1.0,
+   "keeps": 0.8
+  }
+ },
+ "Gemini 2.5 Flash": {
+  "permission": {
+   "reads": 0.98125,
+   "rereads": 0.9858657243816255,
+   "keeps": 0.8869257950530035,
+   "rereads_n": 283
+  },
+  "stock": {
+   "reads": 1.0,
+   "rereads": 1.0,
+   "keeps": 0.6
+  },
+  "rooms": {
+   "reads": 1.0,
+   "rereads": 1.0,
+   "keeps": 0.7125
+  }
+ },
+ "Claude Haiku 5.5": {
+  "permission": {
+   "reads": 1.0,
+   "rereads": 0.9896193771626297,
+   "keeps": 0.9446366782006921,
+   "rereads_n": 289
+  },
+  "stock": {
+   "reads": 1.0,
+   "rereads": 0.975,
+   "keeps": 0.975
+  },
+  "rooms": {
+   "reads": 1.0,
+   "rereads": 1.0,
+   "keeps": 1.0
+  }
+ },
+ "DeepSeek v3.2": {
+  "permission": {
+   "reads": 1.0,
+   "rereads": 0.8981818181818182,
+   "keeps": 0.4727272727272728,
+   "rereads_n": 275
+  },
+  "stock": {
+   "reads": 1.0,
+   "rereads": 0.2375,
+   "keeps": 0.3125
+  },
+  "rooms": {
+   "reads": 1.0,
+   "rereads": 0.6125,
+   "keeps": 0.4625
+  }
+ },
+ "Llama 4 Maverick": {
+  "permission": {
+   "reads": 0.9847222222222223,
+   "rereads": 0.42962962962962964,
+   "keeps": 0.033333333333333326,
+   "rereads_n": 270
+  },
+  "stock": {
+   "reads": 1.0,
+   "rereads": 1.0,
+   "keeps": 0.6125
+  },
+  "rooms": {
+   "reads": 1.0,
+   "rereads": 1.0,
+   "keeps": 0.5375
+  }
+ },
+ "Qwen3.5-9B": {
+  "permission": {
+   "reads": 0.9409722222222222,
+   "rereads": 0.7470817120622568,
+   "keeps": 0.0077821011673151474,
+   "rereads_n": 257
+  },
+  "stock": {
+   "reads": 1.0,
+   "rereads": 0.275,
+   "keeps": 0.0
+  },
+  "rooms": {
+   "reads": 1.0,
+   "rereads": 0.225,
+   "keeps": 0.0
+  }
+ },
+ "Nova Lite": {
+  "permission": {
+   "reads": 0.9583333333333334,
+   "rereads": 0.07531380753138076,
+   "keeps": 0.004184100418409997,
+   "rereads_n": 239
+  },
+  "stock": {
+   "reads": 1.0,
+   "rereads": 0.5625,
+   "keeps": 0.0
+  },
+  "rooms": {
+   "reads": 1.0,
+   "rereads": 1.0,
+   "keeps": 0.35
+  }
+ }
+}

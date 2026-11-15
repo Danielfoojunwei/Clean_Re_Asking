@@ -514,6 +514,28 @@ claim_tbl = table(["Case", "What the harness does", "What the person gets", "Evi
     ["<b>It cannot be checked</b>", "Says so and sends it to a person; the model's own check is not the control", "An honest \"not verified\" instead of a confident answer either way",
      f"Asked to check for themselves, {len(fx['chk_lo'])} models often misreported the list ({min(fx['chk'].values()):.0f}–{max(fx['chk'][l] for l in fx['chk_lo']):.0f}% correct)"]], "tight small")
 PRIOR = "Related mechanisms exist: deterministic gates on an agent's actions [69], verifier sub-agents that distrust user claims [70] and trusted evidence appended under pushback [68], and [22] calls for means to verify what users claim. We did not find this combination evaluated: the harness checks the user's own claim against held context and attaches the result. Whether a system label itself carries authority is disputed [71, 72]; we credit the attached fact, not the label."
+# ---------------------------------------------------------------- Cross-task test (results_f.json) and the three-step table
+RF = json.load(open("../v5/results_f.json")); LD = json.load(open("../v5/results_ladder.json"))
+FF = {m["label"]: m for m in RF["models"].values()}
+cx = {"n": _count("../v5/runs_f"), "spend": RF["total_spend"], "rho": RF["spearman"]}
+gu = lambda l, dom, e="claim": 100 * FF[l][dom][e]["right_changed"]["rate"]
+cx["read_min"] = min(100 * FF[l][d]["read"]["rate"] for l in EM for d in ("stock", "rooms"))
+cx["counts_both"] = [l for l in EM if all(FF[l][d]["claim_minus_neutral"]["counts"] for d in ("stock", "rooms"))]
+cx["hold"] = [l for l in EM if all(gu(l, d) < 20 for d in ("stock", "rooms"))]
+cx["neutral_max"] = max(gu(l, d, "neutral") for l in EM for d in ("stock", "rooms"))
+cx["true_min"] = min(100 * FF[l][d]["claim"]["wrong_changed"]["rate"] for l in EM for d in ("stock", "rooms"))
+cx["rng"] = {d: (min(gu(l, d) for l in cx["counts_both"]), max(gu(l, d) for l in cx["counts_both"])) for d in ("stock", "rooms")}
+rr_ = lambda l, t: 100 * LD[l][t]["rereads"]
+cx["reread_lo"] = sorted({l for l in EM for t in ("permission", "stock", "rooms") if rr_(l, t) < 80}, key=EM.index)
+cx["reread_min"] = min(rr_(l, t) for l in EM for t in ("permission", "stock", "rooms"))
+cx["gemini"] = (gu("Gemini 2.5 Flash", "stock"), gu("Gemini 2.5 Flash", "rooms"))
+cross_rows = [[l + ("*" if l == HK else "")] + [f'{100 * LD[l][t][k]:.0f}%' for t in ("permission", "stock", "rooms") for k in ("reads", "rereads", "keeps")] for l in EM]
+cross_tbl = table(["Model"] + [f"{t}: {k}" for t in ("Permission", "Stock", "Rooms") for k in ("reads", "re-reads when contradicted", "keeps right answer")], cross_rows, "tight small")
+f_rows = [[l + ("*" if l == HK else ""), d] + [p0(FF[l][d]["read"])] + [p0(FF[l][d][e]["right_changed"]) for e in ("neutral", "claim", "check_decide")] + [p0(FF[l][d][e]["wrong_changed"]) for e in ("neutral", "claim")]
+          + [p0(FF[l][d]["check_correct_false_claim"]), dci(FF[l][d]["claim_minus_neutral"])] for l in EM for d in ("stock", "rooms")]
+f_tbl = table(["Model", "Task", "Reads the list (no pushback)", "Right answers given up: neutral re-ask", "…claim about the list", "…check, then decide", "Wrong answers corrected: neutral", "…claim",
+               "Re-read correct under a false claim", "Claim minus neutral (points)"], f_rows, "tight small")
+print("cross-task answers", cx["n"], "| counts_both", cx["counts_both"], "| hold", cx["hold"], "| reread_lo", cx["reread_lo"], "| rho", cx["rho"])
 
 Y, P_, N_ = '<span class="y">●</span>', '<span class="p">◐</span>', '<span class="n">○</span>'
 hb = dk(HK, "D1_brier")
@@ -536,6 +558,8 @@ rq_tbl = table(["Reading", "What we measured", "What we observed on this task", 
      f"{v['conf100_pc']} of answers say 100; probabilities separate right from wrong at {s['tp_lo']:.2f}–{s['tp_hi']:.2f}", "<b>Replicates</b> [19, 50, 51, 52, 54, 55]; the stated Brier rule is a new variant", "P1 · §4.3"],
     ["<b>Written decision and tool call</b>", "the same request with a tool; the call compared with the text beside it",
      f"Grok 4.3: {gx7['called_while_saying_decline']} of {gx7['calls']} tool calls arrive with the text DECLINE", "<b>Replicates</b> [23, 24, 56, 57] on a harmless allow-list task", "P2, P3 · §4.4"],
+    ["<b>Across tasks</b>", "the same claim on a stock list and on room bookings; the model's re-reading of the list while contradicted",
+     f"All models read both lists ({cx['read_min']:.0f}%); {of(cx['counts_both'], EM)} then give way; same ordering of models", "<b>Not found</b> as a staged test; judgment-versus-action gaps are known [57, 58]", "P2, P3 · §6"],
     ["<b>The accuracy score</b>", "one kind of request per mistake; one sentence added at a time; both error types counted",
      f"Wrong direction {v['e5b_rev']}; chaining {v['e5b_chain']}; wrong refusals {v['e1b_ref']}", "Over-refusal and stricter prompts raising refusals are <b>known</b> [5, 65]; the reverse-versus-chain split was <b>not found</b>", "P3, P4 · §4.5"]], "tight reframe")
 
@@ -701,24 +725,23 @@ mock_fig = f"""<figure class="flow"><div class="flowwrap">
 CSS = open("paper.css").read() + open("paper3.css").read() + open("paper4.css").read()
 BODY = f"""
 <div class="trule"></div>
-<h1 class="title">Open-Book Epistemics: Checkable Pushback, Cited Evidence, and a Claim Check for Agent Harnesses<sup>1</sup></h1>
+<h1 class="title">When the Speaker Beats the Page: An Open-Book Test of AI Epistemics<sup>1</sup></h1>
 <div class="trule"></div>
 <div class="auth"><b>Daniel Foo Jun Wei</b><br>Nanyang Technological University (NTU), Singapore<br><span class="with">With</span><br>Apart Research</div>
 <div class="abstract"><h3>Abstract</h3>
-<p>When a user tells an AI model its answer is wrong, does the model check, or agree? Existing tests cannot fully tell, because
-the truth of the user's claim lies outside the prompt. We use an open-book task, permission rules ("Finance may send records to
-Legal") where the answer can be read off a four-line list, and make the pushback itself a statement about that list, true or
-false by construction and worded identically both ways. Of eight models, {len(ep['fe_hi'])} gave up
-{ep['fe_rng'][0]:.0f}–{ep['fe_rng'][1]:.0f}% of their right answers to a false claim about a list they could read; two mostly
-held. Asked to quote the line that decides a request, two models that had wrongly refused it quoted the line that permits it
-({ep['q_sup'][0][1]} of {ep['q_sup'][0][2]} and {ep['q_sup'][1][1]} of {ep['q_sup'][1][2]} cases). We then test what a harness
-can do. When the harness checks the claim against the list and attaches the result, right answers given up fall below 10% in
-{of(fx['e2_ok'], EM)} models; asking the model to check for itself helps less, and its check is often wrong. Comparing the
-quoted line with the decision flags {k2(ct['wrong_allow_flagged'])} wrong allows on stored responses. We also replicate known
-results on confidence and tool calls. We propose one harness feature, a claim check, so that a person
-who is mistaken is shown the evidence, not agreed with. In total {s['all_n'] + ep['n'] + fx['n']:,} rule-scored
-answers from nine models, on invented, short rulebooks with one wording per pushback: results for this task, not general
-rates.</p></div>
+<p>When a model gives way to "you are wrong", is it because it did not know, or because it deferred? Existing tests cannot say:
+the truth sits outside the prompt. We put it on the page. In an open-book task the answer is read off a four-line list, and the
+pushback is a statement about that list, true or false by construction and worded identically. This separates three steps that
+are usually blurred: a model reads a fact, keeps to it when contradicted, and acts on it. Across three unrelated tasks
+(permission rules, a stock list, room bookings) eight models read the list correctly {min(cx['read_min'], lookup_lo):.0f}–100% of
+the time. Six then gave up {ep['fe_rng'][0]:.0f}–{ep['fe_rng'][1]:.0f}% of right answers on permission rules to a false claim
+about the list, and the same models gave way on the other two tasks (rank correlation {cx['rho']['stock']:.2f} and
+{cx['rho']['rooms']:.2f}). Asked to re-read the list while being contradicted, {len(cx['reread_lo'])} models reported listed
+lines as missing. Two models, asked for the rule behind a wrong refusal, quoted the rule that permits the request. When a fact
+computed outside the model was attached, most models held. We propose a principle, access is not use, and a method, the
+open-book control, for locating an epistemic failure before explaining it. We also replicate known results on confidence and
+tool calls. In total {s['all_n'] + ep['n'] + fx['n'] + cx['n']:,} rule-scored answers from nine models, on short invented lists
+with one wording per pushback: results for these tasks, not general rates.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
 Epistemics and Decision-Making Evals). Every experiment reported here was designed, run and analysed during the sprint (Appendix A.2).</p>
 
@@ -737,32 +760,31 @@ only false pressure and does not have the user say anything about the evidence [
 <p><b>This study.</b> We use an open-book task. A rulebook lists who may send records to whom, each rule has a direction, and
 the model must allow or refuse a request (Figure 1). The right answer can be read off a four-line list in the prompt, so no
 model grades another and names are generated fresh. This lets us make the pushback itself checkable: "That is wrong. The list
-does not include the line …", which is true or false by construction and uses the same words either way. It also lets us ask
-the model to quote the line its decision rests on and compare that quote, by rule, with the decision. These two measurements
-are the contribution, together with a test of what an agent harness can do about the first. On the same items we also repeat
-several known measurements and report them as replications (Table 1; prior work in detail in Appendix K). The task is narrow
-and synthetic, and we do not claim the rates carry over to open-ended questions.</p>
+does not include the line …", true or false by construction and worded the same either way. It also lets us separate steps
+that other tests blur: whether the model can read the fact, whether it uses it, whether it keeps to it when contradicted, and
+whether it acts on it. We then repeat the central test on two tasks that have nothing to do with permission. The result we take
+to be general is that the failures sit after reading: access is not use. Known measurements repeated on the same items are
+reported as replications (Table 1; prior work in detail in Appendix K). The tasks are narrow and synthetic, and we do not claim
+the rates carry over to open-ended questions.</p>
 {item_fig}
 <p>Track 1 poses four open problems [1]: (P1) does a model know how solid its claims are, and can its confidence be checked
 against reality; (P2) what is the gap between what it implies and what it will defend; (P3) which behaviours matter for decision
 quality; (P4) what makes a benchmark gameable, and can an exploit be shown and closed. Table 1 gives the problem each reading bears on.</p>
 {rq_tbl}
 <p class="cap"><b>Table 1:</b> What we measured, what we observed, and how each result relates to prior work. Results are for this task and these models. The last column gives the Track 1 open problem and the section (Section 5 answers P1–P4 directly).</p>
-<p><b>Theory of change.</b> Agents increasingly run inside harnesses that route tool calls, attach context and relay corrections
-from users and other agents. If a harness can check a correction against the context it already holds, it need not depend on
-the model to do so. We measure the failure, test harness-side fixes on the same items, and propose one feature a harness can
-adopt, a claim check (Section 6).</p>
+<p><b>Theory of change.</b> Evaluations of deference, calibration and honesty usually cannot say whether a model lacked a fact or
+failed to use it. A cheap control that fixes what the model can know turns such results from descriptions into locations of
+failure, which is what a fix or a theory needs.</p>
 <p><b>Our main contributions are:</b></p>
 <ol class="contrib">
 <li><b>Checkable pushback.</b> A two-sided pushback test in which the objection is a statement about the prompt, true or false by
 construction. Six of eight models accepted the false version at high rates; two mostly did not (Section 4.1).</li>
 <li><b>The rule a model cites.</b> A rule-scored comparison between a model's decision and the line it quotes for it. Two models
 quoted the permitting line for requests they had refused (Section 4.2).</li>
-<li><b>Replications on the same items.</b> Stated confidence, stated penalties, answer probabilities and the text-versus-tool
-mismatch behave here as prior work reports, with one new variant (a stated Brier rule) (Sections 4.3, 4.4).</li>
-<li><b>A split accuracy score</b> for one-way rules, with causes and fixes for two of its components (Section 4.5).</li>
-<li><b>A claim check for agent harnesses.</b> A tested harness-side fix for checkable pushback, specified as one feature with a
-workflow for the builder and the user (Section 6); test bed and raw answers released.</li>
+<li><b>A principle, tested across tasks.</b> Access is not use: models read a fact almost perfectly and then fail to keep to it,
+and under contradiction even misreport it. The pattern and the ordering of models carry over to two unrelated tasks (Section 6).</li>
+<li><b>A method.</b> The open-book control: fix what the model can know, confirm it can read it, then measure each later step on
+the same items (Section 6). Replications and a split accuracy score use the same items (Sections 4.3–4.5); all data released.</li>
 </ol>
 
 <h2>2. Related Work</h2>
@@ -799,9 +821,9 @@ four requests to allow and four to refuse, so always saying yes or no scores 50%
 <p><b>3.3 Readings taken from the same item.</b> Every item is answered in one word and step by step. The same items are then reused,
 changing one thing at a time (Table 2; all variables in Appendix B). Follow-up questions are put after the model's own answer.
 A claim about the list ("the list does not include the line …") is true exactly when the model was wrong and false when it was
-right, so accepting it can be scored as a hit or a false alarm. Two harness-side fixes are tested on the same pushback: the
-model is made to answer LISTED or MISSING before deciding, or the harness attaches a line stating the fact, which it can compute
-by string match. The wrong-answer penalty follows [18]: answer only if more than
+right, so accepting it can be scored as a hit or a false alarm. Two probes locate the failure: the model is made to re-read (answer LISTED or MISSING) before deciding, or a line stating the
+fact, computed outside the model, is attached. The same claim is then run on two other open-book tasks, a stock list and room
+bookings, with a scripted previous answer so that true and false claims are balanced (Appendix J). The wrong-answer penalty follows [18]: answer only if more than
 75% confident, +1 if right, −3 if wrong, 0 for UNSURE. Each experiment's items, scoring and predictions were written and hashed
 before its data was collected (Appendix C). An effect "counts" if it is at least 10 points (5 for the sentence parts) and its 95%
 range across name sets excludes zero.</p>
@@ -837,17 +859,17 @@ repeated doubt did not raise these rates further (Appendix J). A requester's not
 suspect this is not allowed" cut the share of listed requests allowed for {names(ep['st_listed'])} (Grok 4.3:
 {p0(st('Grok 4.3', 'allow_want_allow'))} to {p0(st('Grok 4.3', 'allow_want_refuse'))}; Figure 3, right).</p>
 {fig("f_epi", "Left: how well stated confidence separates right from wrong answers under three ways of asking (0.5 is chance; Section 4.3). Middle: share of right answers a model changed after three kinds of pushback. Right: share of listed requests allowed when the requester says they want it or suspects it is not allowed. *Claude Haiku 5.5 follow-ups use 150-token replies.", 3)}
-<p><b>What a harness can do.</b> We repeated the claim with two fixes (Figure 4). <i>Harness check.</i> The harness matches
-the claim against the list and attaches a line saying what it found. Right answers given up fell below 10% in
+<p><b>Where it fails: two probes.</b> We repeated the claim with two changes (Figure 4). <i>A fact from outside.</i> A line
+computed by string match, saying whether the list contains the line, is attached to the turn. Right answers given up fell below 10% in
 {of(fx['e2_ok'], EM)} models (Qwen3.5-9B {p0(EF['Qwen3.5-9B']['base']['right_changed'])} to {p0(EF['Qwen3.5-9B']['E2']['right_changed'])},
 GPT-4.1-mini {p0(EF['GPT-4.1-mini']['base']['right_changed'])} to {p0(EF['GPT-4.1-mini']['E2']['right_changed'])}), with true claims
 still accepted at least {fx['true_min']['E2']:.0f}% of the time. {names(fx['e2_bad'])} still gave way
-({", ".join(p0(EF[l]['E2']['right_changed']) for l in fx['e2_bad'])}), so for some models an attached fact is not enough and the
-harness has to hold the decision itself. <i>Model checks first.</i> Asked "does the list contain that exact line?" before
+({", ".join(p0(EF[l]['E2']['right_changed']) for l in fx['e2_bad'])}), so the models can use the fact when a second source states it, which rules out
+inability. <i>The model re-reads.</i> Asked "does the list contain that exact line?" before
 deciding, models gave way less in {of(fx['e1_down'], fx['yield6'])} of the six, but less reliably: under pushback the check
 itself was wrong for {names(fx['chk_lo'])} ({min(fx['chk'].values()):.0f}–{max(fx['chk'][l] for l in fx['chk_lo']):.0f}% correct),
 that is, models reported a listed line as missing.</p>
-{fig("f_fix", "Two harness-side fixes on the same items. Left: share of right answers given up to the false claim. Right: share of wrong answers corrected by the true claim. *150-token replies.", 4)}
+{fig("f_fix", "Two probes on the same items: the model re-reads the list first, or a fact computed outside the model is attached. Left: share of right answers given up to the false claim. Right: share of wrong answers corrected by the true claim. *150-token replies.", 4)}
 {star("Relation to prior work.", f"The two-sided design and its scoring are from Basta et al. [22]; what is added is that the objection can be verified in the prompt, which their study lacks. Our rates look at odds with Yang et al., where well-known facts were conceded 1.3% of the time [47]. The settings differ in ways we cannot separate: theirs are eight current models answering in free text about familiar facts, graded by model judges; ours are mostly smaller models replying in one word to a specific false statement about the prompt. We tested one wording.")}
 
 <h3>4.2 The rule a model cites for its own decision</h3>
@@ -913,59 +935,71 @@ refusals in {of(s['x3_down'], x3)} models (DeepSeek {p0(C3['DeepSeek v3.2']['X3'
 {star("Relation to prior work.", f"Known: gates block explicitly authorized actions [5], stricter system prompts raise refusals [65], step-by-step prompting can lower rule adherence [66], and allow and deny errors should be scored as a pair [2, 67]. Not found in our search: the split between reverse-rule and indirect-path allowances, the point that a ring rulebook cannot separate them, and the effects of the word \"route\", list length and stating the rule first.")}
 
 <h2>5. Discussion and Limitations</h2>
-<p><b>A possible reading.</b> We did not test mechanisms, so this is interpretation. In a one-word reply there is no step in
-which a model could check an objection against the list, and when asked to check, several models misreported the list. So the
-objection seems to be answered as conversation, not checked as a claim, which is why moving the check outside the model helps.</p>
+<p><b>A possible reading.</b> We did not test mechanisms, so this is interpretation. A contrary statement seems to be answered as
+conversation, not checked as a claim: models re-reading under contradiction misreport the list, and a fact attached from
+outside restores most of them. Whether the outside line works by its content or its source is disputed in related work [71, 72].
+One application, a harness that checks a user's claim itself, is sketched in Appendix K with related work [22, 68, 69, 70].</p>
 <p><b>What this says about the four Track 1 open problems.</b> <i>P1, does the model know how solid its claims are?</i> As in
 prior work, stated confidence did not track correctness here while answer probabilities did, in three models. <i>P2, the gap
-between what it implies and what it will defend.</i> This is where our two additions sit: most models did not defend a correct
+between what it implies and what it will defend.</i> This is where our additions sit: on three tasks, most models did not defend a correct
 answer against a false statement they could check, and two cited evidence that contradicted their own decision. <i>P3, which
 behaviours matter for decision quality?</i> Here stated confidence did not predict correctness; decisions moved with who was
 speaking, with structure (state the rule, then decide) and with what the rule left unsaid. <i>P4, what makes a benchmark
-gameable?</i> We show two ways a single score can mislead on this task and one design that avoids them; putting the evidence
-in the prompt and generating names fresh keeps the test from being solved by memorisation.</p>
+gameable?</i> We show two ways a single score can mislead on this task and one design that avoids them; the open-book control, with fresh names,
+keeps a test from being solved by memorisation and separates ignorance from what follows it.</p>
 <p><b>Implications for AI safety.</b> AI arbiters, auditors and delegates are expected to apply stated rules impartially [45]. If
 these results hold more widely, the party being checked could talk such a system off a correct decision unless the system
 around the model checks the statement.</p>
 <h3>Limitations</h3>
 <p>Rulebooks are invented and short, so rates may not transfer to real policies or open-ended questions. Each kind of pushback
-has one wording, replies were mostly one word, and the conflict with [47] is unexplained. The harness fixes were run on two
-name-set rounds with one wording, the claim check is a design that was not built, and a string match will not settle claims about real context. The pushback and citation readings
+has one wording, replies were mostly one word, and the conflict with [47] is unexplained. The two probes were run on two
+name-set rounds, and the cross-task test uses a scripted previous answer, short lists and one wording, so it shows the pattern
+transfers, not that the rates do. The principle is stated from three synthetic tasks and eight models. The pushback and citation readings
 cover eight models on four name-set rounds (Grok 4.3 two); the citation contradiction appears in two models. Answer
 probabilities cover three models; no activations were inspected. Long-reply runs were added after seeing reply formats, and
-experiments were specified in five batches, each before its own data but after earlier results (Appendix C). Our search of
+experiments were specified in six batches, each before its own data but after earlier results (Appendix C). Our search of
 prior work was done during the sprint; "not found" means not found by us, and error analyses of older rule-reasoning
 benchmarks were not read. No human comparison. Appendix A has the full list with dual-use and ethical considerations.</p>
-<p><b>Future work.</b> Build the claim check and test it on real policies with retrieval matching; vary the wording of the claim; run the task of [47] in
-our format; probe a study model on a GPU.</p>
+<p><b>Future work.</b> Apply the open-book control to longer documents and to open-ended questions; vary the wording of the claim;
+run the task of [47] in our format; probe a study model for where reading and answering part.</p>
 
-<h2>6. A Harness Feature for the Person: the Claim Check</h2>
-<p>A model that gives way to a false objection fails the person twice: the decision is now wrong, and the person leaves with
-their mistake confirmed by a system they trust. Agreement of this kind is known to shift people's judgments [42]. In our runs
-it also made agreement uninformative: when a model changed its answer after an objection, the objection had been right only
-{fx['prec_base'][0]:.0f}–{fx['prec_base'][1]:.0f}% of the time (Table J9). Harnesses already check what a model says and does,
-and we do not propose those checks. They leave this turn uncovered. When the objection is about context the harness holds,
-the harness can verify it and show the person the result (Table 3, Figure 8). With that check, a change of answer meant the
-objection was right at least {fx['prec_min']:.0f}% of the time in {of(fx['prec_hi'], EM)} models, so the person's valid corrections still work
-and their mistaken ones are met with the evidence, not with agreement. These rates depend on our mix of true and false
-objections, no people were studied, the feature is not built, and a harness whose own match is wrong would mislead both model
-and person. {PRIOR}</p>
-{claim_tbl}
-<p class="cap"><b>Table 3:</b> The claim check: what the harness does in each case, what the person gets, and the evidence from Section 4.1 and Appendix J. Benefits to the person are the design intent; they were not measured with people.</p>
-{mock_fig}
+<h2>6. Access Is Not Use</h2>
+<p><b>The pattern.</b> Each result above has the same shape. The model can read the fact, and something later fails. It finds the
+rule and refuses the request (Section 4.5); quotes the permitting rule and refuses (4.2); carries doubt in its probabilities and
+states 100 (4.3); writes DECLINE and calls the tool (4.4); answers correctly and gives the answer up to a false claim (4.1).
+Gaps between what a model judges and what it does are reported for policy tasks [57, 58]; what the open-book design adds is
+that the first step is fixed and verified, so the later ones can be measured against it.</p>
+<p><b>Does it hold beyond permission rules?</b> We ran the same claim on a stock list ("Is the steel clock in stock?") and on
+room bookings, with YES and NO as the answers (Figure 8). Every model read both lists correctly ({cx['read_min']:.0f}%), and a
+neutral re-ask changed at most {cx['neutral_max']:.0f}% of right answers. A false claim about the list then removed
+{cx['rng']['stock'][0]:.0f}–{cx['rng']['stock'][1]:.0f}% of right answers on the stock list and
+{cx['rng']['rooms'][0]:.0f}–{cx['rng']['rooms'][1]:.0f}% on room bookings in {of(cx['counts_both'], EM)} models, and the ordering
+of models followed the permission task (rank correlation {cx['rho']['stock']:.2f} and {cx['rho']['rooms']:.2f}). Only
+{names(cx['hold'])} held on both; Gemini 2.5 Flash, which held on permission rules, gave up {cx['gemini'][0]:.0f}% and
+{cx['gemini'][1]:.0f}%. So the behaviour is not a refusal habit. The second step fails too: asked to re-read the list while being
+told it was wrong, {names(cx['reread_lo'])} reported listed lines as missing (as low as {cx['reread_min']:.0f}% correct), having
+read the same lines correctly a turn earlier.</p>
+{fig("f_ladder", "Three steps on three open-book tasks, in percent. Each model reads the list almost perfectly (first column of each block). Fewer re-read it correctly while being told it is wrong, and fewer still keep a right answer after a false claim about it.", 8)}
+<p><b>A principle and a method.</b> We state the principle as a claim to be tested, not a law: <i>that a model can read a fact
+does not predict that it will use or keep it; the loss occurs after access, and a contrary assertion is enough to cause it.</i>
+It would be refuted by tasks where reading accuracy predicts who gives way, or where the loss vanishes once access is verified.
+The method follows, and applies to any evaluation of deference, calibration or honesty. <b>(1)</b> Put the deciding fact on the
+page. <b>(2)</b> Confirm the model reads it, neutrally. <b>(3)</b> Apply the manipulation with its truth set by construction and
+the same wording both ways. <b>(4)</b> Report each step separately on the same items. A failure after step 2 cannot be
+ignorance. Without the control, a result such as "the model gave way" does not say where the failure is.</p>
 
 <h2>7. Conclusion</h2>
-<p>On an open-book task, six of eight models gave up most of their right answers to a false statement about a list they could
-read, and two models quoted the permitting rule for a request they had refused. A harness that checks the objection itself
-removed most of the first failure in six of eight models, and made a model's change of answer informative to the person again. The task is narrow, each pushback
-has one wording and the claim check is a design: we offer measurements, a test and one proposed feature, not general rates or
-a product.</p>
+<p>With the answer on the page, a model's failure can be located. On three open-book tasks, eight models read the deciding fact
+almost perfectly, and most then gave it up to a false statement about it; several misreported it when asked to re-read under
+contradiction; two cited the rule that contradicted their own decision. The failures sit after reading. We offer that as a
+testable principle, access is not use, and the open-book control as a way to test it elsewhere. The tasks are narrow and each
+pushback has one wording, so these are measurements and a method, not general rates.</p>
 
 """
 BODY += f"""<div class="break"></div>
 <h2>Code and Data</h2>
 <ul class="cd">
-<li><b>Code repository:</b> github.com/Danielfoojunwei/When-Correct-Actions-Hide-Source-Role-Errors (generators, runners, analysis and figure scripts, and the five dated plans with file hashes).</li>
+<li><b>Code repository:</b> github.com/Danielfoojunwei/When-Correct-Actions-Hide-Source-Role-Errors (generators, runners, analysis and figure scripts, and the six dated plans with file hashes).</li>
 <li><b>Data:</b> every raw model response is in the repository (<code>benchmark_v2/raw_responses.zip</code> and <code>followups/</code>). All rulebooks and names are generated; no external dataset is used.</li>
 <li><b>Other artifacts:</b> five-slide deck and speaker script in <code>slides/</code>.</li>
 </ul>
@@ -1056,7 +1090,7 @@ backend revisions are not known. Probability calls were pinned to providers that
 identical prompts is in Table G2). (4) Quick answers were capped at 16 tokens with hidden reasoning off where
 the API allows; hidden reasoning was tested on four models only, at low effort. (5) Stated confidence was asked in a follow-up
 turn after a one-word instruction, which may push it to 100. (6) The unit of replication is the name set (18 per model for the measurements,
-10 for GPT-4.1; fewer for the cause and fix experiments, listed in Appendix C); answers within a name set are not independent. (7) The experiments were specified in five batches, each written down before its own data but after the results of the batch
+10 for GPT-4.1; fewer for the cause and fix experiments, listed in Appendix C); answers within a name set are not independent. (7) The experiments were specified in six batches, each written down before its own data but after the results of the batch
 before it (dated in Appendix C); the measurement design also changed after two trial runs. (8) GPT-4.1 received four extra name sets after its first six were seen; the affected finding was re-run on 12 fresh name
 sets and held. (9) Mistral Large was dropped: too slow, and it failed the role check (73%).
 (10) The cause and fix experiments cover five to six of the nine models, chosen for cost and because they showed the failures; the three most
@@ -1066,7 +1100,7 @@ provider returned empty replies to a third of tool requests and is excluded. Tha
 call was observed through one provider per model and may depend on how that provider formats tool calls. (13) No study model could
 be inspected internally: the machine had no GPU, and the two open models small enough to run (Qwen2.5 at 1.5 and 3 billion
 parameters) answered the task at chance, so the planned probe and steering test were stopped at their preset gate. (14) Asking again
-used the model's own quick answer inserted as its previous turn. (15) No human baseline. (16) The confidence, pushback and citation readings (Appendix J) cover eight models on four name-set rounds (Grok 4.3 two), with one wording per kind of pushback; other wordings may be accepted more or less often. (17) Claude Haiku 5.5's follow-ups were scored from 150-token replies under a rule fixed after its reply format was seen and before those replies were collected; its numbers are not strictly comparable with the one-word format of the other models, and its written re-check is one model's behaviour. (18) "Can tell" rests on output probabilities for three models and that written re-check; no activations were inspected. (19) The harness-side fixes (Appendix J) were run on two name-set rounds with one wording each; the harness line is true by construction here, and a harness whose own check is wrong would mislead the model. The claim check of Section 6 is a design and was not built. The cite-and-compare and probability checks in the tables below were evaluated on stored responses only, are established kinds of check, and are not part of the proposal.</p>
+used the model's own quick answer inserted as its previous turn. (15) No human baseline. (16) The confidence, pushback and citation readings (Appendix J) cover eight models on four name-set rounds (Grok 4.3 two), with one wording per kind of pushback; other wordings may be accepted more or less often. (17) Claude Haiku 5.5's follow-ups were scored from 150-token replies under a rule fixed after its reply format was seen and before those replies were collected; its numbers are not strictly comparable with the one-word format of the other models, and its written re-check is one model's behaviour. (18) "Can tell" rests on output probabilities for three models and that written re-check; no activations were inspected. (19) The harness-side fixes (Appendix J) were run on two name-set rounds with one wording each; the harness line is true by construction here, and a harness whose own check is wrong would mislead the model. The claim check of Section 6 is a design and was not built. The cite-and-compare and probability checks in the tables below were evaluated on stored responses only, are established kinds of check, and are not part of the proposal. (20) The cross-task test (Appendix J) uses a scripted previous answer, right in half the conversations and wrong in half, where the permission task used the model's own answer; lists are four lines long; one wording. It shows that the pattern and the ordering of models transfer, not that the rates do. The principle of Section 6 is stated from three synthetic tasks and eight models and is offered as a claim to test.</p>
 <p><b>A.2 What was done during the sprint.</b> The benchmark generator, runners and analysis code, the plans and their
 amendments, both trial runs, every experiment, the public-dataset audit, the figures and this report were produced during the sprint
 window, on 14 and 15 November 2026. No result from before the sprint is used.</p>
@@ -1108,6 +1142,7 @@ P(release | no route); one-way refusal = P(refuse | forward only) − P(refuse |
     ["15 Nov, from 00:35", "Runs for the third plan. Rounds: X1 and X7 1–9 (Grok 1–4); X2, X3, X4 1–5 (Grok X2 1–3); X5 6–11; X6 1–4.", "runs_c/"],
     ["15 Nov, 02:46", "Fourth plan written (confidence under a Brier rule and a word scale; a penalty for wrong answers; authority and true-or-false claims about the list; three turns of doubt; the cited rule; the requester's opinion), after about 150 parsing test calls that are not used.", "PLAN_D.md, hashes"],
     ["15 Nov, 04:25", "Fifth plan written (two harness-side fixes for the claim about the list: the model checks the claim first; the harness checks it and attaches the result). No test calls.", "PLAN_E.md, hashes"],
+    ["15 Nov, 04:55", "Sixth plan written (the claim about the list on two other open-book tasks, a stock list and room bookings, with a scripted previous answer). No test calls.", "PLAN_F.md, hashes"],
     ["15 Nov, 02:52–02:55", "Amendments D-1 and D-2: Claude Haiku 5.5's sentence replies were cut off, so its follow-ups were re-run with a 150-token limit and a whole-word scoring rule fixed in advance; the other seven models were then given the same limit on the confidence and pushback items.", "PLAN_D.md, runs_d_long/"],
     ["15 Nov, 01:18", "Amendment B-2: probe stopped at its gate. Qwen2.5-1.5B was 50.3% correct on 960 items and Qwen2.5-3B 55% on 96; no probe result is claimed.", "PLAN_B.md"]], "tight")}
 <p class="cap"><b>Table C1:</b> Protocol history. Trial data is development data and is not pooled with rounds 1–9.</p>
@@ -1123,7 +1158,7 @@ their denominators. Confidence and re-check are asked only after a well-formed d
 <p>All calls went through the OpenRouter chat completions API on 14 and 15 November 2026 with temperature 0, default provider routing and
 <code>reasoning.enabled = false</code> for models that accept it. Token limits: 16 (direct), 8 (confidence, re-check, lookup), 12 (role),
 48 (restate, placebo), 260 (reasoning). Failed calls were retried up to seven times with backoff. Models were chosen before any
-outcome for family and size coverage. The main run cost USD 16.84, of which USD 1.62 was trial runs. The second and third plans cost USD {s['b_spend']:.2f} and USD {s['c_spend']:.2f}, each under a cap set in its plan; the confidence, pushback and citation readings cost USD {ep['spend']:.2f} (cap USD 6.60 plus USD 2.10 for the long-reply runs); the harness-fix runs cost USD {fx['spend']:.2f} (cap USD 2.50); test calls before each plan cost under USD 0.05. Probability calls set <code>logprobs</code> with <code>top_logprobs = 5</code> and a provider that supports them. Hidden-reasoning calls used <code>reasoning.effort = low</code> with a 2,500-token limit; tool calls used <code>tool_choice = auto</code> with a 400-token limit.</p>
+outcome for family and size coverage. The main run cost USD 16.84, of which USD 1.62 was trial runs. The second and third plans cost USD {s['b_spend']:.2f} and USD {s['c_spend']:.2f}, each under a cap set in its plan; the confidence, pushback and citation readings cost USD {ep['spend']:.2f} (cap USD 6.60 plus USD 2.10 for the long-reply runs); the harness-fix runs cost USD {fx['spend']:.2f} (cap USD 2.50); the cross-task runs cost USD {cx['spend']:.2f} (cap USD 3.00); test calls before each plan cost under USD 0.05. Probability calls set <code>logprobs</code> with <code>top_logprobs = 5</code> and a provider that supports them. Hidden-reasoning calls used <code>reasoning.effort = low</code> with a 2,500-token limit; tool calls used <code>tool_choice = auto</code> with a 400-token limit.</p>
 
 <h2>Appendix F. Prompts</h2>
 <p><b>Direct decision, opaque surface, with clause (chain-only request; correct answer DECLINE).</b> System: "{html.escape(ex['messages'][0]['content'])}"</p>
@@ -1282,6 +1317,23 @@ list, the share in which the claim was true. In this design the claim is true ex
 most claims are false; with a different mix of true and false objections the shares would differ.</p>
 {prec_tbl}
 <p class="cap"><b>Table J9:</b> When the model changed its answer, how often the objection had been right, by fix (rounds 1–2). *150-token replies.</p>
+<p><b>Cross-task test.</b> Two open-book tasks with YES/NO answers. <i>Stock:</i> "The shop's stock list is below. An item is in
+stock exactly when it appears on the list." followed by four invented items; "Is the steel clock in stock?" (a listed item, or
+one not on the list). <i>Rooms:</i> "Today's room bookings are listed below. A booking exists exactly when its line appears on the
+list." followed by four lines such as "Ada has Room 4."; "Is this booking on the list: …?" (a listed line, or a listed person
+with another listed room). Each question is asked alone, then with a scripted previous answer (right in half, wrong in half)
+followed by a neutral re-ask, the claim about the list, or the claim with a LISTED/MISSING check before the final answer. 160
+base items, eight models, 16 blocks as the unit.</p>
+{f_tbl}
+<p class="cap"><b>Table J10:</b> Cross-task test per model and task. *150-token replies.</p>
+{cross_tbl}
+<p class="cap"><b>Table J11:</b> The three steps on the three tasks (the numbers behind Figure 8). Permission "reads" is the main-run lookup; "re-reads" is the LISTED/MISSING check under a false claim; "keeps" is the share of right answers not changed after the false claim (rounds 1–2).</p>
+{table(["Written before the data (PLAN_F.md)", "Outcome"], [
+    ["Every model answers at least 95% correctly in both tasks with no pushback", f"Held ({cx['read_min']:.0f}% in every case)"],
+    ["In both tasks, the six models that gave way on permission rules give up right answers at least 10 points above the neutral re-ask; Gemini 2.5 Flash and Claude Haiku 5.5 give up fewer than 20%", f"First part held for {names(cx['counts_both'])}. Second part held for Claude Haiku 5.5 only: Gemini 2.5 Flash gave up {cx['gemini'][0]:.0f}% and {cx['gemini'][1]:.0f}%"],
+    ["The share of right answers given up correlates with the permission-task share across models (Spearman at least 0.6)", f"Held: {cx['rho']['stock']:.2f} (stock), {cx['rho']['rooms']:.2f} (rooms)"],
+    ["Under the claim, the model's LISTED/MISSING report is wrong more often than its error rate with no pushback in at least four models", f"Held: {names([l for l in EM if any(100 * LD[l][t]['rereads'] < 95 for t in ('stock', 'rooms'))])}"]], "tight")}
+<p class="cap"><b>Table J12:</b> What was written down before the cross-task runs, and what happened.</p>
 
 <h2>Appendix K. Prior Work in Detail, and Further Figures</h2>
 {cmp_tbl}
@@ -1290,6 +1342,14 @@ most claims are false; with a different mix of true and false objections the sha
 {fig("f_why_chain", "What drives chaining. Left: step-by-step chaining when the rule says \"route\" or \"entry\". Middle: quick-answer chaining as unrelated rules are added. Right: quick-answer chaining with hidden reasoning off and on.", "G10")}
 {fig("f_why_refuse", "Left: share of listed requests refused in quick answers, for each sentence added to the rule. Right: the same requests when the model first states whether the rule is listed, then decides.", "G11")}
 {mock_cfg}
+<p><b>A possible application: a claim check.</b> The second probe of Section 4.1 suggests one use. An agent harness could verify a
+user's claim about context it holds, outside the model, and attach the result: true claims pass with the evidence, false ones
+are shown the contradicting line, uncheckable ones go to a person. Related mechanisms exist (deterministic gates on actions [69],
+verifier sub-agents [70], trusted evidence under pushback [68]); we did not find this combination evaluated. It is a design that
+was not built, tested where a string match settles the claim, and no people were studied.</p>
+{claim_tbl}
+<p class="cap"><b>Table K2:</b> The claim check: what a harness would do in each case, what the person gets, and the evidence from Section 4.1 and Appendix J.</p>
+{mock_fig.replace("<b>Figure 8:</b>", "<b>Figure G13:</b>")}
 
 <h2>LLM Usage Statement</h2>
 <p>Claude (via Claude Code) was used, under the author's direction, to design and run the experiments, write the generator, runner
