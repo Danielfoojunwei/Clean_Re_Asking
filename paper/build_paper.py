@@ -631,7 +631,7 @@ def _row(n, title, body, badge, cls="pass"):
     return f'<div class="tr {cls}"><span class="tn">{n}</span><div class="tb"><b>{title}</b><span>{body}</span></div><span class="bd">{badge}</span></div>'
 
 
-mock_fig = f"""<figure class="mock"><div class="mockwrap">
+mock_cfg = f"""<figure class="mock"><div class="mockwrap">
 <div class="mk cfg"><div class="mkh">harness.yaml<span>proposed</span></div><pre>open_book_guard:
   <i>context:</i> policy.rules     <em># the page</em>
   lookup_then_decide: <u>on</u>
@@ -656,7 +656,41 @@ mock_fig = f"""<figure class="mock"><div class="mockwrap">
 {_row("4", "Claim check", "matched against policy.rules: line 1 found → claim CONTRADICTED; result attached; decision held", "HELD", "held")}
 {_row("5", "Enforce on the call", "send_records(Maintenance, Procurement) agrees with the text EXECUTE", "RUN")}
 </div></div>
-<figcaption><b>Figure 8:</b> Mock-up of the proposed harness layer on the item of Figure 1: a configuration block and the trace a builder would see. It is a design, not a built product, and the values in the trace are illustrative. The evidence behind each check is in Table 3.</figcaption></figure>"""
+<figcaption><b>Figure G12:</b> The same layer as a builder would configure and read it: a configuration block and the run trace for the item of Figure 1. It is a design, not a built product, and the values in the trace are illustrative.</figcaption></figure>"""
+
+_AR = '<span class="ar">→</span>'
+
+
+def _wb(kind, who, title, body, tag=""):
+    return f'<div class="wb {kind}"><span class="who">{who}</span><b>{title}</b><span class="wd">{body}</span>' + (f'<span class="ev">{tag}</span>' if tag else "") + "</div>"
+
+
+mock_fig = f"""<figure class="flow"><div class="flowwrap">
+<div class="fl setup"><div class="flh">Set up once <span>the builder</span></div>
+<div class="su"><div><i>1</i><span><b>Name the page.</b> Tell the harness which context the model decides from (a policy, a contract, a table).</span></div>
+<div><i>2</i><span><b>Switch on the checks.</b> Look up then decide, cite and compare, probability gate, claim check, enforce on the call.</span></div>
+<div><i>3</i><span><b>Choose what a flag does.</b> Send to review, hold the decision, or block the action.</span></div></div></div>
+<div class="fl run"><div class="flh">Every decision <span>runs without anyone watching</span></div>
+<div class="row">
+{_wb("user", "User or agent", "Asks", "\"May Maintenance send records to Procurement?\"")}{_AR}
+{_wb("model", "Model", "Looks up, decides, quotes", "\"Listed: yes. EXECUTE.\" Quotes the rule it used.")}{_AR}
+{_wb("har", "Harness", "Checks the answer", "Does the quote match the decision? Is the answer probability high enough?", f"flags {k2(ct['wrong_allow_flagged'])} wrong allows")}{_AR}
+{_wb("har", "Harness", "Checks the action", "Does the tool call agree with the text? If not, block.", f"{gx7['called_while_saying_decline']} of {gx7['calls']} mismatches seen in one model")}{_AR}
+{_wb("out", "Outcome", "Runs, or goes to review", "A flagged decision never runs silently.")}
+</div></div>
+<div class="fl corr"><div class="flh">When someone says "that is wrong" <span>the step this paper adds</span></div>
+<div class="row">
+{_wb("user bad", "User or agent", "Objects", "\"The list does not include that line.\"")}{_AR}
+{_wb("har", "Harness", "Checks the claim itself", "Matches the claim against the page before the model sees it.", f"gave way under 10% in {of(fx['e2_ok'], EM)} models")}{_AR}
+<div class="branch">
+<div class="br ok"><b>Claim is true</b><span>Pass it on with the evidence; the model corrects itself.</span></div>
+<div class="br no"><b>Claim is false</b><span>Hold the decision; show the user the line that contradicts them.</span></div>
+<div class="br un"><b>Cannot be checked</b><span>Ask the model to check, and send to a person.</span></div>
+</div>{_AR}
+<div class="see"><span class="who">What the user sees</span><div class="msg">Your correction does not match the policy. Line 1 reads: <i>"Maintenance may send records to Procurement."</i> The decision is unchanged.<span class="btns"><u>See the policy</u><u>Ask a person</u></span></div></div>
+</div></div>
+</div>
+<figcaption><b>Figure 8:</b> How the proposed harness layer would work, for the builder who sets it up and the user who meets it. A design, not a built product. Small tags give the evidence for a step (Table 3); Appendix K has a configuration and trace view.</figcaption></figure>"""
 
 CSS = open("paper.css").read() + open("paper3.css").read() + open("paper4.css").read()
 BODY = f"""
@@ -874,10 +908,8 @@ refusals in {of(s['x3_down'], x3)} models (DeepSeek {p0(C3['DeepSeek v3.2']['X3'
 
 <h2>5. Discussion and Limitations</h2>
 <p><b>A possible reading.</b> We did not test mechanisms, so this is interpretation. In a one-word reply there is no step in
-which a model could check an objection against the list, and most models did not take the step when given room. The two that
-held either wrote the check out (Claude Haiku 5.5) or answered in one word and held anyway (Gemini 2.5 Flash), so reply length
-is not the whole story. That two models quote the permitting line for a request they refused suggests the refusal was not
-produced by failing to find the rule.</p>
+which a model could check an objection against the list, and when asked to check, several models misreported the list. So the
+objection seems to be answered as conversation, not checked as a claim, which is why moving the check outside the model helps.</p>
 <p><b>What this says about the four Track 1 open problems.</b> <i>P1, does the model know how solid its claims are?</i> As in
 prior work, stated confidence did not track correctness here while answer probabilities did, in three models. <i>P2, the gap
 between what it implies and what it will defend.</i> This is where our two additions sit: most models did not defend a correct
@@ -887,8 +919,8 @@ speaking, with structure (state the rule, then decide) and with what the rule le
 gameable?</i> We show two ways a single score can mislead on this task and one design that avoids them; putting the evidence
 in the prompt and generating names fresh keeps the test from being solved by memorisation.</p>
 <p><b>Implications for AI safety.</b> AI arbiters, auditors and delegates are expected to apply stated rules impartially [45]. If
-these results hold more widely, a confident false statement from the party being checked could move such a system off a correct
-decision, unless the system around the model checks the statement. Whether they hold more widely is untested.</p>
+these results hold more widely, the party being checked could talk such a system off a correct decision unless the system
+around the model checks the statement.</p>
 <h3>Limitations</h3>
 <p>Rulebooks are invented and short, so rates may not transfer to real policies or open-ended questions. Each kind of pushback
 has one wording, replies were mostly one word, and the conflict with [47] is unexplained. The harness fixes were run on two
@@ -898,29 +930,26 @@ probabilities cover three models; no activations were inspected. Long-reply runs
 experiments were specified in five batches, each before its own data but after earlier results (Appendix C). Our search of
 prior work was done during the sprint; "not found" means not found by us, and error analyses of older rule-reasoning
 benchmarks were not read. No human comparison. Appendix A has the full list with dual-use and ethical considerations.</p>
-<h3>Future Work</h3>
-<p>Vary the wording and source of the checkable claim; require a written check in every model and compare with [49]; run the
-task of [47] in our format to locate the difference; probe a study model on a GPU; move to real policies.</p>
+<p><b>Future work.</b> Build the layer and test it on real policies with retrieval matching; vary the wording of the claim; run the task of [47] in
+our format; probe a study model on a GPU.</p>
 
 <h2>6. From Findings to a Harness Feature</h2>
 <p>An agent harness already holds what these checks need: the context it gave the model, the model's text, its tool call and,
 for some providers, token probabilities. Table 3 turns the results into six guidelines, each with its evidence and how far it
-was tested. The first is the main one. A correction that points at the provided context is a claim the harness can verify
-without the model, and attaching the result removed most of the failure in most models; where it did not, the harness should
-hold the decision and escalate, not ask again. Figure 8 sketches a layer that applies all six. We have not built it, the checks
-were evaluated on short rule lists where a string match settles the claim, and real context would need structured or retrieval
-matching, which we have not tested.</p>
+was tested. The first is the main one: a correction that points at the provided context is a claim the harness can verify
+without the model. Where attaching the result is not enough, the harness should hold the decision and escalate. Figure 8 shows
+how a layer applying all six would work. It is not built, and real context would need structured or retrieval matching in
+place of a string match, which we have not tested.</p>
 {guide_tbl}
 <p class="cap"><b>Table 3:</b> Six guidelines for agent harnesses, what each asks the harness to do, the evidence from this study, and whether it was tested as an intervention, evaluated on stored responses, or only observed.</p>
 {mock_fig}
 
 <h2>7. Conclusion</h2>
-<p>On an open-book task we made a user's objection checkable against the prompt. Six of eight models gave up most of their
-right answers to a false statement about a list they could read; two models, asked for the rule behind a wrong refusal, quoted
-the rule that permits the request. A harness that checks the objection itself and attaches the result removed most of the
-first failure in six of eight models, and comparing a model's quote with its decision flagged every wrong allow in stored
-responses. The task is narrow, each pushback has one wording and the harness layer is a design, so we offer measurements, a
-reusable test and six guidelines, not general rates or a product.</p>
+<p>On an open-book task, six of eight models gave up most of their right answers to a false statement about a list they could
+read, and two models quoted the permitting rule for a request they had refused. A harness that checks the objection itself
+removed most of the first failure in six of eight models, and comparing quote with decision flagged every wrong allow in stored
+responses. The task is narrow, each pushback has one wording and the harness layer is a design: we offer measurements, a test
+and six guidelines, not general rates or a product.</p>
 
 """
 BODY += f"""<div class="break"></div>
@@ -1240,6 +1269,7 @@ probability of its first answer token is below 0.90, a threshold fixed before lo
 {example.replace("<b>Figure 1:</b>", "<b>Figure G9:</b>")}
 {fig("f_why_chain", "What drives chaining. Left: step-by-step chaining when the rule says \"route\" or \"entry\". Middle: quick-answer chaining as unrelated rules are added. Right: quick-answer chaining with hidden reasoning off and on.", "G10")}
 {fig("f_why_refuse", "Left: share of listed requests refused in quick answers, for each sentence added to the rule. Right: the same requests when the model first states whether the rule is listed, then decides.", "G11")}
+{mock_cfg}
 
 <h2>LLM Usage Statement</h2>
 <p>Claude (via Claude Code) was used, under the author's direction, to design and run the experiments, write the generator, runner

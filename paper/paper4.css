@@ -44,3 +44,23 @@ figure.mock { margin: 1.5mm 0 2mm; } .mockwrap { display: grid; grid-template-co
 .tr.warn { border: 0; border-bottom: 0.5pt solid #e6e8ec; border-radius: 0; outline: 0; }
 figure.mock .tr.warn { border: 0; border-bottom: 0.5pt solid #e6e8ec; border-radius: 0; margin: 0; padding: 0.9mm 1.6mm; font-size: 6.2pt; line-height: 1.28; background: #fde8df; }
 figure.mock .tr, figure.mock .tr.warn, figure.mock .tr.held { border: 0; border-bottom: 0.5pt solid #e6e8ec; } figure.mock .tr:last-child { border-bottom: 0; }
+figure.flow { margin: 1.5mm 0 2mm; } .flowwrap { display: grid; gap: 1.5mm; text-align: left; font-family: Inter, sans-serif; }
+.fl { border: 0.7pt solid #d5d9df; border-radius: 2mm; padding: 1.4mm 1.8mm 1.6mm; background: #fbfaf5; }
+.fl.corr { background: #fff7f2; border-color: #f0b59a; } .fl.setup { background: #f4f6f9; }
+.flh { font-weight: 700; font-size: 7pt; margin-bottom: 1.1mm; color: #20262e; } .flh span { font-weight: 500; font-size: 6pt; color: #6a7380; margin-left: 1.5mm; }
+.su { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6mm; } .su > div { display: flex; gap: 1.2mm; align-items: flex-start; font-size: 6.1pt; line-height: 1.3; color: #333; }
+.su i { flex: 0 0 3.6mm; height: 3.6mm; border-radius: 50%; background: #2f3b4c; color: #fff; font-style: normal; font-weight: 700; font-size: 6pt; display: inline-flex; align-items: center; justify-content: center; }
+.fl .row { display: flex; align-items: stretch; gap: 0.8mm; } .ar { align-self: center; color: #7a8492; font-size: 9pt; flex: 0 0 auto; }
+.wb { flex: 1 1 0; border-radius: 1.6mm; padding: 1mm 1.3mm 1.2mm; background: #fff; border: 0.6pt solid #d5d9df; font-size: 5.9pt; line-height: 1.28; color: #3a4049; display: flex; flex-direction: column; }
+.wb .who, .see .who { font-size: 5.3pt; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: #6a7380; }
+.wb b { font-size: 6.6pt; color: #16191d; margin: 0.2mm 0 0.4mm; }
+.wb.model { background: #e6f1fd; border-color: #a9cdf3; } .wb.model .who { color: #1c5cab; }
+.wb.har { background: #2f3b4c; border-color: #2f3b4c; color: #dfe5ec; } .wb.har b { color: #fff; } .wb.har .who { color: #9fd3b6; }
+.wb.out { background: #e3f4ea; border-color: #a5d9bd; } .wb.out .who { color: #14784f; }
+.wb.bad { background: #fde8df; border-color: #eb6834; } .wb.bad .who { color: #b8430f; }
+.ev { margin-top: auto; padding-top: 0.6mm; font-size: 5.3pt; font-weight: 700; color: #9fd3b6; }
+.branch { flex: 1.5 1 0; display: grid; gap: 0.7mm; } .br { border-radius: 1.3mm; padding: 0.7mm 1.2mm; font-size: 5.7pt; line-height: 1.25; color: #3a4049; }
+.br b { font-size: 6.1pt; margin-right: 1mm; } .br.ok { background: #e3f4ea; } .br.ok b { color: #14784f; } .br.no { background: #fde8df; } .br.no b { color: #b8430f; } .br.un { background: #fdf2cf; } .br.un b { color: #8a6100; }
+.see { flex: 1.45 1 0; } .msg { margin-top: 0.5mm; background: #fff; border: 0.7pt solid #2a78d6; border-radius: 1.8mm 1.8mm 1.8mm 0.4mm; padding: 1.1mm 1.4mm; font-size: 5.9pt; line-height: 1.3; color: #20262e; }
+.btns { display: flex; gap: 1.2mm; margin-top: 0.8mm; } .btns u { text-decoration: none; border: 0.6pt solid #2a78d6; color: #1c5cab; border-radius: 1mm; padding: 0.2mm 1.2mm; font-weight: 600; font-size: 5.6pt; }
+.fl { padding: 1.1mm 1.6mm 1.3mm; } .flowwrap { gap: 1.2mm; }
