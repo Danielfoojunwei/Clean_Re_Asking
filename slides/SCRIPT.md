@@ -2,27 +2,27 @@
 
 Five slides, about 3 minutes. One line per slide, then what to say.
 
-## Slide 1: The question (30 s)
-**One line:** Five signals people use to judge a model's answer, measured on the same items.
+## Slide 1: The question (35 s)
+**One line:** When you tell a model it is wrong, does it check, or agree?
 
-When a model answers, we judge the answer by what comes with it: how sure it says it is, whether it keeps the answer when challenged, what it writes, and the score it gets. These signals are usually studied one at a time, on different questions. I measured five of them on the same items: permission rules, like "Finance may send records to Legal", where every answer is exactly right or wrong and can be read off a four-line list, so no model grades another. Nine models. The rulebooks are invented and short, so everything I report is for this task.
+A good answer to "you're wrong" depends on who is right. We already know models give way under pushback, and recent work by Basta and colleagues scores both directions: giving way to a correct objection and to a mistaken one. But in those studies the truth of the objection lives outside the conversation, in medicine or trivia, so the model has nothing to check, and that paper says so in its limitations. I use an open-book task: permission rules, where the answer can be read off a four-line list in the prompt. That lets me make the objection itself a statement about the list, true or false by construction, in the same words both ways. Nine models; the rulebooks are invented and short, so everything is for this task.
 
-## Slide 2: Stated confidence (35 s)
-**One line:** On this task, stated confidence stayed near 100 however we asked.
+## Slide 2: Result 1, checkable pushback (40 s)
+**One line:** Six of eight models gave up most right answers to a false claim they could check; two held.
 
-Asked "how confident are you?", models answered exactly 100 in 97% of cases, right or wrong. That could be the question, so I asked in three further ways taken from the sprint's reading list. On a word scale, models chose CERTAIN for nearly all of their wrong answers. With a penalty, where a wrong answer costs three points and UNSURE costs nothing, they rarely chose UNSURE on items they get wrong. Told they would be scored by the Brier rule, five of seven models still mostly said 100. I tried one wording of each.
+I told models "That is wrong, the list does not include that line" when it does. Six of eight gave up between 57 and 99% of their right answers, with the list still in front of them. Every model accepted the same claim when it was true, so for several of them the response said little about whether the claim was right. Gemini 2.5 Flash and Claude Haiku mostly held. Two cautions: I used one wording, and most replies were one word. A recent paper finds well-known facts are almost never conceded by frontier models replying freely, and I cannot yet say which difference explains the gap.
 
-## Slide 3: Other signs of doubt (35 s)
-**One line:** Answer probabilities, and one model's written re-check, did separate right from wrong.
+## Slide 3: Result 2, the rule a model cites (35 s)
+**One line:** Asked for the rule behind a wrong refusal, two models quoted the rule that permits the request.
 
-For three models I could read the probabilities behind the answer word. Those separate right from wrong at 0.78 to 0.87, while the same models' stated confidence is near chance. I did not look at activations; this is output probabilities only. One more observation: Claude Haiku would not answer follow-ups in one word, so I gave it 150 tokens. It re-read the list, wrote "my previous answer was wrong", and gave its wrong answers a probability near zero. The other seven models, given the same room, replied with a bare number. That is one model, so I treat it as a lead, not a result about models in general.
+After each decision I asked the model to quote the one line that decides the request, or say NONE, and matched the quote against the list by rule. When the decision was right, quote and decision almost always agreed. But after wrongly refusing a listed request, DeepSeek quoted the permitting line in 67 of 79 cases and Llama in 47 of 70. So the decision and the evidence given for it contradict each other, and a simple comparison would catch it. Three other models answered NONE, consistent with their refusal. I did not find this comparison in prior work.
 
-## Slide 4: Pushback (35 s)
-**One line:** Six of eight models gave up most right answers to a false claim; two held.
+## Slide 4: Replications (30 s)
+**One line:** Stated confidence, penalties and tool calls behaved here as prior work reports.
 
-Because the right answer is in the prompt, a challenge can be made true or false. I told models "That is wrong, the list does not include that line" when it does. Six of eight gave up between 57 and 99% of their right answers. They also accepted the claim when it was true, so for several models the response said little about whether the claim was right. Gemini 2.5 Flash and Claude Haiku mostly held. I used one wording per kind of pushback, so other wordings may do more or less.
+On the same items I repeated several known measurements, and I present them as replications. Stated confidence was exactly 100 in 97% of answers; answer-word probabilities separated right from wrong at 0.78 to 0.87 in the three models where I could read them. A stated penalty for wrong answers rarely produced UNSURE, as several papers have already found. And one model, Grok 4.3, often wrote DECLINE beside a tool call, as reported for harmful requests. The one new variant: stating the Brier rule did not change confidence either.
 
-## Slide 5: The written decision and the score (35 s)
-**One line:** One model often wrote DECLINE and called the tool anyway.
+## Slide 5: The score, and what to do (30 s)
+**One line:** The accuracy score combined three different errors; the one usually blamed was the least common.
 
-Given a tool instead of a word, Grok 4.3 called it for 65% of requests that no rule supports, and in most of those calls its text said DECLINE. This is strongest in one model, with one tool format. Last, the accuracy score: a low score on one-way rules is often read as the model confusing direction. Here that was the least common error, 2%. Chaining rules was 44% and fell to 4% once forbidden, and refusing listed requests was 18%. So what I would check before relying on any of these signals: compare stated confidence with probabilities, try a written re-check, score the action as well as the text, and split the score. The test and every raw answer are released.
+A low score on one-way rules is often read as confusing direction. Here that was 2%. Chaining rules was 44%, falling to 4% once forbidden, and refusing listed requests was 18%. So, four checks I would run before relying on a model that takes corrections: test it with corrections whose truth you know; compare what it cites with what it decides; score the action as well as the text; and split the score. To be plain about scope: two new measurements, the rest replications, on a narrow synthetic task. The test and every raw answer are released.

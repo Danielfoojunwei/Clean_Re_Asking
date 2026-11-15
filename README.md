@@ -1,14 +1,20 @@
 # Open-Book Epistemics
 
 Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
-*Open-Book Epistemics: Confidence, Pushback and Action When the Answer Is on the Page*.
+*Open-Book Epistemics: Checkable Pushback and Cited Evidence When the Answer Is on the Page*.
 
-The study measures, on the same exactly-scored items, five signals people use to judge a model's answer: its stated confidence
-(asked four ways), its answer probabilities, how it responds to true and false pushback, which rule it cites, and what it does
-when given a tool. It also splits the accuracy score into the separate errors it combines. The items are one-way permission
-rules, where every answer is exactly right or wrong and no model grades another. The rulebooks are invented and short, so the
-results are for this task and the nine models tested. Every experiment was specified in writing, with hashes, before its data
-was collected.
+The study uses an open-book task (one-way permission rules, where the right answer can be read off a short list in the prompt
+and no model grades another) to make two measurements we did not find in prior work:
+
+1. **Checkable pushback.** The user's objection is a statement about the list, true or false by construction and worded the same
+   both ways, so giving way can be scored as a correction or a mistake. This extends the two-sided scoring of Basta et al. (2026),
+   whose objections the model cannot verify.
+2. **The rule a model cites.** The line a model quotes for its decision is compared, by rule, with the decision itself.
+
+On the same items it replicates known results on stated confidence, stated penalties, answer probabilities and the mismatch
+between written refusals and tool calls, and splits the accuracy score into the separate errors it combines. The rulebooks are
+invented and short, so the results are for this task and the nine models tested. Every experiment was specified in writing, with
+hashes, before its data was collected.
 
 | Part | What it covers | Plan | Folder |
 |---|---|---|---|

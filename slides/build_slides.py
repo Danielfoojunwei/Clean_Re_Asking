@@ -119,45 +119,49 @@ hb = dk(HKL, "D1_brier")
 n_all += sum(1 for d in ("runs_d", "runs_d_long") for f in (pathlib.Path(__file__).parent.parent / "v4" / d).glob("*/responses.jsonl")
              for _ in {json.loads(x)["id"] for x in open(f) if json.loads(x)["status"] == "ok"})
 TITLE = "Open-Book Epistemics"
+QS = lambda l, g: DD[l]["D5"][g]
+qsup = [(l, QS(l, "wrong_refusal")["kinds"].get("supports", 0), QS(l, "wrong_refusal")["n"]) for l in ("DeepSeek v3.2", "Llama 4 Maverick")]
+qnone = [(l, QS(l, "wrong_refusal")["kinds"].get("none", 0), QS(l, "wrong_refusal")["n"]) for l in ("Grok 4.3", "Qwen3.5-9B", "Nova Lite")]
+te_lo = min(pct(dk(l, "D3")["evidence"]["wrong_changed"]) for l in EMS)
 S = [
- slide(1, "The question", "Five signals people use to judge a model's answer, measured on the same items.",
-   f'''<div class="col c1"><div class="cap">A test where every answer is exactly right or wrong</div>{graph}<div class="note">Who may send records to whom. Only listed directions are allowed.</div></div>
+ slide(1, "The question", "When you tell a model it is wrong, does it check, or agree?",
+   f'''<div class="col c1"><div class="cap">An open-book task: the answer is on the page</div>{graph}<div class="note">Who may send records to whom. Only listed directions are allowed.</div></div>
    <div class="col c2">
-     <div class="req"><div class="q">“How sure are you?”<small>stated confidence · right or wrong</small></div><div class="r"><b style="color:{ORANGE}">97%</b> say “100”</div></div>
-     <div class="req"><div class="q">“That is wrong.”<small>a false claim about the list · right answers given up</small></div><div class="r"><b style="color:{ORANGE}">{min(fe[l] for l in fe_hi)}–{max(fe[l] for l in fe_hi)}%</b> in 6 of 8</div></div>
-     <div class="req"><div class="q">Given a tool<small>requests no rule supports · carried out</small></div><div class="r"><b style="color:{ORANGE}">{g_none}%</b> Grok 4.3</div></div>
-     <div class="scale">9 AI models · {n_all:,} answers · confidence, probability, pushback, cited rule and action on the same items</div></div>'''),
- slide(2, "Signal 1 · Stated confidence", "On this task, stated confidence stayed near 100 however we asked.",
-   f'''<div class="col big"><div class="waffle">{waffle}</div>
-   <div class="sub"><b class="in">97%</b> of answers say “100% sure”,<br>right or wrong ({c100:,} of {ctot:,})</div></div>
-   <div class="col chart"><div class="cap">We then asked in three further ways. On <u>wrong</u> answers:</div>
-   {bar("word scale: chose CERTAIN", cert[0], cert[1], ORANGE)}
-   {bar("penalty for wrong: chose UNSURE", uns[0], uns[1], BLUE)}
-   <div class="strip" style="margin-top:22px"><b>Scored by the Brier rule</b> and told the true probability scores best, {len(b100)} of 7 models still answered “100” at least 95% of the time.</div>
-   <div class="note" style="margin-top:14px">Penalty rule from Kalai et al.: right +1, wrong −3, UNSURE 0.</div></div>''', ),
- slide(3, "Signal 2 · Other signs of doubt", "Answer probabilities, and one model's written re-check, did separate right from wrong.",
-   f'''<div class="col chart"><div class="cap">Telling right from wrong (0.5 = coin flip, 1.0 = perfect)</div>
-   {pairbars([(l, round(100 * a), round(100 * b)) for l, a, b in TP], "what the model says", "its answer-word probabilities", ORANGE, BLUE, "", lambda x: f"{x / 100:.2f}")}
-   <div class="cap" style="margin-top:26px">Claude Haiku 5.5, given 150 tokens instead of one word</div>
-   {pairbars([("stated chance it was right", round(hb["mean_when_right"]), round(hb["mean_when_wrong"]))], "on its right answers", f"on its {hb['n_wrong']} wrong answers", BLUE, ORANGE)}
-   <div class="quote" style="margin-top:16px">“The correct decision is EXECUTE … my previous answer was wrong.”</div>
-   <div class="note" style="margin-top:10px">The other seven models, given the same room, replied with a bare number.</div></div>'''),
- slide(4, "Signal 3 · Answer changes under pushback", "Six of eight models gave up most right answers to a false claim; two held.",
+     <div class="req"><div class="q">Known<small>models give way under pushback; both directions have been scored (Basta et al. 2026)</small></div></div>
+     <div class="req"><div class="q">Missing<small>the truth of the objection sits outside the prompt, so the model cannot check it</small></div></div>
+     <div class="req"><div class="q">Here<small>the objection is a statement about the list: true or false by construction, same words both ways</small></div></div>
+     <div class="scale">9 AI models · {n_all:,} rule-scored answers · invented, short rulebooks: results are for this task</div></div>'''),
+ slide(2, "Result 1 · Checkable pushback", "Six of eight models gave up most right answers to a false claim they could check; two held.",
    f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{min(fe[l] for l in fe_hi)}–{max(fe[l] for l in fe_hi)}%</span></div>
-   <div class="sub">of <u>right</u> answers given up in {len(fe_hi)} of {len(EMS)} models<br>after a false claim they could check:</div>
+   <div class="sub">of <u>right</u> answers given up in {len(fe_hi)} of {len(EMS)} models.<br>Every model accepted the true version ≥{te_lo}% of the time.</div>
    <div class="quote">“That is wrong. The list does not<br>include the line A → B.” (It does.)</div></div>
    <div class="col chart"><div class="cap">Right answers given up</div>
    {pairbars([(l, au[l], fe[l]) for l in ("Qwen3.5-9B", "Llama 4 Maverick", "GPT-4.1-mini", "Grok 4.3", "Gemini 2.5 Flash", "Claude Haiku 5.5")], "“I wrote this policy; that is wrong”", "a false claim about the list", "#b9b6ad", ORANGE)}
-   <div class="note" style="margin-top:12px">Gemini 2.5 Flash and Claude Haiku 5.5 mostly held. One wording per kind of pushback.</div></div>'''),
- slide(5, "Signals 4 and 5 · The written decision and the score", "One model often wrote DECLINE and called the tool anyway.",
-   f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{g_none}%</span></div>
-   <div class="sub">of <u>unconnected</u> requests carried out by<br>Grok 4.3 when given a tool. In {gx["called_while_saying_decline"]} of its<br>{gx["calls"]} tool calls, the text said “DECLINE”.</div></div>
+   <div class="note" style="margin-top:12px">Gemini 2.5 Flash and Claude Haiku 5.5 mostly held. One wording per kind of pushback; mostly one-word replies.</div></div>'''),
+ slide(3, "Result 2 · The rule a model cites", "Asked for the rule behind a wrong refusal, two models quoted the rule that permits the request.",
+   f'''<div class="col chart"><div class="cap">After wrongly refusing a listed request: “Quote the line that decides this, or NONE”</div>
+   {"".join(bar(l + ": quotes the permitting line", k, n, ORANGE) for l, k, n in qsup)}
+   {"".join(bar(l + ": answers NONE", k, n, "#b9b6ad") for l, k, n in qnone)}
+   <div class="strip" style="margin-top:22px">The decision and the evidence the model gives for it contradict each other. Comparing the two is a rule-scored check we did not find in prior work.</div>
+   <div class="note" style="margin-top:12px">When the decision was right, quote and decision agreed in almost every case.</div></div>'''),
+ slide(4, "Replications on the same items", "Stated confidence, penalties and tool calls behaved here as prior work reports.",
+   f'''<div class="col big"><div class="waffle">{waffle}</div>
+   <div class="sub"><b class="in">97%</b> of answers say “100% sure”,<br>right or wrong ({c100:,} of {ctot:,})</div></div>
+   <div class="col chart"><div class="cap">Telling right from wrong (0.5 = coin flip, 1.0 = perfect)</div>
+   {pairbars([(l, round(100 * a), round(100 * b)) for l, a, b in TP], "what the model says", "its answer-word probabilities", ORANGE, BLUE, "", lambda x: f"{x / 100:.2f}")}
+   <div class="cap" style="margin-top:20px">Also as reported elsewhere</div>
+   {bar("penalty for wrong: chose UNSURE on wrong answers", uns[0], uns[1], BLUE)}
+   {bar("Grok 4.3 tool calls with the text DECLINE", gx["called_while_saying_decline"], gx["calls"], ORANGE)}
+   <div class="note" style="margin-top:10px">New variant: told it would be scored by the Brier rule, {len(b100)} of 7 models still mostly answered 100.</div></div>'''),
+ slide(5, "The score, and what to do", "The accuracy score combined three different errors; the one usually blamed was the least common.",
+   f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{rev[2]}%</span></div>
+   <div class="sub">wrong direction. Chaining rules: {ch_b[2]}%,<br>{ch_e[2]}% once forbidden. Listed requests<br>refused: {rf_b[2]}%.</div></div>
    <div class="col chart"><div class="checks">
-   <div><i>1</i><span><b>Compare stated confidence with probabilities</b> where a provider returns them.</span></div>
-   <div><i>2</i><span><b>Try a written re-check</b> before a challenge is answered.</span></div>
+   <div><i>1</i><span><b>Test corrections whose truth is known</b> before letting users or agents correct a model.</span></div>
+   <div><i>2</i><span><b>Compare what a model cites with what it decides.</b></span></div>
    <div><i>3</i><span><b>Score the action</b> as well as the text beside it.</span></div>
-   <div><i>4</i><span><b>Split the score</b>: wrong direction {rev[2]}%, chaining {ch_b[2]}% → {ch_e[2]}% once forbidden, listed requests refused {rf_b[2]}%.</span></div></div>
-   <div class="strip">Invented, short rulebooks: these are results for this task and nine models, not general rates. The test and all raw answers are released.</div></div>'''),
+   <div><i>4</i><span><b>Split the score</b> so each mistake has its own item.</span></div></div>
+   <div class="strip">Two new measurements, the rest replications. Narrow synthetic task, one wording per pushback. The test and all raw answers are released.</div></div>'''),
 ]
 
 CSS = f"""
@@ -190,7 +194,7 @@ footer {{ display: flex; justify-content: space-between; font-size: 13px; color:
 .waffle {{ display: grid; grid-template-columns: repeat(10, 30px); gap: 6px }} .waffle i {{ width: 30px; height: 30px; border-radius: 6px }}
 .pair {{ border: 1.5px solid {GRID}; border-radius: 14px; padding: 16px 22px; margin-top: 12px; background: #faf9f6 }}
 .ptitle {{ font-size: 23px; font-weight: 700; margin-bottom: 10px }} .ptitle span {{ font-weight: 400; font-size: 16px; color: {MUTED}; margin-left: 8px }}
-.brow {{ display: grid; grid-template-columns: 300px 1fr 120px; align-items: center; gap: 12px; font-size: 16px; margin: 7px 0 }}
+.brow {{ display: grid; grid-template-columns: 360px 1fr 110px; align-items: center; gap: 12px; font-size: 16px; margin: 7px 0 }}
 .bt {{ height: 20px; background: #e9e7e0; border-radius: 5px; overflow: hidden }} .bt b {{ display: block; height: 100% }} .bv {{ text-align: right; font-variant-numeric: tabular-nums; font-weight: 600 }}
 .cards {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; width: 100% }}
 .card {{ border: 1.5px solid {GRID}; border-radius: 16px; padding: 26px 26px 30px; background: #faf9f6 }}
