@@ -5,7 +5,7 @@ Five slides, about 2 minutes 45 seconds. One line per slide, then what to say.
 ## Slide 1: The problem (30 s)
 **One line:** One accuracy score on permission rules hides three different failures.
 
-Here is a rulebook: Finance may send records to Legal, Legal to Audit, and so on. Only the listed directions are allowed. I normally test an AI on rules like this and report one score. I tested nine models, and that one score turned out to be three separate failures. For each one I did three things: measured it, found what drives it, and tested a fix. Every experiment was written down before its data was collected.
+Here is a rulebook: Finance may send records to Legal, Legal to Audit, and so on. Only the listed directions are allowed. An AI is normally tested on rules like this with one score. I tested nine models, and that one score turned out to be three separate failures. For each one I did three things: measured it, found what drives it, and tested a fix. Every experiment was written down before its data was collected.
 
 ## Slide 2: Failure 1, chaining (35 s)
 **One line:** Models join rules into chains unless told not to.
