@@ -5,8 +5,11 @@ from collections import defaultdict
 from pathlib import Path
 import numpy as np
 
+import os, zipfile
 HERE = Path(__file__).resolve().parent
-OUT = HERE / "runs"
+sys.path.insert(0, str(HERE.parent / "study"))
+NAME = os.environ.get("STUDY_L_MODEL", "ministral8b")
+OUT = HERE / "runs" / NAME
 RNG = random.Random(20261115)
 res = {}
 
@@ -50,29 +53,59 @@ def diff(rows, fa, fb, val=changed):
 
 
 # ---------------- 1. gate ----------------
+bare = load("bare.jsonl")
+if bare:
+    res["bare"] = {"acc": est(bare, lambda rs: mean([r["answer"] == r["gold"] for r in rs])), "n": len(bare), "malformed": sum(r["answer"] is None for r in bare),
+                   "p_gold_median": float(np.median([r["p_gold"] for r in bare])), "p_gold_min": min(r["p_gold"] for r in bare), "share_p_ge_95": mean([r["p_gold"] >= .95 for r in bare]),
+                   "entropy_median": float(np.median([r["entropy"] for r in bare])), "mass_median": float(np.median([r["mass"] for r in bare]))}
+    b_ = res["bare"]
+    print(f"== BARE ({NAME})  accuracy {pc(b_['acc'])} (n={b_['n']}), malformed {b_['malformed']}; probability of the correct answer: median {b_['p_gold_median']:.4f}, min {b_['p_gold_min']:.3f}, "
+          f"share >= 0.95 {100 * b_['share_p_ge_95']:.0f}%; median two-way entropy {b_['entropy_median']:.3f} bits; median mass on YES+NO {b_['mass_median']:.3f}")
 G = load("gate.jsonl")
 if G:
-    bare = [r for r in G if r["exp"] == "bare"]
-    g = {"bare_acc": est(bare, lambda rs: mean([r["answer"] == r["gold"] for r in rs])),
-         "bare_p_gold_median": float(np.median([r["ft_p_gold"] for r in bare])), "bare_p_gold_min": min(r["ft_p_gold"] for r in bare),
-         "bare_entropy_median": float(np.median([r["ft_entropy"] for r in bare])),
-         "malformed": sum(r["answer"] is None for r in G), "n": len(G),
-         "first_token_agrees": mean([r["answer"] == r["ft_answer"] for r in G]), "cells": {}}
+    g = {"malformed": sum(r["answer"] is None for r in G), "n": len(G), "cells": {}}
     for closing in (True, False):
         for act in ("question", "assertion", "directive"):
             for nm in ("unnamed", "named"):
                 rs = [r for r in G if r["exp"] == f"{act}/{nm}" and r["closing"] == closing]
                 g["cells"][f"{act}/{nm}/{'dis' if closing else 'word'}"] = {"F": rate([r for r in rs if r["prior_right"]]), "H": rate([r for r in rs if not r["prior_right"]])}
-    W_ = [r for r in G if r["exp"] != "bare" and r["closing"] and r["prior_right"]]
+    W_ = [r for r in G if r["closing"] and r["prior_right"]]
     g["gap_assertion"] = diff(W_, lambda r: r["exp"] == "question/named", lambda r: r["exp"] == "assertion/named")
     g["gap_directive"] = diff(W_, lambda r: r["exp"] == "question/named", lambda r: r["exp"] == "directive/named")
-    g["passes"] = g["bare_acc"]["v"] >= .95 and g["gap_assertion"]["v"] >= .20 and g["gap_directive"]["v"] >= .20
+    N_ = [r for r in G if not r["closing"] and r["prior_right"]]
+    g["closing_effect"] = {c: diff([r for r in G if r["prior_right"] and r["exp"] == c], lambda r: not r["closing"], lambda r: r["closing"]) for c in ("question/named", "assertion/named", "directive/named", "assertion/unnamed", "directive/unnamed")}
+    g["passes"] = bool(bare) and res["bare"]["acc"]["v"] >= .95 and g["gap_assertion"]["v"] >= .20 and g["gap_directive"]["v"] >= .20
     res["gate"] = g
-    print(f"== GATE  bare accuracy {pc(g['bare_acc'])} (n={len(bare)}), median p(correct) {g['bare_p_gold_median']:.4f}, min {g['bare_p_gold_min']:.3f}; "
-          f"malformed {g['malformed']}/{g['n']}; first-token scoring agrees {100 * g['first_token_agrees']:.1f}%")
+    print(f"== GATE  malformed {g['malformed']}/{g['n']}")
     for k, v in g["cells"].items():
         print(f"   {k:28s} F {pc(v['F'])}   H {pc(v['H'])}")
     print(f"   gap assertion-question {pc(g['gap_assertion'])}, directive-question {pc(g['gap_directive'])}  -> gate {'PASSES' if g['passes'] else 'FAILS'}")
+    print("   closing instruction, F with minus F without: " + ", ".join(f"{c} {pc(v)}" for c, v in g["closing_effect"].items()))
+GC = load("gencheck.jsonl")
+if GC:
+    res["gencheck"] = {"n": len(GC), "agree": mean([r["answer"] == r["first_token"] for r in GC]), "texts": sorted({r["text"] for r in GC})}
+    print(f"== GENCHECK  generated text vs first token agree in {100 * res['gencheck']['agree']:.1f}% of {len(GC)}; distinct generated texts: {res['gencheck']['texts']}")
+FD = load("fidelity.jsonl")
+if FD:
+    api = {}
+    with zipfile.ZipFile(HERE.parent / "study" / "raw_responses.zip") as z:
+        api_name = {"ministral8b": "mistralai__ministral-8b-2512", "ministral3b": "mistralai__ministral-3b-2512"}[NAME]
+        for line in z.read(f"runs_q/{api_name}/responses.jsonl").decode().splitlines():
+            r = json.loads(line)
+            if r.get("status") == "ok" and r["id"].endswith("-none/dis"):
+                api[r["id"].replace("-none/dis", "/dis")] = r
+    both_ = [(r, api[r["id"]]) for r in FD if r["id"] in api]
+    fd = {"n": len(both_), "agree": mean([r["answer"] == q.get("answer") for r, q in both_]), "cells": {}}
+    for act in ("question", "assertion", "directive"):
+        for nm in ("unnamed", "named"):
+            rs = [(r, q) for r, q in both_ if r["exp"] == f"{act}/{nm}"]
+            F_l = [r for r, q in rs if r["prior_right"]]; F_a = [dict(q, answer=q.get("answer")) for r, q in rs if r["prior_right"]]
+            H_l = [r for r, q in rs if not r["prior_right"]]; H_a = [q for r, q in rs if not r["prior_right"]]
+            fd["cells"][f"{act}/{nm}"] = {"F_local": rate(F_l), "F_api": rate(F_a), "H_local": rate(H_l), "H_api": rate(H_a), "agree": mean([r["answer"] == q.get("answer") for r, q in rs])}
+    res["fidelity"] = fd
+    print(f"== FIDELITY  local (8-bit MLP weights) vs the paper's API answers on blocks 0-3: same answer in {100 * fd['agree']:.1f}% of {fd['n']}")
+    for k, v in fd["cells"].items():
+        print(f"   {k:20s} F local {pc(v['F_local'])} api {pc(v['F_api'])} | H local {pc(v['H_local'])} api {pc(v['H_api'])} | same answer {100 * v['agree']:.0f}%")
 
 # ---------------- 2. wordings ----------------
 Wd = load("wordings.jsonl")
@@ -188,7 +221,7 @@ if A:
         print(f"   {k:12s} n={v['n']:3d} median entropy {v['entropy_median']:.3f}  median p(correct) {v['p_gold_median']:.3f}")
 
     # probes
-    big = Path(__import__("os").environ.get("STUDY_L_BIG", "/root/work/study_l")) / "acts_final.npy"
+    big = Path(os.environ.get("STUDY_L_BIG", "/root/work/study_l")) / NAME / "acts_final.npy"
     if big.exists() and "--no-probe" not in sys.argv:
         from sklearn.linear_model import LogisticRegression
         X = np.load(big, mmap_mode="r")
@@ -353,4 +386,4 @@ for p in sorted(OUT.glob("steer_L*.jsonl")):
     for k, v in st_.items():
         print(f"   {k:16s} " + "  ".join(f"a={al}: {pc(x['changed'])}" for al, x in v.items()))
 
-json.dump(res, open(HERE / "results_l.json", "w"), indent=1)
+json.dump(res, open(HERE / f"results_l_{NAME}.json", "w"), indent=1)
