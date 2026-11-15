@@ -1,4 +1,4 @@
-# “100% Confident” on Wrong Answers: speaker script
+# Certain Until Contradicted: speaker script
 
 Five slides, about 3 minutes. One line per slide, then what to say.
 

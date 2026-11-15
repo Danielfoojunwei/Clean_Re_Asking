@@ -1,7 +1,7 @@
-# “100% Confident” on Wrong Answers
+# Certain Until Contradicted
 
 Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
-*“100% Confident” on Wrong Answers: Stated Confidence, False Pushback and Tool Calls in Nine Models, Measured Against Exact Answers*.
+*Certain Until Contradicted: What AI Models Say, Defend and Do When Every Answer Can Be Checked*.
 
 The study measures, on the same exactly-scored items, five signals people use to judge a model's answer: its stated confidence
 (asked four ways), its answer probabilities, how it responds to true and false pushback, which rule it cites, and what it does
