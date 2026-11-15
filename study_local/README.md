@@ -41,14 +41,14 @@ Model directories are set in `lm.MODELS`. The first model (it fails the gate, so
 cd study_local && STUDY_L_MODEL=ministral3b python3 run_l.py bare
 ```
 
-The second model, all parts in the order they were run (about nine hours on 4 CPU cores):
+The second model, all parts in the order they were run (about fourteen hours on 4 CPU cores):
 
 ```bash
 for p in bare gate wordings acts patch knock fidelity gencheck entropy; do STUDY_L_MODEL=ministral8b python3 run_l.py $p; done
 ```
 
 ```bash
-STUDY_L_MODEL=ministral8b python3 run_l.py steer --layer 24
+STUDY_L_MODEL=ministral8b python3 run_l.py steer --layer 22
 ```
 
 ```bash

@@ -143,3 +143,14 @@ where a YES reply cannot be a refusal; (2) part **qrfree**: QR0, QR2, QR5, QR7, 
 (greedy reply of 16 tokens, then the paper's final-answer turn), block 12, previous answer right (24 items), where a refusal
 and a change of answer can be told apart. The pre-specified results are reported unchanged next to these.
 sha256 run_l.py: 6bedc5cfba8494b42bed85573ad54bd45546cf0695a17623bcba027585bb7cee
+
+## Amendment L-4 (2026-11-15 23:32 UTC), written after the patching results, before any steering data
+Steering site chosen from the patching results: the final position after block 22, the first block at which the final
+position alone carries most of the ask-minus-tell difference in both pairs (73% and 72% restored), while the rebuttal tokens
+carry 2% and 5%. Vector: mean final-position residual stream of Q0 runs minus A0 runs (and minus D0 runs), blocks 12 to 19,
+closing instruction on, previous answer right; tested on blocks 8 to 11 at strengths -1, 0, 0.5, 1, 2 and 4, both
+directions. Prediction: at strength 1 the share of right answers given up under A0 and D0 falls by at least half, and the
+share of wrong answers corrected stays at 90% or more (the vector moves the model towards checking, not towards refusing).
+If corrections fall below 90%, the vector is read as "refuses to move", not as "checks".
+Also recorded: the session's worker restarted at about 23:25 UTC and killed the running parts; `entropy` resumed from row 112
+of 144 (all rows intact), followed by `steer` and `qrfree`. No code changed.
