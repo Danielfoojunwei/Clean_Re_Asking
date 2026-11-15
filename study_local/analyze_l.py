@@ -146,6 +146,16 @@ if Wd:
     pw = w["per_wording"]
     w["auc_label"] = auc([v["F"]["v"] for v in pw.values() if v["label"] == "replace"], [v["F"]["v"] for v in pw.values() if v["label"] == "keep"])
     w["auc_form"] = auc([v["F"]["v"] for v in pw.values() if v["form"] == "statement"], [v["F"]["v"] for v in pw.values() if v["form"] == "question"])
+    # Amendment L-3 (post hoc): the same effects on the half where the pushed answer is YES (a YES reply cannot be a refusal)
+    FY = [r for r in F if r["pushed"] == "YES"]
+    def both_y(rs):
+        a_ = [wmean(rs, S("SO")), wmean(rs, S("A", "D")), wmean(rs, S("Q")), wmean(rs, S("QR"))]
+        return None if None in a_ else ((a_[1] - a_[0]) + (a_[3] - a_[2])) / 2 - ((a_[0] - a_[2]) + (a_[1] - a_[3])) / 2
+    w["posthoc_pushed_yes"] = {"per_set": {s_: rate([r for r in FY if r["set"] == s_]) for s_ in WW.SETS},
+                               "label_within_statement": wdiff(FY, S("SO"), S("A", "D")), "label_within_question": wdiff(FY, S("Q"), S("QR")),
+                               "form_within_keep": wdiff(FY, S("Q"), S("SO")), "form_within_replace": wdiff(FY, S("QR"), S("A", "D")), "label_minus_form": est(FY, both_y)}
+    # share of replies that are NO, by pushed answer (user wrong): equal shares mean the reply ignores which answer is pushed
+    w["replies_no"] = {name: {a_: mean([r["answer"] == "NO" for r in F if r["w"] == name and r["pushed"] == a_]) for a_ in ("YES", "NO")} for name in WW.WORDINGS}
     res["wordings"] = w
     print(f"\n== WORDINGS  malformed {w['malformed']}/{w['n']}")
     for s, v in w["per_set"].items():
@@ -155,6 +165,10 @@ if Wd:
     print(f"   AUC over wordings: label {w['auc_label']:.2f}, form {w['auc_form']:.2f}")
     for name, v in pw.items():
         print(f"     {name:4s} F {pc(v['F']):16s} H {pc(v['H']):16s} {v['text']}")
+    ph = w["posthoc_pushed_yes"]
+    print("   POST HOC, pushed answer YES only: " + ", ".join(f"{s_} {pc(v)}" for s_, v in ph["per_set"].items()))
+    print("      " + ", ".join(f"{k} {pc(ph[k])}" for k in ("label_within_statement", "label_within_question", "form_within_keep", "form_within_replace", "label_minus_form")))
+    print("   share of NO replies when pushed YES / pushed NO: " + ", ".join(f"{k} {100 * v['YES']:.0f}/{100 * v['NO']:.0f}" for k, v in w["replies_no"].items() if k.startswith("QR") or k in ("Q0", "Q6", "D0", "A0")))
     # 8. symmetry
     sym = {}
     for s in ("Q", "A", "D", "SO", "QR"):
@@ -371,6 +385,20 @@ if E:
         if "/" in k:
             print(f"   {k:16s} entropy {v['sem_entropy']['v']:.2f} [{v['sem_entropy']['ci'][0]:.2f},{v['sem_entropy']['ci'][1]:.2f}]  samples changing answer {pc(v['share_changed'])}  items unanimous {pc(v['share_unanimous'])}  no answer {100 * v['share_none']:.0f}%")
     print(f"   tell minus ask: assertion {se['tell_minus_ask_A0']['v']:.2f} {se['tell_minus_ask_A0']['ci']}, directive {se['tell_minus_ask_D0']['v']:.2f} {se['tell_minus_ask_D0']['ci']}")
+
+# ---------------- post hoc: free-form check of question-form requests ----------------
+QF = load("qrfree.jsonl")
+if QF:
+    qf = {}
+    for w_ in ("Q0", "QR0", "QR2", "QR5", "QR7", "D0"):
+        rs = [r for r in QF if r["w"] == w_]
+        if rs:
+            qf[w_] = {"F": rate(rs), "by_pushed": {a_: mean([changed(r) for r in rs if r["pushed"] == a_]) for a_ in ("YES", "NO")}, "malformed": sum(r["answer"] is None for r in rs),
+                      "examples": sorted({r["reply"] for r in rs})[:6]}
+    res["qrfree"] = qf
+    print("\n== POST HOC free-form check (greedy reply, then the final-answer turn; previous answer right)")
+    for k, v in qf.items():
+        print(f"   {k:4s} F {pc(v['F'])} (pushed YES {100 * v['by_pushed']['YES']:.0f}%, pushed NO {100 * v['by_pushed']['NO']:.0f}%), malformed {v['malformed']}; e.g. {v['examples'][:3]}")
 
 # ---------------- 7. steering ----------------
 for p in sorted(OUT.glob("steer_L*.jsonl")):
