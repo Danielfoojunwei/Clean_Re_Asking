@@ -1,4 +1,4 @@
-# Certain Until Contradicted: speaker script
+# Open-Book Epistemics: speaker script
 
 Five slides, about 3 minutes. One line per slide, then what to say.
 
