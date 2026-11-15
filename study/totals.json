@@ -1,0 +1,36 @@
+{
+ "runs_g": {
+  "n": 111360,
+  "spend": 9.48,
+  "models": 21
+ },
+ "runs_h": {
+  "n": 49694,
+  "spend": 3.38,
+  "models": 14
+ },
+ "runs_i": {
+  "n": 90361,
+  "spend": 6.3,
+  "models": 21
+ },
+ "runs_q": {
+  "n": 94509,
+  "spend": 6.48,
+  "models": 21
+ },
+ "runs_j_sample": {
+  "n": 16223,
+  "spend": 0.73,
+  "models": 21
+ },
+ "runs_j_logprob": {
+  "n": 8023,
+  "spend": 0.54,
+  "models": 8
+ },
+ "total": {
+  "n": 370170,
+  "spend": 26.91
+ }
+}
