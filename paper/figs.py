@@ -93,7 +93,7 @@ def fig_design():
     graph(axes[0], [("A", "B"), ("B", "A"), ("B", "C"), ("C", "D")],
           [(("B", "C"), "listed one way", True, -0.55, (0.5, 0.0)), (("C", "B"), "wrong way round", False, -0.55, (-0.3, 0.22)),
            (("A", "C"), "needs a chain", False, 0.0, (-0.22, -0.2)), (("D", "A"), "not connected", False, -0.5, (-0.42, 0.0))],
-          "Mixed rulebook (ours)", "each mistake has its own request")
+          "Mixed rulebook (this study)", "each mistake has its own request")
     graph(axes[1], [("A", "B"), ("B", "C"), ("C", "D"), ("D", "A")],
           [(("B", "A"), "wrong way + chain", False, -0.45, (0.0, 0.3)), (("C", "D"), "listed one way", True, -0.5, (0.0, -0.33))],
           "Ring rulebook (common)", "two mistakes look identical")

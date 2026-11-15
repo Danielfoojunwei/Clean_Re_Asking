@@ -166,7 +166,7 @@ cells_tbl = table(
      ["Not connected", "Payroll → Finance", "refuse", "allows almost anything"]], "tight")
 
 exp_tbl = table(
-    ["We ask the model to…", "Why"],
+    ["I ask the model to…", "Why"],
     [["give a quick one-word decision", "this is how such tests are usually scored"],
      ["say how confident it is, 0–100 (same conversation)", "does it know when it is wrong?"],
      ["double-check and say KEEP or CHANGE (same conversation)", "does it defend or abandon its answer?"],
@@ -177,7 +177,7 @@ exp_tbl = table(
      ["say whether a named rule is on the list", "step 2 of the decision, on its own"]], "tight")
 
 prior_tbl = table(
-    ["Common practice", "What it assumes", "What we did instead", "What it showed"],
+    ["Common practice", "What it assumes", "What I did instead", "What it showed"],
     [["One accuracy number for one-way rules [2, 5, 6]", "A low score means the model confuses direction",
       "Six kinds of request, each with one possible explanation",
       f"\"Wrong way round\" was allowed {v['e5b_rev']} of the time; requests that need a chain, {v['e5b_chain']}."],
@@ -194,7 +194,7 @@ prior_tbl = table(
 ledger = table(
     ["Question asked in advance", "Answer", "Evidence"],
     [["Do models treat a one-way rule as two-way?", "<b>Rarely.</b>",
-      f"Passed our bar in {lst(sym_b)} ({', '.join(sym_b)}); allowed {v['e1b_rev']} of the time overall ({v['e1b_rev_kn']})."],
+      f"Passed my bar in {lst(sym_b)} ({', '.join(sym_b)}); allowed {v['e1b_rev']} of the time overall ({v['e1b_rev_kn']})."],
      ["Do models join rules into chains?", "<b>Yes.</b>",
       f"Passed in {lst(ch5b)} with step-by-step answers; {v['e5b_chain']} wrongly allowed ({v['e5b_chain_kn']})."],
      ["Is chaining caused by the wording?", "<b>Mostly.</b>",
@@ -397,7 +397,7 @@ BODY = f"""
 <div class="auth"><b>Daniel Foo Jun Wei</b><br>Nanyang Technological University (NTU), Singapore<br><span class="with">With</span><br><b>Apart Research</b></div>
 <div class="abstract"><h3>Abstract</h3>
 <p>AI assistants are tested on permission rules such as "Finance may send records to Legal", usually with one accuracy score. A low
-score on one-way rules is read as confusing direction. We show the score hides three different failures, and for each one we
+score on one-way rules is read as confusing direction. I show the score hides three different failures, and for each one I
 measure it, find what drives it, and test a fix, across {s['all_n']:,} answers from nine models. Going the wrong way round is rare
 ({v['e5b_rev']}). Instead, models join rules into chains: they allow {v['e5b_chain']} of such requests, driven partly by the word
 "route" and by longer rulebooks, and {v['e5e_chain']} once the rule forbids chaining. Models refuse {v['e1b_ref']} of plainly
@@ -406,7 +406,7 @@ state whether the rule is listed nearly removes it. Models say they are exactly 
 the probabilities of their answer words separate right from wrong (score {s['tp_lo']:.2f}–{s['tp_hi']:.2f}, where 0.5 is chance): the
 signal exists and is not reported. Asking again does not recover it, and mild doubt makes models abandon right answers. Finally,
 words and actions can diverge: given a tool, one model carried out {p0(x7g('Grok 4.3', 'base', 'none_action'))} of requests that no rule
-supports while writing "DECLINE". We release the test, every plan and every answer.</p></div>
+supports while writing "DECLINE". I release the test, every plan and every answer.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
 Epistemics and Decision-Making Evals). Every experiment reported here was designed, run and analysed during the sprint (Appendix A.2).</p>
 
@@ -419,9 +419,9 @@ Legal" does not let Legal send to Finance. An AI assistant that handles requests
 lower on one-way rules than on two-way rules, conclude that the model confuses direction. This assumes there is only one way to get
 a one-way rule wrong. Figure 1 shows several, and a popular test rulebook, a ring (A to B to C to D to A), makes two of them
 indistinguishable: every request that should be refused both goes the wrong way round and can be reached by a chain (Figure 2).</p>
-{fig("f_design", "Three ways to build a test rulebook. In a ring, the only request that should be refused is both \"wrong way round\" and reachable by a chain, so a wrong answer has two possible causes. Our mixed rulebook gives each mistake its own request.", 2, "narrow")}
-<p><b>What we did.</b> We built a test in which every request is exactly one of six kinds, so each wrong answer has one explanation.
-For each failure it exposes we then ask three things in order: how large is it, what drives it, and what fixes it (Table 2). Every
+{fig("f_design", "Three ways to build a test rulebook. In a ring, the only request that should be refused is both \"wrong way round\" and reachable by a chain, so a wrong answer has two possible causes. My mixed rulebook gives each mistake its own request.", 2, "narrow")}
+<p><b>What I did.</b> I built a test in which every request is exactly one of six kinds, so each wrong answer has one explanation.
+For each failure it exposes I then ask three things in order: how large is it, what drives it, and what fixes it (Table 2). Every
 experiment changes one thing at a time from the same base prompts and was specified in writing before its data was collected.</p>
 <div class="cards">
 <div><b>1 · It joins rules it shouldn't</b><br><span class="big">{v['e5b_chain']} → {v['e5e_chain']}</span><br>of chain requests allowed, before and after one sentence. Driven by the word "route" and by longer rulebooks.</div>
@@ -435,11 +435,11 @@ weakness in a benchmark can be shown and closed [1]. A score that counts only fi
 proves that identical current permissions can require opposite decisions [3]. AuthorizationBench, AuthGateBench and DelegationBench
 measure whether agents stay inside what they were granted [4, 5, 6]. None separates the ways one directional rule can be broken.
 Models track which name plays which role [8], can use the right tool on the wrong person [7], and are weak at relation direction
-[9, 10]; we test the permission version directly and find it rare.</p>
+[9, 10]; I test the permission version directly and find it rare.</p>
 <p><b>What a score can show, and self-report.</b> Contrast sets and CheckList probe a decision boundary [13, 14]; a test cannot see an
 error that leaves its answers unchanged [11] and identifies a property only if no other behaviour gives the same results [12].
 Stated confidence runs high [19], MASK separates honesty from accuracy [15], and work on pushback warns that stopping a model from
-caving can also stop it from correcting itself [16, 17]. We measure all of these on the same items as the decision.</p>
+caving can also stop it from correcting itself [16, 17]. I measure all of these on the same items as the decision.</p>
 
 <h2>3. The Test</h2>
 <p><b>3.1 One item.</b> The model sees a rulebook of four rules between four invented names, a sender and a receiver, and must answer
@@ -459,7 +459,7 @@ named first, and the naming style (code words or department names) are balanced 
 <p><b>3.4 Models and scale.</b> Nine models from eight developers, chosen before any result, give the measurements (eight on 18 name
 sets, GPT-4.1 on 10). The cause and fix experiments run on the five lower-cost models that show the failures, plus Grok 4.3, the
 heaviest refuser. Answers are scored strictly: one allowed word, otherwise "malformed", which counts as wrong.</p>
-<p><b>3.5 How we kept ourselves honest.</b> Each experiment's items, scoring and pass mark were written and fingerprinted before its
+<p><b>3.5 How I kept myself honest.</b> Each experiment's items, scoring and pass mark were written and fingerprinted before its
 data was collected; the dated record is in Appendix C. An effect "counts" if it is at least 10 points (5 for the sentence parts)
 and its 95% range across name sets excludes zero. Square brackets show those ranges.</p>
 
@@ -484,7 +484,7 @@ eight of nine models were below 3% (Figure 3).</p>
 <h3>4.2 Going the wrong way round is rare</h3>
 <p>When only the reverse rule was listed, quick answers allowed {v['e1b_rev']} of requests and step-by-step answers {v['e5b_rev']}.
 The exception is GPT-4.1, which allowed wrong-way requests only when the receiver was printed before the sender
-({ro['REV/a_first'][0]}/{ro['REV/a_first'][1]} against {ro['REV/d_first'][0]}/{ro['REV/d_first'][1]}). We re-ran this on 12 fresh name sets
+({ro['REV/a_first'][0]}/{ro['REV/a_first'][1]} against {ro['REV/d_first'][0]}/{ro['REV/d_first'][1]}). I re-ran this on 12 fresh name sets
 and it repeated: {kn2(g5['rev_receiver_first'])} against {kn2(g5['rev_sender_first'])}, a gap of {dci(g5['gap'])} points.</p>
 
 <h3>4.3 Failure 2: models refuse requests that are plainly allowed</h3>
@@ -524,7 +524,7 @@ but it costs more than it gains.</p>
 
 <h3>4.5 Words and actions can diverge</h3>
 {short("given a tool, models stop refusing allowed requests, but two of them carry out requests while writing DECLINE.")}
-<p>We gave models a tool and told them to call it or reply DECLINE. Refusals of allowed requests mostly vanished
+<p>I gave models a tool and told them to call it or reply DECLINE. Refusals of allowed requests mostly vanished
 (Grok {p0(x7g('Grok 4.3', 'base', 'refusal_words'))} to {p0(x7g('Grok 4.3', 'base', 'refusal_action'))}). But Grok 4.3 called the tool for
 {p0(x7g('Grok 4.3', 'base', 'chain_action'))} of chain requests and {p0(x7g('Grok 4.3', 'base', 'none_action'))} of unconnected ones, against
 {p0(x7g('Grok 4.3', 'base', 'chain_words'))} and {v_grok_none} in words, and in {gx7['called_while_saying_decline']} of its {gx7['calls']} tool
@@ -546,7 +546,7 @@ informative, the stated number is not, and pushback moves answers for the wrong 
 the action it takes.</p>
 <div class="warn"><b>⚠ What flatters the result.</b> (i) The cause and fix experiments cover five to six of the nine models, the
 lower-cost ones that show the failures. (ii) Answer-word probabilities were available for three models, through one provider each.
-(iii) The tool result comes from one tool format and one provider per model. (iv) We could not look inside a model: the open models
+(iii) The tool result comes from one tool format and one provider per model. (iv) I could not look inside a model: the open models
 small enough to run locally answered the task at chance, so no activation probe is reported. (v) Quick answers were limited to one
 word.</div>
 <p><b>5.2 Limitations.</b> Invented names and rules; one prompt layout per naming style; all calls over two days through one gateway;
@@ -611,7 +611,7 @@ window, on 14 and 15 November 2026. No result from before the sprint is used.</p
 <p><b>A.3 Dual use and ethics.</b> The benchmark shows which phrasings lead models to release requests that a policy denies, and which
 make them refuse valid ones. Someone could use the first to craft policies or requests that induce over-release, or cite the second
 to argue for looser rules. The pushback result shows that a single sentence of doubt can move a model off a correct decision, and the tool result shows a
-case where written refusals and actions diverge; both could be misused against deployed assistants. We report both directions
+case where written refusals and actions diverge; both could be misused against deployed assistants. I report both directions
 together for that reason, and the practical findings are defensive: state explicitly that permissions do not combine, score actions
 rather than text, and do not rely on a model's stated confidence or self-check as a control. No personal
 data was used; all scopes, departments and policies are invented, and no action was taken on any system.</p>
@@ -718,7 +718,7 @@ outcome for family and size coverage. The main run cost USD 16.84, of which USD 
 {prior_tbl}
 <p class="cap"><b>Table H3:</b> How the measurement design differs from common practice.</p>
 <p>One-way and two-way requests rank the models almost identically (ρ = {H7['spearman_symmetric_vs_oneway']:.2f};
-Figure G8). Two public datasets we could check (PrivacyLens, 493 items; a synthetic privacy set, 4,024 items) contain no item whose
+Figure G8). Two public datasets I could check (PrivacyLens, 493 items; a synthetic privacy set, 4,024 items) contain no item whose
 sender and receiver are swapped elsewhere with a different answer, so they cannot detect direction mistakes; swapping is often not
 meaningful there, so this is weak support. Ring rulebooks remain harder than two-way ones ({bridge[('base', 'CYC')]:.0f}% against
 {bridge[('base', 'REC')]:.0f}% correct), now with a known reason.</p>

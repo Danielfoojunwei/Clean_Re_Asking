@@ -69,7 +69,7 @@ table.sum th:nth-child(4), table.sum td:nth-child(4) { width: 19%; }
 <div class="auth"><b>Daniel Foo Jun Wei</b><br>Nanyang Technological University (NTU), Singapore<br><span class="with">With</span><br><b>Apart Research</b></div>
 <div class="abstract"><h3>Abstract</h3>
 <p>AI assistants are tested on permission rules such as "Finance may send records to Legal", usually with one accuracy score. A low
-score on one-way rules is read as confusing direction. We show the score hides three different failures, and for each one we
+score on one-way rules is read as confusing direction. I show the score hides three different failures, and for each one I
 measure it, find what drives it, and test a fix, across 273,980 answers from nine models. Going the wrong way round is rare
 (2%). Instead, models join rules into chains: they allow 44% of such requests, driven partly by the word
 "route" and by longer rulebooks, and 4% once the rule forbids chaining. Models refuse 18% of plainly
@@ -78,7 +78,7 @@ state whether the rule is listed nearly removes it. Models say they are exactly 
 the probabilities of their answer words separate right from wrong (score 0.78–0.87, where 0.5 is chance): the
 signal exists and is not reported. Asking again does not recover it, and mild doubt makes models abandon right answers. Finally,
 words and actions can diverge: given a tool, one model carried out 65% of requests that no rule
-supports while writing "DECLINE". We release the test, every plan and every answer.</p></div>
+supports while writing "DECLINE". I release the test, every plan and every answer.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
 Epistemics and Decision-Making Evals). Every experiment reported here was designed, run and analysed during the sprint (Appendix A.2).</p>
 
@@ -103,9 +103,9 @@ Finance may send records to Legal.<br>Legal may send records to Finance.<br>Lega
 lower on one-way rules than on two-way rules, conclude that the model confuses direction. This assumes there is only one way to get
 a one-way rule wrong. Figure 1 shows several, and a popular test rulebook, a ring (A to B to C to D to A), makes two of them
 indistinguishable: every request that should be refused both goes the wrong way round and can be reached by a chain (Figure 2).</p>
-<figure class="narrow"><img src="figs/f_design.svg" alt=""><figcaption><b>Figure 2:</b> Three ways to build a test rulebook. In a ring, the only request that should be refused is both "wrong way round" and reachable by a chain, so a wrong answer has two possible causes. Our mixed rulebook gives each mistake its own request.</figcaption></figure>
-<p><b>What we did.</b> We built a test in which every request is exactly one of six kinds, so each wrong answer has one explanation.
-For each failure it exposes we then ask three things in order: how large is it, what drives it, and what fixes it (Table 2). Every
+<figure class="narrow"><img src="figs/f_design.svg" alt=""><figcaption><b>Figure 2:</b> Three ways to build a test rulebook. In a ring, the only request that should be refused is both "wrong way round" and reachable by a chain, so a wrong answer has two possible causes. My mixed rulebook gives each mistake its own request.</figcaption></figure>
+<p><b>What I did.</b> I built a test in which every request is exactly one of six kinds, so each wrong answer has one explanation.
+For each failure it exposes I then ask three things in order: how large is it, what drives it, and what fixes it (Table 2). Every
 experiment changes one thing at a time from the same base prompts and was specified in writing before its data was collected.</p>
 <div class="cards">
 <div><b>1 · It joins rules it shouldn't</b><br><span class="big">44% → 4%</span><br>of chain requests allowed, before and after one sentence. Driven by the word "route" and by longer rulebooks.</div>
@@ -119,11 +119,11 @@ weakness in a benchmark can be shown and closed [1]. A score that counts only fi
 proves that identical current permissions can require opposite decisions [3]. AuthorizationBench, AuthGateBench and DelegationBench
 measure whether agents stay inside what they were granted [4, 5, 6]. None separates the ways one directional rule can be broken.
 Models track which name plays which role [8], can use the right tool on the wrong person [7], and are weak at relation direction
-[9, 10]; we test the permission version directly and find it rare.</p>
+[9, 10]; I test the permission version directly and find it rare.</p>
 <p><b>What a score can show, and self-report.</b> Contrast sets and CheckList probe a decision boundary [13, 14]; a test cannot see an
 error that leaves its answers unchanged [11] and identifies a property only if no other behaviour gives the same results [12].
 Stated confidence runs high [19], MASK separates honesty from accuracy [15], and work on pushback warns that stopping a model from
-caving can also stop it from correcting itself [16, 17]. We measure all of these on the same items as the decision.</p>
+caving can also stop it from correcting itself [16, 17]. I measure all of these on the same items as the decision.</p>
 
 <h2>3. The Test</h2>
 <p><b>3.1 One item.</b> The model sees a rulebook of four rules between four invented names, a sender and a receiver, and must answer
@@ -143,7 +143,7 @@ named first, and the naming style (code words or department names) are balanced 
 <p><b>3.4 Models and scale.</b> Nine models from eight developers, chosen before any result, give the measurements (eight on 18 name
 sets, GPT-4.1 on 10). The cause and fix experiments run on the five lower-cost models that show the failures, plus Grok 4.3, the
 heaviest refuser. Answers are scored strictly: one allowed word, otherwise "malformed", which counts as wrong.</p>
-<p><b>3.5 How we kept ourselves honest.</b> Each experiment's items, scoring and pass mark were written and fingerprinted before its
+<p><b>3.5 How I kept myself honest.</b> Each experiment's items, scoring and pass mark were written and fingerprinted before its
 data was collected; the dated record is in Appendix C. An effect "counts" if it is at least 10 points (5 for the sentence parts)
 and its 95% range across name sets excludes zero. Square brackets show those ranges.</p>
 
@@ -168,7 +168,7 @@ eight of nine models were below 3% (Figure 3).</p>
 <h3>4.2 Going the wrong way round is rare</h3>
 <p>When only the reverse rule was listed, quick answers allowed 5% of requests and step-by-step answers 2%.
 The exception is GPT-4.1, which allowed wrong-way requests only when the receiver was printed before the sender
-(13/80 against 0/80). We re-ran this on 12 fresh name sets
+(13/80 against 0/80). I re-ran this on 12 fresh name sets
 and it repeated: 18/96 against 0/96, a gap of +19 [+8, +30] points.</p>
 
 <h3>4.3 Failure 2: models refuse requests that are plainly allowed</h3>
@@ -208,7 +208,7 @@ but it costs more than it gains.</p>
 
 <h3>4.5 Words and actions can diverge</h3>
 <p class="short"><b>In short:</b> given a tool, models stop refusing allowed requests, but two of them carry out requests while writing DECLINE.</p>
-<p>We gave models a tool and told them to call it or reply DECLINE. Refusals of allowed requests mostly vanished
+<p>I gave models a tool and told them to call it or reply DECLINE. Refusals of allowed requests mostly vanished
 (Grok 43% to 9%). But Grok 4.3 called the tool for
 71% of chain requests and 65% of unconnected ones, against
 2% and 0% in words, and in 280 of its 474 tool
@@ -230,7 +230,7 @@ informative, the stated number is not, and pushback moves answers for the wrong 
 the action it takes.</p>
 <div class="warn"><b>⚠ What flatters the result.</b> (i) The cause and fix experiments cover five to six of the nine models, the
 lower-cost ones that show the failures. (ii) Answer-word probabilities were available for three models, through one provider each.
-(iii) The tool result comes from one tool format and one provider per model. (iv) We could not look inside a model: the open models
+(iii) The tool result comes from one tool format and one provider per model. (iv) I could not look inside a model: the open models
 small enough to run locally answered the task at chance, so no activation probe is reported. (v) Quick answers were limited to one
 word.</div>
 <p><b>5.2 Limitations.</b> Invented names and rules; one prompt layout per naming style; all calls over two days through one gateway;
@@ -294,7 +294,7 @@ window, on 14 and 15 November 2026. No result from before the sprint is used.</p
 <p><b>A.3 Dual use and ethics.</b> The benchmark shows which phrasings lead models to release requests that a policy denies, and which
 make them refuse valid ones. Someone could use the first to craft policies or requests that induce over-release, or cite the second
 to argue for looser rules. The pushback result shows that a single sentence of doubt can move a model off a correct decision, and the tool result shows a
-case where written refusals and actions diverge; both could be misused against deployed assistants. We report both directions
+case where written refusals and actions diverge; both could be misused against deployed assistants. I report both directions
 together for that reason, and the practical findings are defensive: state explicitly that permissions do not combine, score actions
 rather than text, and do not rely on a model's stated confidence or self-check as a control. No personal
 data was used; all scopes, departments and policies are invented, and no action was taken on any system.</p>
@@ -403,14 +403,14 @@ What is the transfer decision? Answer with exactly one word: EXECUTE if allowed 
 <p class="cap"><b>Table G9:</b> Acting with a tool. A tool call counts as carrying out the request.</p>
 
 <h2>Appendix H. Questions Set in Advance and Design Notes</h2>
-<table class="tight"><thead><tr><th>We ask the model to…</th><th>Why</th></tr></thead><tbody><tr><td>give a quick one-word decision</td><td>this is how such tests are usually scored</td></tr><tr><td>say how confident it is, 0–100 (same conversation)</td><td>does it know when it is wrong?</td></tr><tr><td>double-check and say KEEP or CHANGE (same conversation)</td><td>does it defend or abandon its answer?</td></tr><tr><td>first write the rule it must look up, then decide</td><td>a candidate fix</td></tr><tr><td>first write a meaningless filler line, then decide</td><td>control: is the fix just "write something first"?</td></tr><tr><td>think step by step, then decide</td><td>does reasoning help?</td></tr><tr><td>say which side is the sender and which the receiver</td><td>step 1 of the decision, on its own</td></tr><tr><td>say whether a named rule is on the list</td><td>step 2 of the decision, on its own</td></tr></tbody></table>
+<table class="tight"><thead><tr><th>I ask the model to…</th><th>Why</th></tr></thead><tbody><tr><td>give a quick one-word decision</td><td>this is how such tests are usually scored</td></tr><tr><td>say how confident it is, 0–100 (same conversation)</td><td>does it know when it is wrong?</td></tr><tr><td>double-check and say KEEP or CHANGE (same conversation)</td><td>does it defend or abandon its answer?</td></tr><tr><td>first write the rule it must look up, then decide</td><td>a candidate fix</td></tr><tr><td>first write a meaningless filler line, then decide</td><td>control: is the fix just "write something first"?</td></tr><tr><td>think step by step, then decide</td><td>does reasoning help?</td></tr><tr><td>say which side is the sender and which the receiver</td><td>step 1 of the decision, on its own</td></tr><tr><td>say whether a named rule is on the list</td><td>step 2 of the decision, on its own</td></tr></tbody></table>
 <p class="cap"><b>Table H1:</b> What each item is asked when the failures are measured. Hidden reasoning was switched off where possible, so "step by step" means visible reasoning.</p>
-<table class="ledger"><thead><tr><th>Question asked in advance</th><th>Answer</th><th>Evidence</th></tr></thead><tbody><tr><td>Do models treat a one-way rule as two-way?</td><td><b>Rarely.</b></td><td>Passed our bar in 1 of 9 (Nova Lite); allowed 5% of the time overall (56/1,232).</td></tr><tr><td>Do models join rules into chains?</td><td><b>Yes.</b></td><td>Passed in 7 of 9 with step-by-step answers; 44% wrongly allowed (1,365/3,080).</td></tr><tr><td>Is chaining caused by the wording?</td><td><b>Mostly.</b></td><td>With the extra sentence it passed in 1 of 9 (Nova Lite); 4% overall (132/3,080).</td></tr><tr><td>Do models refuse requests that are allowed?</td><td><b>Yes, and the extra sentence makes it worse.</b></td><td>18% refused in quick answers, 26% with the extra sentence.</td></tr><tr><td>Does confidence tell right from wrong?</td><td><b>No.</b></td><td>23,312 of 24,122 confidences were exactly 100; separation score (AUROC) 0.50–0.56, where 0.5 is chance.</td></tr><tr><td>Do models stand by wrong answers?</td><td><b>Some always do.</b></td><td>4 of 9 kept at least half of their wrong answers (GPT-4.1, Grok 4.3, Claude Haiku 5.5, Qwen3.5-9B); the others also changed right answers.</td></tr><tr><td>Does writing the rule first help?</td><td><b>Partly.</b></td><td>It cut chaining in 6 of 9; a meaningless filler line did so in 3 of 9.</td></tr><tr><td>Does step-by-step reasoning help?</td><td><b>It swaps one mistake for another.</b></td><td>More allowed requests got through in 7 of 9; more chaining in 6 of 9.</td></tr><tr><td>Is one step of the decision broken?</td><td><b>No.</b></td><td>Both steps were right in 3,319 of 3,579 wrong decisions.</td></tr><tr><td>Do one-way and two-way requests rank models differently?</td><td><b>No.</b></td><td>Rank agreement ρ = 0.91; 3 of 36 model pairs swap.</td></tr></tbody></table>
+<table class="ledger"><thead><tr><th>Question asked in advance</th><th>Answer</th><th>Evidence</th></tr></thead><tbody><tr><td>Do models treat a one-way rule as two-way?</td><td><b>Rarely.</b></td><td>Passed my bar in 1 of 9 (Nova Lite); allowed 5% of the time overall (56/1,232).</td></tr><tr><td>Do models join rules into chains?</td><td><b>Yes.</b></td><td>Passed in 7 of 9 with step-by-step answers; 44% wrongly allowed (1,365/3,080).</td></tr><tr><td>Is chaining caused by the wording?</td><td><b>Mostly.</b></td><td>With the extra sentence it passed in 1 of 9 (Nova Lite); 4% overall (132/3,080).</td></tr><tr><td>Do models refuse requests that are allowed?</td><td><b>Yes, and the extra sentence makes it worse.</b></td><td>18% refused in quick answers, 26% with the extra sentence.</td></tr><tr><td>Does confidence tell right from wrong?</td><td><b>No.</b></td><td>23,312 of 24,122 confidences were exactly 100; separation score (AUROC) 0.50–0.56, where 0.5 is chance.</td></tr><tr><td>Do models stand by wrong answers?</td><td><b>Some always do.</b></td><td>4 of 9 kept at least half of their wrong answers (GPT-4.1, Grok 4.3, Claude Haiku 5.5, Qwen3.5-9B); the others also changed right answers.</td></tr><tr><td>Does writing the rule first help?</td><td><b>Partly.</b></td><td>It cut chaining in 6 of 9; a meaningless filler line did so in 3 of 9.</td></tr><tr><td>Does step-by-step reasoning help?</td><td><b>It swaps one mistake for another.</b></td><td>More allowed requests got through in 7 of 9; more chaining in 6 of 9.</td></tr><tr><td>Is one step of the decision broken?</td><td><b>No.</b></td><td>Both steps were right in 3,319 of 3,579 wrong decisions.</td></tr><tr><td>Do one-way and two-way requests rank models differently?</td><td><b>No.</b></td><td>Rank agreement ρ = 0.91; 3 of 36 model pairs swap.</td></tr></tbody></table>
 <p class="cap"><b>Table H2:</b> The ten measurement questions fixed before the first call, with their answers.</p>
-<table class="tight"><thead><tr><th>Common practice</th><th>What it assumes</th><th>What we did instead</th><th>What it showed</th></tr></thead><tbody><tr><td>One accuracy number for one-way rules [2, 5, 6]</td><td>A low score means the model confuses direction</td><td>Six kinds of request, each with one possible explanation</td><td>"Wrong way round" was allowed 2% of the time; requests that need a chain, 44%.</td></tr><tr><td>Make the rule more explicit</td><td>Clearer rules can only help</td><td>The same test with and without one extra sentence</td><td>Wrongly allowed requests fell to 4%, but refusals of allowed requests rose from 18% to 26%.</td></tr><tr><td>Trust the model's confidence or self-check [15, 19]</td><td>A model is less sure, or changes its mind, when wrong</td><td>Asked for confidence and a double-check after every decision</td><td>97% of confidences were exactly 100; double-checks kept every error or changed right answers too.</td></tr><tr><td>Test the steps separately [7, 8]</td><td>A model that can do each step will decide correctly</td><td>Tested both steps on the same items as the decision</td><td>In 3,319 of 3,579 wrong decisions the model had done both steps correctly.</td></tr></tbody></table>
+<table class="tight"><thead><tr><th>Common practice</th><th>What it assumes</th><th>What I did instead</th><th>What it showed</th></tr></thead><tbody><tr><td>One accuracy number for one-way rules [2, 5, 6]</td><td>A low score means the model confuses direction</td><td>Six kinds of request, each with one possible explanation</td><td>"Wrong way round" was allowed 2% of the time; requests that need a chain, 44%.</td></tr><tr><td>Make the rule more explicit</td><td>Clearer rules can only help</td><td>The same test with and without one extra sentence</td><td>Wrongly allowed requests fell to 4%, but refusals of allowed requests rose from 18% to 26%.</td></tr><tr><td>Trust the model's confidence or self-check [15, 19]</td><td>A model is less sure, or changes its mind, when wrong</td><td>Asked for confidence and a double-check after every decision</td><td>97% of confidences were exactly 100; double-checks kept every error or changed right answers too.</td></tr><tr><td>Test the steps separately [7, 8]</td><td>A model that can do each step will decide correctly</td><td>Tested both steps on the same items as the decision</td><td>In 3,319 of 3,579 wrong decisions the model had done both steps correctly.</td></tr></tbody></table>
 <p class="cap"><b>Table H3:</b> How the measurement design differs from common practice.</p>
 <p>One-way and two-way requests rank the models almost identically (ρ = 0.91;
-Figure G8). Two public datasets we could check (PrivacyLens, 493 items; a synthetic privacy set, 4,024 items) contain no item whose
+Figure G8). Two public datasets I could check (PrivacyLens, 493 items; a synthetic privacy set, 4,024 items) contain no item whose
 sender and receiver are swapped elsewhere with a different answer, so they cannot detect direction mistakes; swapping is often not
 meaningful there, so this is weak support. Ring rulebooks remain harder than two-way ones (78% against
 94% correct), now with a known reason.</p>
