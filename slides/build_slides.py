@@ -12,7 +12,7 @@ n_ = len
 
 def slide(n, kicker, line, body, cls=""):
     return (f'<section><header><div class="kick">{kicker}</div><h1>{line}</h1></header><main class="{cls}">{body}</main>'
-            f'<footer><span>{TITLE} · Daniel Foo Jun Wei · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
+            f'<footer><span>{TITLE} · Daniel Foo · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
 
 
 def bar(lab, v, col):
