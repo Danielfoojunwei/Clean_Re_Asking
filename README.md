@@ -1,7 +1,7 @@
-# Checking What Models Say About Their Answers
+# “100% Confident” on Wrong Answers
 
 Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
-*Checking What Models Say About Their Answers: Confidence, Pushback and Action on Rules with Exact Answers*.
+*“100% Confident” on Wrong Answers: Stated Confidence, False Pushback and Tool Calls in Nine Models, Measured Against Exact Answers*.
 
 The study measures, on the same exactly-scored items, five signals people use to judge a model's answer: its stated confidence
 (asked four ways), its answer probabilities, how it responds to true and false pushback, which rule it cites, and what it does
@@ -19,11 +19,11 @@ was collected.
 
 ## What is here
 
-- `paper/Checking_What_Models_Say.pdf` is the report (`.docx` is a copy for pasting into the sprint template).
+- `paper/Epistemics_Sprint_Paper.pdf` is the report (`.docx` is a copy for pasting into the sprint template).
   `paper/ABSTRACT.txt` is the title and abstract for the submission form.
 - `paper/` also holds the sources: `build_data.py` (measurement numbers), `figs.py`, `figs2.py` and `figs3.py` (figures),
   `build_paper.py` and `render.js` (PDF).
-- `slides/Checking_What_Models_Say_slides.pdf` is the five-slide deck and `slides/SCRIPT.md` the speaker script
+- `slides/Epistemics_Sprint_Slides.pdf` is the five-slide deck and `slides/SCRIPT.md` the speaker script
   (rebuild with `build_slides.py` and `node render_slides.js slides.pdf` from `slides/`).
 - `benchmark_v2/` holds the base generator (`gen.py`), runner (`run.py`), analysis (`analyze.py`), the plan with its dated
   amendments, results tables, the public-dataset audit and every raw response (`raw_responses.zip`).

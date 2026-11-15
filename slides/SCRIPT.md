@@ -1,4 +1,4 @@
-# Checking What Models Say About Their Answers: speaker script
+# “100% Confident” on Wrong Answers: speaker script
 
 Five slides, about 3 minutes. One line per slide, then what to say.
 

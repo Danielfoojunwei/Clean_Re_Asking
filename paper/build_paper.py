@@ -549,7 +549,7 @@ example2 = example.replace("<b>Figure 1:</b>", "<b>Figure 2:</b>")
 CSS = open("paper.css").read() + open("paper3.css").read() + open("paper4.css").read()
 BODY = f"""
 <div class="trule"></div>
-<h1 class="title">Checking What Models Say About Their Answers: Confidence, Pushback and Action on Rules with Exact Answers<sup>1</sup></h1>
+<h1 class="title">“100% Confident” on Wrong Answers: Stated Confidence, False Pushback and Tool Calls in Nine Models, Measured Against Exact Answers<sup>1</sup></h1>
 <div class="trule"></div>
 <div class="auth"><b>Daniel Foo Jun Wei</b><br>Nanyang Technological University (NTU), Singapore<br><span class="with">With</span><br>Apart Research</div>
 <div class="abstract"><h3>Abstract</h3>
