@@ -111,3 +111,17 @@ pb["rho_cit"] = spearman([PMM[l]["basta_pub"]["citation"][0] for l in BL], [PMM[
 pb["rho_plain"] = spearman([PMM[l]["basta_pub"]["plain"][0] for l in BL], [PMM[l]["word_F"]["plain"] for l in BL])
 
 pb["incomplete"] = [l for l in pb["FL"] if PMM[l]["fact"]["n_F"] < max(PMM[x]["fact"]["n_F"] for x in pb["FL"])]
+# ---- cross-cutting readings: cost and benefit of telling, profiles, stability across tasks
+Hact = lambda a: (lambda m: (m.get("fact") or {}).get("H_by_act", {}).get(a))
+pb["cost"] = {l: PMM[l]["fact"]["by_act"]["directive"] - PMM[l]["fact"]["by_act"]["question"] for l in pb["FL"]}
+pb["gain"] = {l: PMM[l]["fact"]["H_by_act"]["directive"] - PMM[l]["fact"]["H_by_act"]["question"] for l in pb["FL"]}
+pb["gain5"] = [l for l in pb["FL"] if pb["gain"][l] > 0.05]
+pb["cost_gt_gain"] = [l for l in pb["FL"] if pb["cost"][l] > pb["gain"][l] + 0.05]
+_fa = lambda l: PMM[l]["fact"]["by_act"]
+pb["vigilant"] = [l for l in pb["FL"] if _fa(l)["directive"] < 0.10 and _fa(l)["question"] < 0.10]
+pb["suggestible"] = [l for l in pb["FL"] if _fa(l)["question"] >= 0.10]
+pb["obedient"] = [l for l in pb["FL"] if l not in pb["vigilant"] and l not in pb["suggestible"]]
+pb["vig_H"] = [100 * PMM[l]["fact"]["H_all"] for l in pb["vigilant"]]
+pb["task_rho"] = {c: [spearman([PMM[l]["by_task"][a][c] for l in PL], [PMM[l]["by_task"][b][c] for l in PL]) for a, b in (("stock", "rooms"), ("stock", "rules"), ("rooms", "rules"))] for c in ("plain", "page_frame")}
+pb["rho_lo"] = min(min(v) for v in pb["task_rho"].values()); pb["rho_hi"] = max(max(v) for v in pb["task_rho"].values())
+FT = lambda l: f'{100 * _fa(l)["directive"]:.0f}%'

@@ -1,36 +1,36 @@
-# Told, Not Persuaded
+# Certain Until Told Otherwise
 
 Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
-*Told, Not Persuaded: What Pushback Tests Measure When the Answer Is on the Page*.
+*Certain Until Told Otherwise: Why Pushback Benchmarks Disagree*.
 
-Published tests of how models respond to "you are wrong" disagree. One reports that current models almost never give up a
-well-anchored fact (Yang et al. 2026); another that models of the same generation concede most correct answers (Basta et al.
-2026). This study asks how much of that gap is the test. It takes the rebuttals of five published protocols, word for word,
-puts them on three open-book tasks where the answer is read off a four-line list in the prompt, and runs them on
-21 models, including models those papers tested. The user is wrong in half of the items and right in half.
-Scoring is by rule; no model grades another.
+A model with good epistemics updates for reasons and holds against pressure. Published tests of this disagree: one reports
+that current models almost never give up a well-anchored fact (Yang et al. 2026), another that models of the same generation
+concede most correct answers (Basta et al. 2026). This study shows the tests measure two different things. It runs the
+rebuttals of five published protocols, word for word, on three open-book tasks where the answer is on a four-line list in the
+prompt, on 21 models, with the user wrong in half of the items and right in half. Scoring is by rule.
+370,170 scored answers.
 
-**Findings** (370,170 rule-scored answers)
+**The argument**
 
-1. **Same items, different rates.** The median share of right answers given up was 0–3% under
-   question-style rebuttals and 50% under a plain directive. Both published pictures reappear on one set
-   of items and models.
-2. **Asks, asserts, tells.** In a factorial that holds content fixed, the medians were 3%, 32% and 48%.
-   Telling exceeded asking reliably in 17 of 21 models; Claude Haiku 5.5, GPT-6 Luna Pro, GPT-6 Luna and GPT-5.6 Luna stayed near zero.
-   Naming the answer and adding evidence mattered less.
-3. **Evidence adds little.** A stated credential raised the rate in 0 models. A false claim about the
-   list, which a model could refute by re-reading it, was reliably weaker than an uncheckable source in 1 model
-   and stronger in 5.
-4. **The models were sure beforehand.** On the bare question, eight of eight samples were correct on every item in
-   18 of 21 models.
-5. **Test design moves the number.** Free-form replies and one closing sentence each changed rates by tens of points. Two
-   faults found in our own runs are reported with how they were handled.
-6. **Fixes.** A fact computed outside the model and attached to the turn held the rate at 10% or less in
-   11 of 14 models. The evidence-gated prompt of Basta et al. helped
-   5 and harmed 2.
+1. **The disagreement belongs to the tests.** On identical items the median share of right answers given up is
+   0–3% under question-style rebuttals and 50% under a plain directive.
+2. **The cause is the speech act.** With content held fixed, asking, asserting and telling cost medians of 3%, 32%
+   and 48%. Telling exceeds asking reliably in 17 of 21 models.
+3. **It is not persuasion.** Models were sure beforehand (18 of 21 unanimous and correct), a
+   credential helped in 0 models, and a false claim about the list, which the model could re-read, still worked.
+4. **Asking is enough.** Asking already corrected a median of 97% of wrong answers. Telling added a
+   median of 0 points and cost 35 points of right answers.
+5. **One account.** The model answers the last request, not the question. This also fits the effects of a closing sentence,
+   reply format and repeated turns. It is offered as a conjecture.
+6. **A trait, and avoidable.** Model order agrees across three unrelated tasks (rank correlation
+   0.81–0.95); Claude Haiku 5.5, GPT-6 Luna Pro, GPT-6 Luna and GPT-5.6 Luna hold when told and still accept correct objections.
+7. **Fixes.** A fact computed outside the model held the rate at 10% or less in 11 of
+   14 models; the evidence-gated prompt of Basta et al. helped 5 and harmed 2.
 
-**Recommendations for pushback tests:** report the speech act of each rebuttal and include a question and a directive; report
-the reply format and any closing instruction; score both directions; include an open-book condition.
+**What transfers to other evaluations:** cross the instruments before comparing scores; put the deciding fact on the page;
+score what the stronger probe buys in both directions; report two numbers, yielding when asked and the defence gap between
+asked and told. The paper maps the results onto the four open problems of Track 1 (Table 1) and separates what is shown,
+supported and conjectured (Table 5).
 
 The lists are invented and short, the previous answer is scripted and each factorial cell has one wording, so results are for
 these tasks and models. Every experiment was specified in writing, with file hashes, before its data was collected; predictions
@@ -51,7 +51,7 @@ that failed are listed in the paper (Table M3).
 - `paper/Epistemics_Sprint_Paper.pdf` is the report (`.docx` is a copy for pasting into the sprint template).
   `paper/ABSTRACT.txt` is the title and abstract for the submission form.
 - `paper/` also holds the sources: `build_data.py` (measurement numbers for Appendix L), `figs.py` to `figs6.py` (figures;
-  `figs6.py` draws Figures 2 to 4), `build_paper.py` and `render.js` (PDF).
+  `figs6.py` draws Figures 2 to 5), `build_paper.py` and `render.js` (PDF).
 - `slides/Epistemics_Sprint_Slides.pdf` is the five-slide deck and `slides/SCRIPT.md` the speaker script
   (rebuild with `build_slides.py`, `build_script.py` and `node render_slides.js slides.pdf` from `slides/`).
 - `followups/stage7/` holds the pushback study: the four plans with dated amendments, generators (`gen_g.py`, `gen_h.py`,

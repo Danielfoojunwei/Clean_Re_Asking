@@ -109,5 +109,33 @@ def fig_fixes():
     save(fig, "f_fixes")
 
 
+def fig_trade():
+    """What telling adds over asking: right answers lost (cost) against wrong answers additionally corrected (gain)."""
+    fig, ax = plt.subplots(1, 2, figsize=(7.0, 2.75), gridspec_kw={"wspace": 0.3, "width_ratios": [1, 1.05]})
+    a = ax[0]
+    for l in ROWS:
+        f = M[l].get("fact")
+        if not f:
+            continue
+        x0, y0 = 100 * f["by_act"]["question"], 100 * f["H_by_act"]["question"]; x1, y1 = 100 * f["by_act"]["directive"], 100 * f["H_by_act"]["directive"]
+        a.annotate("", xy=(x1, y1), xytext=(x0, y0), arrowprops=dict(arrowstyle="-", color=AXIS, lw=0.9))
+        a.scatter([x0], [y0], s=18, color=AQUA, zorder=3, edgecolor=SURF, linewidth=0.6, label="asked" if l == ROWS[0] else None)
+        a.scatter([x1], [y1], s=20, color="#b8430f", marker="D", zorder=3, edgecolor=SURF, linewidth=0.6, label="told" if l == ROWS[0] else None)
+    a.scatter([0], [100], s=90, facecolor="none", edgecolor=INK, linewidth=0.9, zorder=2); a.text(4, 101.2, "ideal", fontsize=6.4, color=INK, va="bottom")
+    a.set_xlim(-4, 100); a.set_ylim(78, 103); a.set_xticks([0, 25, 50, 75, 100]); a.set_xticklabels(["0%", "25%", "50%", "75%", "100%"]); a.set_yticks([80, 90, 100]); a.set_yticklabels(["80%", "90%", "100%"])
+    a.set_xlabel("Right answers given up when the user is wrong"); a.set_ylabel("Wrong answers corrected\nwhen the user is right"); a.set_title("Each model, asked and told")
+    a.legend(loc="lower right", fontsize=6.4, handletextpad=0.2)
+    b = ax[1]
+    order = sorted([l for l in ROWS if M[l].get("fact")], key=lambda l: M[l]["fact"]["by_act"]["directive"] - M[l]["fact"]["by_act"]["question"])
+    ys = range(len(order))
+    cost = [100 * (M[l]["fact"]["by_act"]["directive"] - M[l]["fact"]["by_act"]["question"]) for l in order]
+    gain = [100 * (M[l]["fact"]["H_by_act"]["directive"] - M[l]["fact"]["H_by_act"]["question"]) for l in order]
+    b.barh([y + 0.2 for y in ys], cost, height=0.38, color="#eb6834", label="right answers lost by telling")
+    b.barh([y - 0.2 for y in ys], gain, height=0.38, color=BLUE, label="wrong answers gained by telling")
+    b.axvline(0, color=AXIS, lw=0.8); b.set_yticks(list(ys)); b.set_yticklabels(order, fontsize=5.6); b.set_xlabel("Points (told minus asked)"); b.set_title("What telling adds over asking")
+    b.set_xlim(-10, 80); b.legend(loc="lower right", fontsize=6.2, handletextpad=0.3)
+    save(fig, "f_trade")
+
+
 if __name__ == "__main__":
-    fig_rebuttals(); fig_factorial(); fig_fixes()
+    fig_rebuttals(); fig_factorial(); fig_fixes(); fig_trade()
