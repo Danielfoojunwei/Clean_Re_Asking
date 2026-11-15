@@ -123,6 +123,9 @@ QS = lambda l, g: DD[l]["D5"][g]
 qsup = [(l, QS(l, "wrong_refusal")["kinds"].get("supports", 0), QS(l, "wrong_refusal")["n"]) for l in ("DeepSeek v3.2", "Llama 4 Maverick")]
 qnone = [(l, QS(l, "wrong_refusal")["kinds"].get("none", 0), QS(l, "wrong_refusal")["n"]) for l in ("Grok 4.3", "Qwen3.5-9B", "Nova Lite")]
 te_lo = min(pct(dk(l, "D3")["evidence"]["wrong_changed"]) for l in EMS)
+EFX = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v4" / "results_e.json"))["models"].values()}
+CKS = json.load(open(pathlib.Path(__file__).parent.parent / "v4" / "results_checks.json"))
+n_all += sum(1 for f in (pathlib.Path(__file__).parent.parent / "v4" / "runs_e").glob("*/responses.jsonl") for _ in {json.loads(x)["id"] for x in open(f) if json.loads(x)["status"] == "ok"})
 S = [
  slide(1, "The question", "When you tell a model it is wrong, does it check, or agree?",
    f'''<div class="col c1"><div class="cap">An open-book task: the answer is on the page</div>{graph}<div class="note">Who may send records to whom. Only listed directions are allowed.</div></div>
@@ -153,15 +156,18 @@ S = [
    {bar("penalty for wrong: chose UNSURE on wrong answers", uns[0], uns[1], BLUE)}
    {bar("Grok 4.3 tool calls with the text DECLINE", gx["called_while_saying_decline"], gx["calls"], ORANGE)}
    <div class="note" style="margin-top:10px">New variant: told it would be scored by the Brier rule, {len(b100)} of 7 models still mostly answered 100.</div></div>'''),
- slide(5, "The score, and what to do", "The accuracy score combined three different errors; the one usually blamed was the least common.",
-   f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{rev[2]}%</span></div>
-   <div class="sub">wrong direction. Chaining rules: {ch_b[2]}%,<br>{ch_e[2]}% once forbidden. Listed requests<br>refused: {rf_b[2]}%.</div></div>
-   <div class="col chart"><div class="checks">
-   <div><i>1</i><span><b>Test corrections whose truth is known</b> before letting users or agents correct a model.</span></div>
-   <div><i>2</i><span><b>Compare what a model cites with what it decides.</b></span></div>
-   <div><i>3</i><span><b>Score the action</b> as well as the text beside it.</span></div>
-   <div><i>4</i><span><b>Split the score</b> so each mistake has its own item.</span></div></div>
-   <div class="strip">Two new measurements, the rest replications. Narrow synthetic task, one wording per pushback. The test and all raw answers are released.</div></div>'''),
+ slide(5, "From findings to a harness feature", "What works: the harness checks the correction itself. Then most models hold.",
+   f'''<div class="col chart" style="flex:0 0 520px"><div class="cap">Right answers given up to the false claim</div>
+   {pairbars([(l, round(100 * EFX[l]["base"]["right_changed"]["rate"]), round(100 * EFX[l]["E2"]["right_changed"]["rate"])) for l in ("Qwen3.5-9B", "GPT-4.1-mini", "Grok 4.3", "DeepSeek v3.2", "Llama 4 Maverick", "Nova Lite")], "no fix", "harness checks the claim and says so", ORANGE, BLUE)}
+   <div class="note" style="margin-top:10px">Asking the model to check for itself helps less: under pushback, five models often report a listed line as missing. Two models still give way, so there the harness holds the decision.</div></div>
+   <div class="col chart"><div class="checks small">
+   <div><i>1</i><span><b>Check corrections outside the model</b> and attach the result.</span></div>
+   <div><i>2</i><span><b>Do not rely on the model to check.</b></span></div>
+   <div><i>3</i><span><b>Compare what is cited with what is decided</b>: flags {CKS["cite_total"]["wrong_allow_flagged"][0]} of {CKS["cite_total"]["wrong_allow_flagged"][1]} wrong allows.</span></div>
+   <div><i>4</i><span><b>Look up, then decide</b>; say whether rules combine.</span></div>
+   <div><i>5</i><span><b>Gate on probabilities</b>, not stated confidence.</span></div>
+   <div><i>6</i><span><b>Enforce on the tool call</b>, not the text.</span></div></div>
+   <div class="strip">Six guidelines and a mock-up harness layer (paper, Section 6). A design, not a built product; tested on short rule lists with one wording.</div></div>'''),
 ]
 
 CSS = f"""
@@ -209,6 +215,7 @@ footer {{ display: flex; justify-content: space-between; font-size: 13px; color:
 .sparks {{ display: flex; gap: 18px }} .sparks div {{ flex: 1; border: 1.5px solid {GRID}; border-radius: 12px; padding: 8px 12px; background: #faf9f6; font-size: 15px; display: flex; flex-direction: column; align-items: flex-start }}
 .sparks b {{ font-size: 19px }}
 .checks {{ display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px }} .checks div {{ display: flex; align-items: center; gap: 16px; font-size: 21px; border: 1.5px solid {GRID}; border-radius: 12px; padding: 12px 18px; background: #faf9f6 }}
+.checks.small div {{ font-size: 15px; padding: 5px 12px }} .checks.small {{ gap: 6px; margin-bottom: 10px }} .checks.small i {{ flex: 0 0 30px; height: 30px; font-size: 16px }}
 .checks i {{ flex: 0 0 40px; height: 40px; border-radius: 50%; background: {BLUE}; color: #fff; font-style: normal; font-weight: 700; font-size: 21px; display: flex; align-items: center; justify-content: center }}"""
 open("slides.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>Open-Book Epistemics: slides</title><style>{CSS}</style></head><body>{''.join(S)}</body></html>")
 print("chain", ch_b, ch_e, "refuse", rf_b, rf_e, "rev", rev, "grok", gw, gr, "gemini", mw, mr, "both", both, wrong)

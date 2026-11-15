@@ -29,3 +29,18 @@ svg.ic { width: 4.2mm; height: 4.2mm; flex: 0 0 4.2mm; margin-top: 0.3mm; }
 .hh.h2 { margin-top: 2mm; padding-top: 1.6mm; border-top: 0.6pt solid #e2dfd2; }
 .cr { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 1.4mm; align-items: center; margin: 0.7mm 0; font-size: 6.2pt; }
 .cbar { height: 1.8mm; background: #f0eee8; border-radius: 0.9mm; overflow: hidden; } .cbar i { display: block; height: 100%; background: #eb6834; } .cr b { font-size: 6.4pt; }
+figure img[src*="f_fix"] { width: 78%; }
+figure.mock { margin: 1.5mm 0 2mm; } .mockwrap { display: grid; grid-template-columns: 0.82fr 1.5fr; gap: 2mm; text-align: left; }
+.mk { border: 0.7pt solid #cfd3d9; border-radius: 2mm; overflow: hidden; font-family: Inter, sans-serif; background: #fff; }
+.mkh { background: #2f3b4c; color: #fff; font-size: 6.6pt; font-weight: 600; padding: 1mm 1.8mm; display: flex; justify-content: space-between; } .mkh span { font-weight: 400; opacity: .75; font-size: 6pt; }
+.mk pre { margin: 0; padding: 1.4mm 1.8mm; font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; font-size: 5.7pt; line-height: 1.42; background: #f7f8fa; color: #2b2f36; white-space: pre; }
+.mk pre i { font-style: normal; color: #55606e; } .mk pre u { text-decoration: none; color: #1c5cab; font-weight: 700; } .mk pre em { font-style: normal; color: #8b94a0; }
+.tr { display: grid; grid-template-columns: 4.6mm 1fr auto; gap: 1.4mm; align-items: center; padding: 0.9mm 1.6mm; border-bottom: 0.5pt solid #e6e8ec; font-size: 6.2pt; line-height: 1.28; }
+.tr:last-child { border-bottom: 0; } .tn { width: 3.8mm; height: 3.8mm; border-radius: 50%; background: #2a78d6; color: #fff; font-weight: 700; font-size: 6pt; display: inline-flex; align-items: center; justify-content: center; }
+.tb b { display: block; font-size: 6.5pt; } .tb span { color: #4a5059; }
+.bd { font-weight: 700; font-size: 5.8pt; padding: 0.4mm 1.4mm; border-radius: 1.2mm; background: #e3f4ea; color: #14784f; }
+.tr.warn { background: #fde8df; } .tr.warn .tn { background: #eb6834; } .tr.warn .bd { background: #eb6834; color: #fff; }
+.tr.held { background: #eef5fd; } .tr.held .bd { background: #1c5cab; color: #fff; }
+.tr.warn { border: 0; border-bottom: 0.5pt solid #e6e8ec; border-radius: 0; outline: 0; }
+figure.mock .tr.warn { border: 0; border-bottom: 0.5pt solid #e6e8ec; border-radius: 0; margin: 0; padding: 0.9mm 1.6mm; font-size: 6.2pt; line-height: 1.28; background: #fde8df; }
+figure.mock .tr, figure.mock .tr.warn, figure.mock .tr.held { border: 0; border-bottom: 0.5pt solid #e6e8ec; } figure.mock .tr:last-child { border-bottom: 0; }
