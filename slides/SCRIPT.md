@@ -1,4 +1,4 @@
-# Models Can Tell When They Are Wrong and Do Not Say So: speaker script
+# Five Assumptions That Fail: speaker script
 
 Five slides, about 3 minutes. One line per slide, then what to say.
 

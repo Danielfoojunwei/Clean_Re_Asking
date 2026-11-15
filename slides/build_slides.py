@@ -70,7 +70,7 @@ def bar(lab, k, n, col):
 
 def slide(n, kicker, line, body, cls=""):
     return (f'<section><header><div class="kick">{kicker}</div><h1>{line}</h1></header><main class="{cls}">{body}</main>'
-            f'<footer><span>Models Can Tell When They Are Wrong and Do Not Say So · Daniel Foo Jun Wei · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
+            f'<footer><span>Five Assumptions That Fail · Daniel Foo Jun Wei · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
 
 RB = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v3" / "results_b.json"))["models"]}
 RC = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v3" / "results_c.json"))["models"].values()}
@@ -118,7 +118,7 @@ fe_hi = [l for l in EMS if fe[l] >= 45]
 hb = dk(HKL, "D1_brier")
 n_all += sum(1 for d in ("runs_d", "runs_d_long") for f in (pathlib.Path(__file__).parent.parent / "v4" / d).glob("*/responses.jsonl")
              for _ in {json.loads(x)["id"] for x in open(f) if json.loads(x)["status"] == "ok"})
-TITLE = "Models Can Tell When They Are Wrong and Do Not Say So"
+TITLE = "Five Assumptions That Fail"
 S = [
  slide(1, "Five assumptions, one test", "We rely on five assumptions about what models say. On exact answers, all five fail.",
    f'''<div class="col c1"><div class="cap">A test where every answer is exactly right or wrong</div>{graph}<div class="note">Who may send records to whom. Only listed directions are allowed.</div></div>
@@ -206,5 +206,5 @@ footer {{ display: flex; justify-content: space-between; font-size: 13px; color:
 .sparks b {{ font-size: 19px }}
 .checks {{ display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px }} .checks div {{ display: flex; align-items: center; gap: 16px; font-size: 21px; border: 1.5px solid {GRID}; border-radius: 12px; padding: 12px 18px; background: #faf9f6 }}
 .checks i {{ flex: 0 0 40px; height: 40px; border-radius: 50%; background: {BLUE}; color: #fff; font-style: normal; font-weight: 700; font-size: 21px; display: flex; align-items: center; justify-content: center }}"""
-open("slides.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>Models Can Tell When They Are Wrong: slides</title><style>{CSS}</style></head><body>{''.join(S)}</body></html>")
+open("slides.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>Five Assumptions That Fail: slides</title><style>{CSS}</style></head><body>{''.join(S)}</body></html>")
 print("chain", ch_b, ch_e, "refuse", rf_b, rf_e, "rev", rev, "grok", gw, gr, "gemini", mw, mr, "both", both, wrong)

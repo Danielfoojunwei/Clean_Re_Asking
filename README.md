@@ -1,7 +1,7 @@
-# Models Can Tell When They Are Wrong and Do Not Say So
+# Five Assumptions That Fail
 
 Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
-*Models Can Tell When They Are Wrong and Do Not Say So: Confidence, Pushback and Action on Rules with Exact Answers*.
+*Five Assumptions That Fail: Testing What AI Models Say, Defend and Do on Rules with Exact Answers*.
 
 The study measures, on the same exactly-scored items, what a model says about its answer (stated confidence, asked four ways),
 what its answer probabilities show, how it responds to true and false pushback, which rule it cites, and what it does when given
@@ -18,11 +18,11 @@ Every experiment was specified in writing, with hashes, before its data was coll
 
 ## What is here
 
-- `paper/Models_Can_Tell_When_They_Are_Wrong.pdf` is the report (`.docx` is a copy for pasting into the sprint template).
+- `paper/Five_Assumptions_That_Fail.pdf` is the report (`.docx` is a copy for pasting into the sprint template).
   `paper/ABSTRACT.txt` is the title and abstract for the submission form.
 - `paper/` also holds the sources: `build_data.py` (measurement numbers), `figs.py`, `figs2.py` and `figs3.py` (figures),
   `build_paper.py` and `render.js` (PDF).
-- `slides/Models_Can_Tell_When_They_Are_Wrong_slides.pdf` is the five-slide deck and `slides/SCRIPT.md` the speaker script
+- `slides/Five_Assumptions_That_Fail_slides.pdf` is the five-slide deck and `slides/SCRIPT.md` the speaker script
   (rebuild with `build_slides.py` and `node render_slides.js slides.pdf` from `slides/`).
 - `benchmark_v2/` holds the base generator (`gen.py`), runner (`run.py`), analysis (`analyze.py`), the plan with its dated
   amendments, results tables, the public-dataset audit and every raw response (`raw_responses.zip`).
