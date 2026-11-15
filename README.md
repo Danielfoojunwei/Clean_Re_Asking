@@ -51,5 +51,5 @@ and their outcomes are listed in the paper (Table B3).
 ## Rebuilding
 
 Unzip `study/raw_responses.zip` inside `study/`, then run `python3 analyze_g.py`, `analyze_h.py`, `analyze_i.py`,
-`analyze_j.py`, `summary.py` and `totals.py`. Running the hosted experiments needs an OpenRouter key in
-`OPENROUTER_API_KEY`; the archive contains model outputs and provider metadata only.
+`analyze_j.py`, `summary.py` and `totals.py`. `study/lib/` holds the request helpers the runners import (run with
+`PYTHONPATH=lib`). Running the hosted experiments needs an OpenRouter key in `OPENROUTER_API_KEY`; the archive contains model outputs and provider metadata only.
