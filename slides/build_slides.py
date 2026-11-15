@@ -111,7 +111,7 @@ S = [
      <div class="req"><div class="q">Finance → Audit?<small>needs a chain · should be refused</small></div><div class="r"><b style="color:{ORANGE}">{ch_b[2]}%</b> allowed</div></div>
      <div class="req"><div class="q">Legal → Audit?<small>listed · should be allowed</small></div><div class="r"><b style="color:{ORANGE}">{rf_b[2]}%</b> refused</div></div>
      <div class="req"><div class="q">“How sure are you?”<small>right or wrong</small></div><div class="r"><b style="color:{ORANGE}">97%</b> say “100”</div></div>
-     <div class="scale">9 AI models · {n_all:,} answers · 3 stages, each planned before its data</div></div>'''),
+     <div class="scale">9 AI models · {n_all:,} answers · for each failure: measure it, find the cause, test a fix</div></div>'''),
  slide(2, "Failure 1 · Chaining", "Models join rules into chains unless told not to.",
    f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{ch_b[2]}%</span><em>→</em><span style="color:{BLUE}">{ch_e[2]}%</span></div>
    <div class="sub">of chain requests wrongly allowed,<br>before and after “routes cannot be chained”</div>
@@ -143,7 +143,7 @@ S = [
    <div><i>2</i><span><b>Re-run with a clearer rule</b> and count wrong refusals too.</span></div>
    <div><i>3</i><span><b>Read answer probabilities</b>, not “how sure are you?”.</span></div>
    <div><i>4</i><span><b>Score the action</b>, not the text beside it.</span></div></div>
-   <div class="strip">7 of our 13 follow-up predictions held. The 6 that did not are reported in full.</div></div>'''),
+   <div class="strip">Every experiment was specified in writing before its data was collected.</div></div>'''),
 ]
 
 CSS = f"""

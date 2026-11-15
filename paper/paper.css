@@ -59,3 +59,8 @@ table.score th:nth-child(2), table.score td:nth-child(2) { width: 38%; }
 table.score th:nth-child(3), table.score td:nth-child(3) { width: 18%; }
 table.score td { padding-top: 3px; padding-bottom: 3px; }
 .mu { color: #77756f; font-size: 0.9em; }
+
+table.sum th:nth-child(1), table.sum td:nth-child(1) { width: 15%; }
+table.sum th:nth-child(2), table.sum td:nth-child(2) { width: 17%; }
+table.sum th:nth-child(3), table.sum td:nth-child(3) { width: 30%; }
+table.sum th:nth-child(4), table.sum td:nth-child(4) { width: 19%; }
