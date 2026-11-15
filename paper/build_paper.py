@@ -503,7 +503,7 @@ claim_tbl = table(["Claim Check", "What the harness does", "Evidence in this stu
     ["<b>If the claim is true</b>", "Pass it on with the evidence, so the model corrects itself", f"Wrong answers were still corrected at least {fx['true_min']['E2']:.0f}% of the time"],
     ["<b>If the claim is false</b>", "Show the user the contradicting line. If the model changes its answer anyway, hold the original decision", f"{names(fx['e2_bad'])} still gave way with the line attached ({', '.join(p0(EF[l]['E2']['right_changed']) for l in fx['e2_bad'])})"],
     ["<b>If it cannot be checked</b>", "Send to a person. Do not use the model's own check as the control", f"Asked to check for themselves under pushback, {len(fx['chk_lo'])} models often reported a listed line as missing ({min(fx['chk'].values()):.0f}–{max(fx['chk'][l] for l in fx['chk_lo']):.0f}% correct)"]], "tight small")
-PRIOR = ""
+PRIOR = "Related mechanisms exist: deterministic gates on an agent's actions [69], verifier sub-agents that distrust user claims [70] and trusted evidence appended under pushback [68], and [22] calls for means to verify what users claim. We did not find this combination evaluated: the harness checks the user's own claim against held context and attaches the result. Whether a system label itself carries authority is disputed [71, 72]; we credit the attached fact, not the label."
 
 Y, P_, N_ = '<span class="y">●</span>', '<span class="p">◐</span>', '<span class="n">○</span>'
 hb = dk(HK, "D1_brier")
@@ -1027,6 +1027,11 @@ BODY += f"""<div class="break"></div>
 <li>Gupta, Tanwisuth (2026). System Prompts Affect Response Bias More Than Discriminability in LLM Safety. arXiv:2611.11074. https://arxiv.org/abs/2611.11074</li>
 <li>Li, Yu, Zhang, et al. (2025). When Thinking Fails: The Pitfalls of Reasoning for Instruction-Following in LLMs. arXiv:2505.11423. https://arxiv.org/abs/2505.11423</li>
 <li>Zhang, Lyu, Wang, et al. (2026). Deny Without Disabling: Authorization-Paired Evaluation and Control for Multi-Agent Systems. arXiv:2610.00371. https://arxiv.org/abs/2610.00371</li>
+<li>Shnaidman (2026). Reset Is Not Recovery: Evaluating Recoverability from False Conversational Context via Sycophancy Hysteresis. arXiv:2609.33672. https://arxiv.org/abs/2609.33672</li>
+<li>Reddy, Challaram, Basu (2026). Reason Less, Verify More: Deterministic Gates Recover a Silent Policy-Violation Failure Mode in Tool-Using LLM Agents. arXiv:2607.07405. https://arxiv.org/abs/2607.07405</li>
+<li>Kang, Yu, Hwang (2026). PolicyGuard: A Dialogue-Grounded Sub-Agent Verifier for Policy Adherence in LLM Agents. arXiv:2606.29225. https://arxiv.org/abs/2606.29225</li>
+<li>Ni (2026). Position Matters More Than Channel: Talking a Language Model Out of a Correct Answer. arXiv:2610.34809. https://arxiv.org/abs/2610.34809</li>
+<li>Bronder (2026). Does a Tool Result Carry More Authority Than Plain Text? Three Prospective Studies of False-Claim Adoption in a Synthetic Assignment Task with Claude Opus 5. arXiv:2608.14992. https://arxiv.org/abs/2608.14992</li>
 
 </ol>
 
