@@ -111,7 +111,7 @@ S = [
      <div class="req"><div class="q">Finance → Audit?<small>needs a chain · should be refused</small></div><div class="r"><b style="color:{ORANGE}">{ch_b[2]}%</b> allowed</div></div>
      <div class="req"><div class="q">Legal → Audit?<small>listed · should be allowed</small></div><div class="r"><b style="color:{ORANGE}">{rf_b[2]}%</b> refused</div></div>
      <div class="req"><div class="q">“How sure are you?”<small>right or wrong</small></div><div class="r"><b style="color:{ORANGE}">97%</b> say “100”</div></div>
-     <div class="scale">9 AI models · {n_all:,} answers · for each failure: measure it, find the cause, test a fix</div></div>'''),
+     <div class="scale">9 AI models · {n_all:,} answers · Track 1: all four open problems, on the same items</div></div>'''),
  slide(2, "Failure 1 · Chaining", "Models join rules into chains unless told not to.",
    f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{ch_b[2]}%</span><em>→</em><span style="color:{BLUE}">{ch_e[2]}%</span></div>
    <div class="sub">of chain requests wrongly allowed,<br>before and after “routes cannot be chained”</div>

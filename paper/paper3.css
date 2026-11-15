@@ -48,3 +48,5 @@ figure.diag { break-inside: auto; } .band, figure.diag .example { break-inside: 
 .tiles { align-content: start; } .tile { min-height: 9.5mm; }
 figure.item .rulebook { font-size: 6.8pt; line-height: 1.35; }
 figure img[src*="f_why_chain"], figure img[src*="f_why_refuse"], figure img[src*="f_signal"], figure img[src*="f_act"] { width: 90%; }
+
+.tag { font-family: Inter, sans-serif; font-size: 6.3pt; font-weight: 700; color: #1c5cab; background: #e6f1fd; border-radius: 1mm; padding: 0.2mm 1.2mm; margin-right: 1mm; white-space: nowrap; }

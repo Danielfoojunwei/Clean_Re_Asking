@@ -369,16 +369,16 @@ exA = gen_c.x3_stage1(1)[0]; exB = gen_c.x3_stage2(exA, "YES"); ex7 = gen_c.x7_a
 esc = html.escape
 
 Y, P_, N_ = '<span class="y">●</span>', '<span class="p">◐</span>', '<span class="n">○</span>'
-rq_tbl = table(["What a low score could mean", "Research question", "Answer in brief", "Where"], [
-    ["The diagnosis", "RQ1. Is a low score on one-way rules confusion about direction?",
+rq_tbl = table(["Track 1 open problem [1]", "Research question", "Answer in brief", "Where"], [
+    ["<b>P4</b> · What makes a benchmark gameable; demonstrate and close an exploit", "RQ1. Is a low score on one-way rules confusion about direction?",
      f"No. Wrong-way requests are allowed {v['e5b_rev']} of the time; chain requests {v['e5b_chain']}; listed requests are refused {v['e1b_ref']}", "§4.1"],
-    ["Failure 1: chaining", "RQ2. What drives chaining, and what stops it?",
+    ["<b>P4</b> · Keeping a benchmark meaningful", "RQ2. What drives chaining, and what stops it?",
      f"The word \"route\", longer rulebooks and reasoning drive it; forbidding it brings {v['e5b_chain']} to {v['e5e_chain']}", "§4.2"],
-    ["Failure 2: over-refusal", "RQ3. Why are listed requests refused, and what fixes it?",
+    ["<b>P3</b> · Which behaviours matter for real decision quality", "RQ3. Why are listed requests refused, and what fixes it?",
      f"Every restrictive sentence raises it and softer wording does not help; stating the rule first cuts it in {of(s['x3_down'], x3)} models", "§4.3"],
-    ["Failure 3: self-report", "RQ4. Do models know when they are wrong, and say so?",
+    ["<b>P1</b> · Does the model know how solid its claims are; <b>P2</b> · what it implies vs what it defends", "RQ4. Do models know when they are wrong, and say so?",
      f"They know but do not say: stated confidence scores {min(auroc):.2f}–{max(auroc):.2f}, answer-word probabilities {s['tp_lo']:.2f}–{s['tp_hi']:.2f}", "§4.4"],
-    ["Words versus actions", "RQ5. Does the written answer match what the model does?",
+    ["<b>P2</b> · Misrepresenting its own work; <b>P3</b> · do honesty signals predict decisions", "RQ5. Does the written answer match what the model does?",
      f"Not always: Grok 4.3 acted on {p0(x7g('Grok 4.3', 'base', 'none_action'))} of unsupported requests, mostly while writing DECLINE", "§4.5"]], "tight")
 
 cmp_tbl = f"""<table class="cmp"><thead>
@@ -502,13 +502,16 @@ round and can be reached by a chain. Figure 1 shows how each step of diagnosis m
 to Payroll. "Audit to Legal" goes the wrong way; nine models allow it {v['e5b_rev']} of the time. "Finance to Audit" needs a chain
 through Legal; they allow it {v['e5b_conly']} of the time when reasoning step by step. "Legal to Audit" is listed; they refuse it
 {v['e1b_fwd']} of the time in quick answers. One score averages all three.</p>
-<p><b>Why it matters.</b> Language models now sit in front of real actions as authorization gates [5], and agents act outside what
-they were granted in about one run in five [4]. Whether a gate over-blocks or over-permits decides whether people keep it switched
-on [2]. Track 1 asks whether models know how solid their claims are and whether a benchmark's weakness can be shown and closed [1];
-a score that counts only final answers addresses neither.</p>
+<p><b>Why it matters.</b> The AI-for-epistemics agenda asks for systems whose claims come with a reliable signal of how far to
+trust them [25, 26, 27], and treats evaluations as the cheapest outside lever on what labs optimise [1, 18]. Language models now
+sit in front of real actions as authorization gates [5], and agents act outside what they were granted in about one run in five
+[4]; a gate that over-blocks gets switched off [2]. Track 1 poses four open problems [1]: (P1) does a model know how solid its
+claims are, and can its confidence be checked against reality; (P2) what is the gap between what it implies and what it will
+defend; (P3) which behaviours matter for decision quality; (P4) what makes a benchmark gameable, and can an exploit be shown and
+closed. A permission decision has an exact right answer, so all four can be measured on the same items (Table 1).</p>
 {diag_fig}
 {rq_tbl}
-<p class="cap"><b>Table 1:</b> Five questions that take one score from symptom to cause to fix, and what we found.</p>
+<p class="cap"><b>Table 1:</b> Five research questions, the Track 1 open problem each answers, and what we found. P1–P4 are the four open problems the sprint lists for Track 1 (Section 5.2 answers each directly).</p>
 <p><b>Theory of change.</b> Scores will keep being read as diagnoses. If a benchmark gives each failure its own request, reports
 wrong refusals beside wrong allows, reads the model's probabilities rather than its stated confidence, and scores the action, then
 a low number points at something that can be fixed. Our contributions are a test that separates the ways a one-way rule is broken
@@ -530,9 +533,15 @@ right tool on the wrong person [7], and are weak at relation direction [9, 10].<
 leaves its answers unchanged [11], and identifies a property only if no other behaviour gives the same results [12]. Scoring rules
 also shape what models learn [18].</p>
 <p><b>Self-report, pushback and actions.</b> Stated confidence is overconfident [19], though recent work finds it coupled to internal
-probability [20] and prefers it for judge models [21]; MASK separates honesty from accuracy [15]. Under user pressure most models
-abandon correct answers [16, 22], and suppressing this can impair legitimate updating [17]. Refusals in text often fail to carry
-over to tool calls [23, 24].</p>
+probability [20] and prefers it for judge models [21]. MASK separates honesty from accuracy by pressuring models to contradict
+their own beliefs [15]; DarkBench catalogues manipulative response patterns [34]; SycEval and ELEPHANT measure capitulation and
+social sycophancy [16, 35], which deployed systems have shown [41] and which changes how users behave [42]. Under pressure most
+models abandon correct answers [22], and suppressing this can impair legitimate updating [17]. Refusals in text often fail to
+carry over to tool calls [23, 24].</p>
+<p><b>Keeping benchmarks meaningful.</b> Binary scoring rewards confident guessing over stated doubt [18]. ForecastBench stays
+uncontaminated by asking about the future [36]; consistency checks grade forecasters without waiting for outcomes [39]; Petri and
+Bloom automate behavioural audits [37], and Inspect standardises tasks [40]. Our route is complementary: ground truth is exact and
+immediate, names are freshly generated, and the test is built so that a shortcut reading cannot score well.</p>
 {cmp_tbl}
 <p class="cap"><b>Table 2:</b> This study against existing benchmarks. {Y} yes, {P_} partly, {N_} no, – not the benchmark's subject. Design entries are read from the cited papers; their headline numbers come from different tasks and models and are not directly comparable to ours.</p>
 <p><b>A different question.</b> Prior authorization benchmarks ask <i>whether</i> a decision matches the policy: is this action allowed
@@ -552,10 +561,7 @@ and both kinds of error are costly.</p>
 <p><b>3.2 Study design.</b> Each failure is measured, then one thing at a time is changed to find its cause and to test a fix
 (Figure 2). Every experiment's items, scoring and pass mark were written and hashed before its data was collected (Appendix C).</p>
 {design_fig}
-<p><b>3.3 Variables.</b> Table 4 lists what we varied, what we measured and what was held fixed.</p>
-{var_tbl}
-<p class="cap"><b>Table 4:</b> Experimental variables.</p>
-<p><b>3.4 Test specification.</b> For a rulebook R and a request from sender d to receiver a:</p>
+<p><b>3.3 Test specification.</b> Appendix B lists every variable. For a rulebook R and a request from sender d to receiver a:</p>
 <pre class="spec"><span class="k">kinds</span>      listed both ways: d→a and a→d in R        listed one way: only d→a in R
            wrong way round: only a→d in R, no chain   wrong way + chain: a→d in R and a chain d…a exists
            needs a chain: no rule either way, chain d…a exists       not connected: none of these
@@ -564,7 +570,7 @@ and both kinds of error are costly.</p>
 <span class="k">chaining</span>   P(allow | needs a chain or wrong way + chain)        <span class="k">wrong refusal</span>  P(refuse | listed)
 <span class="k">signal</span>     stated: integer 0–100 in a follow-up turn        probability: p(chosen word) − p(other word), first answer token
 <span class="k">counts</span>     an effect counts if it is ≥ 10 points (5 for sentence parts) and its 95% range over name sets excludes 0</pre>
-<p><b>3.5 Models, comparisons and statistics.</b> <i>Models.</i> Nine models from eight developers, chosen before any result, give
+<p><b>3.4 Models, comparisons and statistics.</b> <i>Models.</i> Nine models from eight developers, chosen before any result, give
 the measurements (eight on 18 name sets, GPT-4.1 on 10): GPT-4.1, GPT-4.1-mini, Grok 4.3, Gemini 2.5 Flash, Claude Haiku 5.5,
 DeepSeek v3.2, Llama 4 Maverick, Qwen3.5-9B and Nova Lite. Cause and fix experiments run on the five lower-cost models that show
 the failures, plus Grok 4.3, the heaviest refuser. <i>Comparisons.</i> We did not re-run other benchmarks; Table 2 compares designs
@@ -572,7 +578,7 @@ and cites their reported results. Within the study, each change is compared with
 or filler line controls for "any extra text". <i>Statistics.</i> The unit is the name set (four fresh names used in five rulebooks).
 We report 95% percentile bootstrap ranges over name sets (2,000 resamples), shown in square brackets. Answers are rule-scored; no
 model graded another model.</p>
-<p><b>3.6 What happens, on one real item.</b> Figure 3 follows one stored item through eight conditions. The rule that permits the
+<p><b>3.5 What happens, on one real item.</b> Figure 3 follows one stored item through eight conditions. The rule that permits the
 request is the fourth line of four. The quick answer refuses it and reports confidence 100, while the model's own probability of
 that answer is 78%. Writing the rule first does not help; being asked whether the rule is listed does.</p>
 {item_fig}
@@ -582,7 +588,7 @@ that answer is 78%. Writing the rule first does not help; being asked whether th
 <p class="cap"><b>Table 5:</b> Headline results beside the closest published result. Published numbers come from other tasks and models; they place our rates in context and are not head-to-head comparisons.</p>
 
 <h3>4.1 RQ1 · Is a low score on one-way rules confusion about direction?</h3>
-<p>No. When only the reverse rule was listed, quick answers allowed {v['e1b_rev']} of requests ({v['e1b_rev_kn']}) and step-by-step
+<p><span class="tag">Track 1 · P4</span> No. When only the reverse rule was listed, quick answers allowed {v['e1b_rev']} of requests ({v['e1b_rev_kn']}) and step-by-step
 answers {v['e5b_rev']}. The errors sit elsewhere: {v['e5b_chain']} of chain requests were allowed ({v['e5b_chain_kn']}) and
 {v['e1b_ref']} of listed requests were refused ({v['e1b_ref_kn']}). Models named the sender and receiver correctly in {roles_k:,} of
 {roles_n:,} checks. Ring rulebooks were harder than two-way ones ({bridge[('base', 'CYC')]:.0f}% against {bridge[('base', 'REC')]:.0f}%
@@ -593,7 +599,7 @@ wrong-way requests only when the receiver was printed before the sender ({ro['RE
 {star("What no prior benchmark shows.", f"Matched-pair benchmarks report that a decision was wrong [2, 5, 6]; none says which rule-reading produced it. Here the reading everyone assumes accounts for {v['e5b_rev']} of answers, and two readings nobody scores account for {v['e5b_chain']} and {v['e1b_ref']}.")}
 
 <h3>4.2 RQ2 · What drives chaining, and what stops it?</h3>
-<p>Given "A may send to B" and "B may send to C", models allow A to C; Gemini 2.5 Flash did so in
+<p><span class="tag">Track 1 · P4</span> Given "A may send to B" and "B may send to C", models allow A to C; Gemini 2.5 Flash did so in
 {kn('Gemini 2.5 Flash', 'E5/base', 'chain_release')} step-by-step answers, and its reasoning says why: "GARNET → LOTUS → ELM is a
 valid route". Three things drive it (Figure 4). <i>The word.</i> Replacing "route" with "entry" cut chaining in {of(s['x4_down'], x4)}
 models, but Gemini still chained {p0(C3['Gemini 2.5 Flash']['X4']['E5']['chain_entry'])} and Llama
@@ -606,7 +612,7 @@ models and hidden reasoning in {names(s['x6_chain_up'])}. One sentence stops it:
 {star("Where the state of the art sees one error, there are two conventions.", "In AuthorizationPairs a guardrail is marked wrong for <i>missing</i> a valid submitter-to-editor-to-viewer path [2]; here models are wrong for <i>using</i> one. Chains are legal in some policies and illegal in others, and a model will guess unless the rule says which. AuthorizationBench found more reasoning leaves errors unchanged [4]; split by kind, reasoning moves two errors in opposite directions.")}
 
 <h3>4.3 RQ3 · Why are listed requests refused, and what fixes it?</h3>
-<p>In quick answers Grok 4.3 refused {rci('Grok 4.3', 'E1/base', 'listed_refusal')} of listed requests. The same models found those
+<p><span class="tag">Track 1 · P3</span> In quick answers Grok 4.3 refused {rci('Grok 4.3', 'E1/base', 'listed_refusal')} of listed requests. The same models found those
 rules {lookup_lo:.0f}–{lookup_hi:.0f}% of the time when asked "is it on the list?", and in {both_right:,} of {wrong_tot:,} wrong
 quick decisions the model got both steps of that item right separately. <i>The cause is restriction.</i> The stricter sentence raised
 refusals from {v['e1b_ref']} to {v['e1e_ref']} ({v['e1e_ref_kn']}). Split into parts (Figure 5, left), "exact line" raised them in
@@ -621,7 +627,7 @@ and the model contradicted its own "yes" in {s['x3_yes_ref'][0]} of {s['x3_yes_r
 {star("Explicit rules are not enough, and explicit permission is not the fix.", f"DelegationBench reports 97–100% accuracy once rules are explicit [6], and AuthGateBench that explicit policy reduces over-blocking [5]. Our rules are explicit and four lines long, yet {v['e1b_ref']} of listed requests are refused, and adding explicit permission helps one model in six. A test that counts only wrong allows would score every restrictive sentence as an improvement.")}
 
 <h3>4.4 RQ4 · Do models know when they are wrong, and say so?</h3>
-<p>They know, and do not say. Asked how confident they were, models answered exactly 100 in {v['conf100']} of {v['confn']} cases;
+<p><span class="tag">Track 1 · P1, P2</span> They know, and do not say. Asked how confident they were, models answered exactly 100 in {v['conf100']} of {v['confn']} cases;
 the stated number separated right from wrong at {min(auroc):.2f}–{max(auroc):.2f}. For the three models whose providers return
 answer-word probabilities, the gap between "EXECUTE" and "DECLINE" separated right from wrong at {s['tp_lo']:.2f}–{s['tp_hi']:.2f}
 (Figure 6, left). Asking again does not recover the signal. A neutral "state your final decision" changed almost nothing. "I think
@@ -631,10 +637,10 @@ an effect that counts in {of(s['x2_doubt'], x2)} models), taking DeepSeek from {
 {p0(X2('DeepSeek v3.2', 'doubt', 'accuracy_after'))} correct. Wrong answers were changed more often than right ones, so doubt is not
 pure noise, but it costs more than it gains.</p>
 {fig("f_signal", "Left: how well two signals separate right from wrong answers; 0.5 is chance. Middle and right: share of right and of wrong answers a model changed when asked again in three ways.", 6)}
-{star("Against the recent view that stated confidence is enough.", f"Stated and internal probabilities are reported to be coupled [20], and stated confidence is now recommended over logprobs for judge models [21]. On this task they come apart completely: the stated number is 100 in {v['conf100_pc']} of answers while the probability beside it is informative. Our pushback result agrees with [22], and extends it to a setting where the right answer can be read off a four-line list.")}
+{star("Against the recent view that stated confidence is enough.", f"Stated and internal probabilities are reported to be coupled [20], and stated confidence is now recommended over logprobs for judge models [21]. On this task they come apart completely: the stated number is 100 in {v['conf100_pc']} of answers while the probability beside it is informative. Our pushback result agrees with [16, 22, 35] and extends them to a setting where the right answer can be read off a four-line list. Binary scoring gives a model no reason to voice doubt [18], and here it voices none.")}
 
 <h3>4.5 RQ5 · Does the written answer match what the model does?</h3>
-<p>We gave models a tool and told them to call it or reply DECLINE. Refusals of listed requests mostly vanished (Grok
+<p><span class="tag">Track 1 · P2, P3</span> We gave models a tool and told them to call it or reply DECLINE. Refusals of listed requests mostly vanished (Grok
 {p0(x7g('Grok 4.3', 'base', 'refusal_words'))} to {p0(x7g('Grok 4.3', 'base', 'refusal_action'))}). But Grok 4.3 called the tool for
 {p0(x7g('Grok 4.3', 'base', 'chain_action'))} of chain requests and {p0(x7g('Grok 4.3', 'base', 'none_action'))} of unconnected ones,
 against {p0(x7g('Grok 4.3', 'base', 'chain_words'))} and {v_grok_none} in words, and in {gx7['called_while_saying_decline']} of its
@@ -653,10 +659,17 @@ and fix experiments cover five to six of the nine models, the lower-cost ones th
 were available for three models. (iv) The tool result comes from one tool format and one provider per model. (v) We compare with
 other benchmarks by design and reported numbers; we did not re-run them. (vi) We could not look inside a model: the open models
 small enough to run locally answered at chance, so no activation probe is reported.</div>
-<p><b>5.2 What this means for evaluators and deployers.</b> <i>Split before you explain:</i> a rate per kind of request costs nothing
-and changes the diagnosis. <i>Count both errors:</i> every restrictive sentence looked like progress on wrong allows. <i>Prefer
-structure to wording:</i> one extra question removed most wrong refusals where softer wording did not. <i>Read probabilities and
-actions:</i> the stated confidence and the written decision were the two least reliable signals we measured.</p>
+<p><b>5.2 Answers to the four Track 1 open problems.</b> <i>P1, does the model know how solid its claims are?</i> It knows and does
+not say: answer probabilities check out against ground truth ({s['tp_lo']:.2f}–{s['tp_hi']:.2f}), the stated number does not
+({min(auroc):.2f}–{max(auroc):.2f}). A confidence audit should read the first, not ask for the second. <i>P2, the gap between what
+it implies and what it defends.</i> Three gaps, all measured: it implies certainty it does not have ({v['conf100_pc']} say 100); it
+abandons {p0(X2('Nova Lite', 'doubt', 'changed_right'))}–{p0(X2('Qwen3.5-9B', 'doubt', 'changed_right'))} of right answers after one line
+of doubt while a neutral re-ask changes almost none, which separates capitulation from warranted updating; and it can write DECLINE
+while making the call. <i>P3, which behaviours matter for decision quality?</i> Not self-report: every model reported full confidence
+whatever its accuracy. What moved decisions was structure (state the rule, then decide) and what the rule leaves unsaid. <i>P4,
+what makes a benchmark gameable, and can an exploit be closed?</i> Ring rulebooks let one score stand for two mistakes, and counting
+only wrong allows rewards every restrictive sentence. Both are shown here and closed by a rulebook with one explanation per
+request, fresh names per set, and both error types reported.</p>
 <p><b>5.3 Limitations.</b> Invented names and rules; one prompt layout per naming style; all calls over two days through one
 gateway; experiments specified in three batches (Appendix C); no human comparison. Appendix A gives the full list.</p>
 
@@ -703,6 +716,25 @@ repository: github.com/Danielfoojunwei/When-Correct-Actions-Hide-Source-Role-Err
 <li>Basta, Haghighi, Kaafar, Beheshti (2026). Correction or Manipulation? Measuring Epistemic Vigilance in LLM Agents Under User Pressure. arXiv:2610.36453.</li>
 <li>Gupta, Saha, Inyang, Al Gharib (2026). Behavior Beyond Text: Evaluating Refusal Transfer Failure in LLM Agents. arXiv:2610.28982.</li>
 <li>Kerche Bonás, Laitz, Sales Almeida, Alves Santos (2026). Lumen-bench: Cross-Lingual Safety Gaps and the Say-Do Problem in Tool-Calling Large Language Models. arXiv:2610.15134.</li>
+<li>Ben N, Csaky (2026). State of the Field: AI for Epistemics and Coordination. LessWrong.</li>
+<li>Finnveden (2024). What's Important in "AI for Epistemics"? Forethought.</li>
+<li>Cotton-Barratt, Hadshar (2026). AI Impacts on Epistemics: the Good, the Bad and the Ugly. Forethought.</li>
+<li>Cotton-Barratt, Vaintrob, Sourbut, Hadshar (2026). Design Sketches for a More Sensible World. Forethought.</li>
+<li>Finnveden (2024, updated 2025). Project Ideas: Epistemics. lukasfinnveden.substack.com.</li>
+<li>Todd (2024). The most interesting startup idea I've seen recently: AI for epistemics. 80,000 Hours.</li>
+<li>Sourbut, Goldhaber (2025). A Full Epistemic Stack: Knowledge Commons for the 21st Century. LessWrong.</li>
+<li>Hammond et al. (2025). Multi-Agent Risks from Advanced AI. Cooperative AI Foundation. arXiv:2502.14143.</li>
+<li>Cotton-Barratt, Vaintrob, Sourbut (2025). Design Sketches: Collective Epistemics. Forethought.</li>
+<li>Kran et al. (2025). DarkBench: Benchmarking Dark Patterns in Large Language Models. ICLR. arXiv:2503.10728.</li>
+<li>Cheng et al. (2025). ELEPHANT: Measuring and Understanding Social Sycophancy in LLMs. arXiv:2505.13995.</li>
+<li>Karger et al. (2025). ForecastBench: A Dynamic Benchmark of AI Forecasting Capabilities. ICLR. arXiv:2409.19839.</li>
+<li>Anthropic (2025). Petri: an open-source auditing tool; Bloom: automated behavioural evaluations. anthropic.com/research.</li>
+<li>European Union (2024). Artificial Intelligence Act, Article 5: Prohibited AI Practices. artificialintelligenceact.eu/article/5.</li>
+<li>Paleka et al. (2024). Consistency Checks for Language Model Forecasters. arXiv:2412.18544.</li>
+<li>UK AI Security Institute. Inspect: a framework for large language model evaluations. github.com/UKGovernmentBEIS/inspect_ai.</li>
+<li>OpenAI (2025). Sycophancy in GPT-4o: what happened and what we're doing about it. openai.com.</li>
+<li>Cheng et al. (2025). Sycophantic AI Decreases Prosocial Intentions and Promotes Dependence. Science.</li>
+
 </ol>
 
 <h2>Appendix A. Limitations and Dual-Use / Ethical Considerations</h2>
@@ -741,6 +773,8 @@ and analysis code, produce the figures and draft this report. All measurements c
 rules; no model graded another model's output. The author is responsible for the content.</p>
 
 <h2>Appendix B. Design Details</h2>
+{var_tbl}
+<p class="cap"><b>Table B1:</b> Experimental variables: what was varied, measured and held fixed.</p>
 <p>Names: 48 opaque tokens and 48 department names, shuffled once with a fixed seed; round r uses names 4r to 4r+3 on each surface, so no
 name repeats across rounds. Mixed policy: A→B, B→A, B→C, C→D, with requests on pairs AB, BC, CD and one of AC, AD, BD rotated by
 round, in both orientations. Ring: A→B, B→C, C→D, D→A. Reciprocal: A→B, B→A, C→D, D→C. Route lines are shuffled per bank and policy,
@@ -847,6 +881,35 @@ meaningful there, so this is weak support. Ring rulebooks remain harder than two
 {bridge[('base', 'REC')]:.0f}% correct), now with a known reason.</p>
 
 
+
+<h2>Appendix I. Alignment with the Sprint: Track 1 and the Reading List</h2>
+<p><b>Track 1 open problems.</b> Section 5.2 answers the four open problems the sprint lists for Track 1 [1]. The sprint's example
+project ideas for the track map onto the experiments as follows.</p>
+{table(["Sprint example idea [1]", "What it asks for", "Where this study does it", "Difference"], [
+    ["Confidence Audit", "elicit confidence in a decision and check it against outcomes", "confidence after every quick decision, scored against exact ground truth; answer-word probabilities as a second signal (Section 4.4)", "ground truth is immediate, not delayed"],
+    ["FlipRate", "flip curves under escalating rebuttals, separating warranted updating from capitulation", "neutral, agreeing and doubting re-asks on right and on wrong answers (Section 4.4, Table G5)", "one rebuttal turn, three framings"],
+    ["MisleadBench", "what a model implies against what it will defend", "stated certainty against its own probabilities; written DECLINE against the tool call (Sections 4.4–4.5)", "single turn; fresh names instead of question rotation"],
+    ["Epistemic virtue eval suite", "calibration, honest uncertainty and manipulation resistance as reusable tasks", "rule-scored generators and runners released; no model grades another", "not yet packaged as Inspect tasks [40]"],
+    ["Article 5 measurement protocol", "measures of deceptive behaviour usable against EU AI Act Article 5(1)(a) [38]", "a rule-scored rate of written refusals that accompany the action (Section 4.5)", "a measurement only; no legal threshold is proposed"]], "tight small")}
+<p class="cap"><b>Table I1:</b> The sprint's Track 1 example ideas and the corresponding experiments.</p>
+<p><b>Reading list.</b> Table I2 lists every resource named on the sprint page and how this study relates to it. Where a resource
+addresses a different problem we say so instead of forcing a link.</p>
+{table(["Resource (sprint section)", "Relation to this study"], [
+    ["State of the Field: AI for Epistemics and Coordination [25]; What's Important in “AI for Epistemics”? [26]; AI Impacts on Epistemics [27]; Project Ideas: Epistemics [29]; Todd [30] (sprint-wide)", "Framing: AI systems are useful for decisions only if the trust they signal is warranted. This study measures that signal on a task with exact answers."],
+    ["Design Sketches for a More Sensible World [28]; Design Sketches: Collective Epistemics [33]; A Full Epistemic Stack [31] (sprint-wide, Track 1)", "Framing: these sketch tools that depend on a model's claims carrying honest reliability signals; Section 4.4 shows the stated signal is not one."],
+    ["Multi-Agent Risks from Advanced AI [32] (sprint-wide)", "Motivation: permission rules between parties are a building block of multi-agent systems; chaining is a way authority spreads further than granted."],
+    ["MASK [15]; DarkBench [34]; SycEval [16]; ELEPHANT [35] (Track 1)", "Used and compared: honesty against accuracy, manipulative patterns, capitulation under pushback (Sections 2, 4.4)."],
+    ["Why Language Models Hallucinate [18] (Track 1)", "Used: binary scoring rewards confident answers; the confidence result is consistent with it (Section 4.4)."],
+    ["ForecastBench [36]; consistency checks [39]; Petri and Bloom [37]; Inspect [40] (Track 1)", "Related methods for keeping evaluations meaningful (Section 2). Not used as tools."],
+    ["EU AI Act Article 5 [38] (Track 1)", "Context for Section 4.5 and Table I1. No legal claim is made."],
+    ["Sycophancy in GPT-4o [41]; Sycophantic AI Decreases Prosocial Intentions and Promotes Dependence [42] (Track 3)", "Context for the pushback result: capitulation is observed in deployment and affects users."],
+    ["OpenTelemetry GenAI conventions; Certificate Transparency RFC 6962 (Track 2 ideas)", "Implication only: Section 4.5 is a case where the text and the executed call disagree, which an action log would expose and a text log would not."],
+    ["The AI Adoption Gap, Vaintrob 2025; AI Tools for Existential Security, Vaintrob and Cotton-Barratt 2025 (Track 4)", "Implication only: a gate that refuses listed requests imposes an adoption cost (Section 4.3)."],
+    ["Design Sketches: Angels-on-the-Shoulder, 2026; Guardian Angels, Gwern 2026 (Track 3)", "Implication only: an agent that intervenes before a user acts is a gate, and inherits both failure directions measured here."],
+    ["AI for AI for Epistemics, Cotton-Barratt and Finnveden 2026; C2PA specification v2.4; Community Notes dataset; From Birdwatch to Community Notes, Mohammadi et al. 2025; AVeriTeC (Track 2)", "Different problem (provenance and source reliability). Not used."],
+    ["AI Can Help Humans Find Common Ground, Tessler et al. 2024 (Track 3)", "Different problem (group deliberation). Not used."],
+    ["Did the Roll-Out of Community Notes Reduce Engagement With Misinformation?, Chuai et al. 2024; Accuracy of Forecasts in Strategic Intelligence, Mandel and Barnes 2014; FutureSearch, Swift Centre and Sentinel write-ups (Track 4)", "Different problem (deployment and forecasting impact). Not used."]], "tight small")}
+<p class="cap"><b>Table I2:</b> Every resource named on the sprint page, and its relation to this study.</p>
 """
 
 open("paper.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>One Score, Three Failures</title><style>{CSS}</style></head><body>{BODY}</body></html>")
