@@ -56,9 +56,9 @@ if "probe" in R:
         for w, c in (("Q0", "ask"), ("A0", "assert"), ("D0", "direct")):
             for st, ls in (("kept", "-"), ("flipped", "--")):
                 g = P["groups"].get(f"{w}/dis/{side}/{st}")
-                if g and g["n"] >= 10:
+                if g and g["n"] >= 100:
                     ax.plot(xs, [100 * v for v in g["acc"]], color=C[c], ls=ls, label=f"{ {'ask': 'asks', 'assert': 'asserts', 'direct': 'tells'}[c]}, answer {st} (n={g['n']})")
-        ax.set_title(title, fontsize=9); ax.set_xlabel("after block"); ax.legend(frameon=False, fontsize=6.5)
+        ax.set_title(title, fontsize=9); ax.set_xlabel("after block"); ax.legend(frameon=False, fontsize=6.5, loc="upper left")
     axs[0].set_ylabel("probe accuracy (%)")
     save(fig, "probe.png")
 

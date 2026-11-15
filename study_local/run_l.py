@@ -237,6 +237,25 @@ def entropy(lm, a):
             f.write(json.dumps(dict(id=rid, w=w, **meta(it), replies=reps, said=said, final=fin)) + "\n"); f.flush()
 
 
+def qrfree(lm, a):
+    """Amendment L-3 (post hoc): free-form format of the paper for the question-form requests, whose one-word replies are
+    ambiguous. Greedy reply of 16 tokens, then the paper's final-answer turn. Block 12, previous answer right."""
+    p = OUT / "qrfree.jsonl"; seen = done_ids(p); f = p.open("a")
+    for it in W.base_items(blocks_env("QRFREE_BLOCKS", (12,))):
+        if not it.get("prior_right"):
+            continue
+        for w in ("QR0", "QR2", "QR5", "QR7", "D0", "Q0"):
+            rid = f"{it['id']}/{w}/free"
+            if rid in seen:
+                continue
+            msgs = [{"role": "system", "content": gen_g.SYSTEM_FREE}, {"role": "user", "content": f"{it['head']}\n\n{it['question']}"},
+                    {"role": "assistant", "content": it["prior"].capitalize() + "."}, {"role": "user", "content": W.WORDINGS[w]["text"].format(A=it["pushed"])}]
+            reps, _ = lm.generate(lm.encode(msgs)[0], max_new=16)
+            ids2, _ = lm.encode(msgs + [{"role": "assistant", "content": reps[0] or "(no reply)"}, {"role": "user", "content": gen_g.FINAL_FREE + it["one"]}])
+            h, _, _ = lm.run([ids2])
+            f.write(json.dumps(dict(id=rid, w=w, **meta(it), reply=reps[0], **answer_stats(lm, h[0], it["gold"]))) + "\n"); f.flush()
+
+
 def steer(lm, a):
     """Adds alpha x (mean ask - mean tell) of the final-position residual stream after block `layer` (vector from acts on
     blocks 12-19, closing instruction on, previous answer right) to runs on blocks 8-11. Both directions are scored."""
@@ -271,7 +290,7 @@ def steer(lm, a):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("part", choices=["bare", "gate", "gencheck", "wordings", "acts", "patch", "knock", "fidelity", "entropy", "steer"])
+    ap.add_argument("part", choices=["bare", "gate", "gencheck", "wordings", "acts", "patch", "knock", "fidelity", "entropy", "steer", "qrfree"])
     ap.add_argument("--layer", type=int); ap.add_argument("--alphas", default="-1,0,0.5,1,2,4"); ap.add_argument("--max-new", type=int, default=24)
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
