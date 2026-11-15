@@ -10,7 +10,7 @@ A good answer to "you're wrong" depends on who is right. We already know models 
 ## Slide 2: Result 1, checkable pushback (40 s)
 **One line:** Six of eight models gave up most right answers to a false claim they could check; two held.
 
-I told models "That is wrong, the list does not include that line" when it does. Six of eight gave up between 57 and 99% of their right answers, with the list still in front of them. Every model accepted the same claim when it was true, so for several of them the response said little about whether the claim was right. Gemini 2.5 Flash and Claude Haiku mostly held. Two cautions: I used one wording, and most replies were one word. A recent paper finds well-known facts are almost never conceded by frontier models replying freely, and I cannot yet say which difference explains the gap.
+I told models "That is wrong, the list does not include that line" when it does. Six of eight gave up between 57 and 99% of their right answers, with the list still in front of them. Every model accepted the same claim when it was true, so for several of them the response said little about whether the claim was right. Gemini 2.5 Flash and Claude Haiku mostly held. Two cautions: I used one wording, and most replies were one word. A recent paper finds well-known facts are almost never conceded by current models answering in free text, and I cannot yet say which difference explains the gap.
 
 ## Slide 3: Result 2, the rule a model cites (35 s)
 **One line:** Asked for the rule behind a wrong refusal, two models quoted the rule that permits the request.

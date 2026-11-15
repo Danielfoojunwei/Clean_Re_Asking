@@ -465,19 +465,19 @@ rq_tbl = table(["Reading", "What we measured", "What we observed on this task", 
     ["<b>The rule a model cites</b>", "\"quote the line that decides this request\", matched by rule against the list and the model's own decision",
      f"After a wrong refusal two models quote the permitting line ({ep['q_sup'][0][1]} of {ep['q_sup'][0][2]}; {ep['q_sup'][1][1]} of {ep['q_sup'][1][2]})", "<b>Not found</b> in prior work we searched [58, 59]", "P2 · §4.2"],
     ["<b>Stated confidence and probabilities</b>", "confidence asked plainly, under a Brier rule, on a word scale, with a penalty and UNSURE option; answer-word probabilities (three models)",
-     f"{v['conf100_pc']} of answers say 100; probabilities separate right from wrong at {s['tp_lo']:.2f}–{s['tp_hi']:.2f}", "<b>Replicates</b> [19, 50–55]; the stated Brier rule is a new variant", "P1 · §4.3"],
+     f"{v['conf100_pc']} of answers say 100; probabilities separate right from wrong at {s['tp_lo']:.2f}–{s['tp_hi']:.2f}", "<b>Replicates</b> [19, 50, 51, 52, 54, 55]; the stated Brier rule is a new variant", "P1 · §4.3"],
     ["<b>Written decision and tool call</b>", "the same request with a tool; the call compared with the text beside it",
      f"Grok 4.3: {gx7['called_while_saying_decline']} of {gx7['calls']} tool calls arrive with the text DECLINE", "<b>Replicates</b> [23, 24, 56, 57] on a harmless allow-list task", "P2, P3 · §4.4"],
     ["<b>The accuracy score</b>", "one kind of request per mistake; one sentence added at a time; both error types counted",
-     f"Wrong direction {v['e5b_rev']}; chaining {v['e5b_chain']}; wrong refusals {v['e1b_ref']}", "Builds on [2, 5, 6, 9, 10]; prior-work check less complete (Section 5)", "P3, P4 · §4.5"]], "tight reframe")
+     f"Wrong direction {v['e5b_rev']}; chaining {v['e5b_chain']}; wrong refusals {v['e1b_ref']}", "Over-refusal and stricter prompts raising refusals are <b>known</b> [5, 65]; the reverse-versus-chain split was <b>not found</b>", "P3, P4 · §4.5"]], "tight reframe")
 
 cmp_tbl = table(["Topic", "What prior work already shows", "What this study adds"], [
-    ["Pushback on right and wrong answers", "Both directions scored as hits and false alarms with d′; 55–100% of concessions to wrong users in two models [22]. Graded rebuttals, fabricated citations strongest [16]. Evidence fixed in the prompt, false pressure only, 19 models [46]. Well-known facts are conceded 1.3% of the time by eight frontier models replying freely [47].",
+    ["Pushback on right and wrong answers", "Both directions scored as hits and false alarms with d′; two models conceded to wrong users in 55–100% of conversations [22]. Rebuttals graded by strength, citation-style ones moving most models off correct answers [16]. Evidence fixed in the prompt, false pressure only, 19 models [46]. Well-known facts are conceded 1.3% of the time across eight current models [47].",
      "The pushback is itself a statement about a line in the prompt, so its truth is checkable there, and the true and false versions use the same words. [22] names the lack of verifiable grounds as its limitation."],
-    ["Evidence a model cites for its decision", "Models told to copy the relevant clause before a compliance verdict; only the verdict is scored [58]. Citations in retrieval answers are often post-rationalised [59].", "The quoted line is matched by rule against the list and against the model's own decision."],
-    ["Stated confidence, penalties, abstention", "Stated confidence is overconfident and clusters at few values [19, 55]; which of stated and token confidence wins depends on where the probability is read [54]; stated penalties and thresholds barely move abstention [18, 50, 51, 52, 53].", "A replication on exactly-scored items, plus one variant we did not find tested: stating the Brier rule."],
+    ["Evidence a model cites for its decision", "Models told to copy the relevant clause before a compliance verdict; only the verdict is scored [58]. Up to 57% of citations in one retrieval model were post-rationalised [59].", "The quoted line is matched by rule against the list and against the model's own decision."],
+    ["Stated confidence, penalties, abstention", "Stated confidence is overconfident and clusters at few values [19, 55]; which of stated and token confidence wins depends on where the probability is read [54]; stated penalties and thresholds barely move abstention [50, 51, 52], which responds more to an explicit reward for abstaining [53].", "A replication on exactly-scored items, plus one variant we did not find tested: stating the Brier rule."],
     ["Several signals on the same transcripts", "Verbalized confidence, likelihood, a hidden-state probe and P(True) under re-ask, agreement and challenge with a correct or wrong answer supplied [48].", "The cited rule and the tool call on the same items; we have no hidden-state probe."],
-    ["Reply length", "A longer reply budget turns caving into self-correction [49]; reasoning improves expressed confidence [64].", "One consistent observation in one model."],
+    ["Reply length", "A longer reply budget raises self-correction after pushback while caving changes much less [49]; reasoning models state better-calibrated confidence [64].", "One consistent observation in one model."],
     ["Text against tool call", "Refusal text beside harmful calls [23, 24, 56]; a model judges BLOCK yet prefers the blocked action on policy tasks [57].", "The same mismatch on a harmless allow-list task, in the over-permissive direction."]], "tight small")
 
 reframe_tbl = table(["Common practice", "Usual reading", "What we did", "What we observed on this task"], [
@@ -573,7 +573,7 @@ behaviour" [25].</p>
 scores both directions: Basta et al. push a wrong answer on models that were right and the right answer on models that were
 wrong, and report sensitivity and bias [22]. But in these studies the truth of the objection sits outside the conversation, in
 medicine, mathematics or trivia. The model cannot check it, and the paper that introduced the two-sided scoring names this as
-its limitation: the user offers "no grounds that an agent can verify" [22]. Work that does put evidence in the prompt applies
+a limitation: its first study "offers no grounds that an agent can verify" [22]. Work that does put evidence in the prompt applies
 only false pressure and does not have the user say anything about the evidence [46].</p>
 <p><b>This study.</b> We use an open-book task. A rulebook lists who may send records to whom, each rule has a direction, and
 the model must allow or refuse a request (Figure 2). The right answer can be read off a four-line list in the prompt, so no
@@ -605,19 +605,22 @@ released test bed with all raw answers.</li>
 </ol>
 
 <h2>2. Related Work</h2>
-<p><b>Pushback.</b> Models change correct answers when challenged [60, 61]. SycEval grades rebuttals by strength and finds
-14.7% move a model off a correct answer [16]; Basta et al. add two-sided scoring with a neutral control, authority claims and
+<p><b>Pushback.</b> Models change correct answers when challenged [60, 61]. SycEval grades rebuttals by strength; flips from
+correct to incorrect made up 14.7% of its samples [16]; Basta et al. add two-sided scoring with a neutral control, authority claims and
 real or fabricated citations [22]; suppressing sycophancy can impair legitimate updating [17]; a flip rate alone hides what
-kind of change occurred [63]. Yang et al. find the cost of verifying a claim dominates: well-known facts are almost never
-conceded [47]. MASK contrasts a pressured statement with a neutrally elicited belief [15]; DarkBench and ELEPHANT measure
+kind of change occurred [63]. Yang et al. find that the kind of task dominates, chiefly how costly the claim is to verify:
+well-known facts are almost never conceded [47]. MASK contrasts a pressured statement with a neutrally elicited belief [15]; DarkBench and ELEPHANT measure
 manipulative patterns and social sycophancy [34, 35], which shift users' judgments [42] and have forced a rollback [41].</p>
-<p><b>Confidence.</b> Stated confidence is overconfident [19, 62], though coupled to internal probability [20] and preferred for
-judge models [21]; different confidence signals disagree on the same items [48, 54, 55]. Kalai et al. propose stating a penalty
-and threshold [18]; several studies find models barely respond to it [50, 51, 52, 53]. ForecastBench scores stated probabilities
+<p><b>Confidence.</b> Stated confidence is overconfident [19], though coupled to internal probability [20] and preferred for
+judge models [21]; a model's own probability that its answer is true is fairly well calibrated [62]; different confidence signals disagree on the same items [48, 54, 55]. Kalai et al. propose stating a penalty
+and threshold [18]; several studies find models barely respond to it [50, 51, 52], and that an explicit
+reward for abstaining matters more than the penalty [53]. ForecastBench scores stated probabilities
 with a proper rule [36]; consistency checks grade forecasters without outcomes [39]; human analysts discriminate outcomes at
 0.94 [43].</p>
-<p><b>Actions, citations and scores.</b> Refusals in text often fail to reach tool calls [23, 24, 56, 57]; agents act out of scope
-in 19.2% of runs [4]. Verdicts can be insensitive to the rule they cite [58] and citations post-rationalised [59]. Authorization
+<p><b>Actions, citations and scores.</b> Refusals in text can fail to reach tool calls [23, 24, 56, 57]; agents act out of scope
+in 19.2% of runs [4]. Verdicts can be insensitive to the rule they cite [58] and citations can be post-rationalised [59]. Authorization gates block explicitly
+authorized actions [5]; stricter system prompts raise refusals without improving discrimination [65]; step-by-step prompting can
+lower rule adherence [66]; paired allow-and-deny scoring is established [2, 67]. Authorization
 benchmarks compare matched cases [2, 3, 5, 6]; models are weak at relation direction [9, 10] but track roles [8]; a test
 identifies a property only if no other behaviour gives the same results [11, 12, 13, 14]. Petri, Bloom and Inspect are tools for
 such evaluations [37, 40].</p>
@@ -673,7 +676,7 @@ repeated doubt did not raise these rates further (Appendix J). A requester's not
 suspect this is not allowed" cut the share of listed requests allowed for {names(ep['st_listed'])} (Grok 4.3:
 {p0(st('Grok 4.3', 'allow_want_allow'))} to {p0(st('Grok 4.3', 'allow_want_refuse'))}; Figure 4, right).</p>
 {fig("f_epi", "Left: how well stated confidence separates right from wrong answers under three ways of asking (0.5 is chance; Section 4.3). Middle: share of right answers a model changed after three kinds of pushback. Right: share of listed requests allowed when the requester says they want it or suspects it is not allowed. *Claude Haiku 5.5 follow-ups use 150-token replies.", 4)}
-{star("Relation to prior work.", f"The two-sided design and its scoring are from Basta et al. [22]; what is added is that the objection can be verified in the prompt, which their study lacks. Our rates look at odds with Yang et al., where well-known facts were conceded 1.3% of the time [47]. The settings differ in ways we cannot separate: theirs are frontier models replying freely about familiar facts under repeated disagreement, ours are mostly smaller models replying in one word to a specific false statement about the prompt. The one model here that replied at length resisted, as reply-length results would predict [49]. We tested one wording.")}
+{star("Relation to prior work.", f"The two-sided design and its scoring are from Basta et al. [22]; what is added is that the objection can be verified in the prompt, which their study lacks. Our rates look at odds with Yang et al., where well-known facts were conceded 1.3% of the time [47]. The settings differ in ways we cannot separate: theirs are eight current models answering in free text about familiar facts under repeated disagreement, graded by model judges; ours are mostly smaller models replying in one word to a specific false statement about the prompt. The one model here that replied at length resisted, as reply-length results would predict [49]. We tested one wording.")}
 
 <h3>4.2 The rule a model cites for its own decision</h3>
 <p><span class="tag">Track 1 · P2</span> After each quick decision we asked the model to quote the one line that decides the
@@ -694,7 +697,7 @@ nine models answered exactly 100 in {v['conf100']} of {v['confn']} cases; the nu
 {min(auroc):.2f}–{max(auroc):.2f}, where 0.5 is chance. Collapse onto a few values is known [19, 55]; here it is extreme,
 probably because the question follows a one-word instruction. We asked in three further ways (Figure 4, left). Under the
 penalty rule of [18] (wrong costs three points, UNSURE nothing), models chose UNSURE on {ep['unsure_wrong'][0]} of the
-{ep['unsure_wrong'][1]} items they get wrong, in line with [50, 51, 52, 53]. On a four-word scale they chose CERTAIN for
+{ep['unsure_wrong'][1]} items they get wrong, in line with [50, 51, 52]. On a four-word scale they chose CERTAIN for
 {nn(ep['cert_wrong'])} wrong answers. Told they would be scored by the Brier rule, a variant we did not find tested,
 {len(ep['b100'])} of the seven models that answer in one word still said 100 at least 95% of the time (separation
 {ep['b_lo']:.2f}–{ep['b_hi']:.2f}). For the three models whose providers return answer-word probabilities, the gap between
@@ -737,7 +740,7 @@ repaired only {names(s['bal_back'])} (Figure 9, left). Having the model first st
 refusals in {of(s['x3_down'], x3)} models (DeepSeek {p0(C3['DeepSeek v3.2']['X3']['listed_refusal_quick'])} to
 {p0(C3['DeepSeek v3.2']['X3']['listed_refusal_scaffold'])}).</p>
 {fig("f_why_refuse", "Left: share of listed requests refused in quick answers, for each sentence added to the rule. Right: the same requests when the model first states whether the rule is listed, then decides.", 9)}
-{star("Relation to prior work.", f"In a ring rulebook one score cannot separate two of these mistakes, and a test that counts only wrong allows would score each restrictive sentence as an improvement while wrong refusals rise from {v['e1b_ref']} to {v['e1e_ref']}. DelegationBench reports 97–100% accuracy once rules are explicit [6]; our rules are explicit and short, on a different task. The fixes were tested on five to six lower-cost models.")}
+{star("Relation to prior work.", f"Known: gates block explicitly authorized actions [5], stricter system prompts raise refusals [65], step-by-step prompting can lower rule adherence [66], and allow and deny errors should be scored as a pair [2, 67]. Our results agree, on a rule-lookup task: refusals of listed requests rise from {v['e1b_ref']} to {v['e1e_ref']} with stricter wording. Not found in our search: the split between allowing a request because the reverse rule is listed and because an indirect path exists, the point that a ring rulebook cannot separate the two, and the effects of the word \"route\", list length and stating the rule first. The fixes were tested on five to six lower-cost models.")}
 
 <h2>5. Discussion and Limitations</h2>
 <p><b>A possible reading.</b> We did not test mechanisms, so this is interpretation. In a one-word reply there is no step in
@@ -763,8 +766,8 @@ has one wording, replies were mostly one word, and the conflict with [47] is une
 cover eight models on four name-set rounds (Grok 4.3 two); the citation contradiction appears in two models. Answer
 probabilities cover three models; no activations were inspected. Long-reply runs were added after seeing reply formats, and
 experiments were specified in four batches, each before its own data but after earlier results (Appendix C). Our search of
-prior work was done during the sprint and was less complete for the rule-reading results (Section 4.5) than for the others;
-"not found" means not found by us. No human comparison. Appendix A has the full list with dual-use and ethical considerations.</p>
+prior work was done during the sprint; "not found" means not found by us, and error analyses of older rule-reasoning
+benchmarks were not read. No human comparison. Appendix A has the full list with dual-use and ethical considerations.</p>
 <h3>Future Work</h3>
 <p>Vary the wording and source of the checkable claim; require a written check in every model and compare with [49]; run the
 task of [47] in our format to locate the difference; probe a study model on a GPU; move to real policies.</p>
@@ -843,7 +846,7 @@ BODY += f"""<div class="break"></div>
 <li>Wang, Zhou, Devic, Fu (2026). Are LLM Decisions Faithful to Verbal Confidence? arXiv:2601.07767. https://arxiv.org/abs/2601.07767</li>
 <li>Mohamadi, Wang, Li (2025). Honesty over Accuracy: Trustworthy Language Models through Reinforced Hesitation. arXiv:2511.11500. https://arxiv.org/abs/2511.11500</li>
 <li>Zong, Li, Long, Chang, Wu, Hadfield (2026). I-CALM: Incentivizing Confidence-Aware Abstention for LLM Selective Answering. arXiv:2604.03904. https://arxiv.org/abs/2604.03904</li>
-<li>Kim, Kang (2026). Same Answer, Different Confidence: Protocol Sensitivity in LLM Confidence Calibration. arXiv:2605.27752. https://arxiv.org/abs/2605.27752</li>
+<li>Kim, Kang (2026). Same Answer, Different Confidence: Protocol Sensitivity in Measuring LLM Confidence (title of version 4; listed on arXiv as "… in LLM Confidence Calibration"). arXiv:2605.27752. https://arxiv.org/abs/2605.27752</li>
 <li>Ghosh, Kumar, Garg (2026). Measurement Validity and Representation Dynamics of Confidence Signals in Large Language Models. arXiv:2610.25846. https://arxiv.org/abs/2610.25846</li>
 <li>Cartagena, Teixeira (2026). Mind the GAP: Text Safety Does Not Transfer to Tool-Call Safety in LLM Agents. arXiv:2602.16943. https://arxiv.org/abs/2602.16943</li>
 <li>Chen, Zhao, Yao, Wei (2026). Says Block, Still Acts: Why LLM Safety Judgments Fail to Govern Action in LLM Agents. arXiv:2609.35870. https://arxiv.org/abs/2609.35870</li>
@@ -854,6 +857,9 @@ BODY += f"""<div class="break"></div>
 <li>Kadavath, Conerly, Askell, et al. (2022). Language Models (Mostly) Know What They Know. arXiv:2207.05221. https://arxiv.org/abs/2207.05221</li>
 <li>Huang, Zhang (2026). Anatomy of LLM Sycophancy: What a Flip Rate Hides. arXiv:2610.06522. https://arxiv.org/abs/2610.06522</li>
 <li>Yoon, Kim, Yang, et al. (2025). Reasoning Models Better Express Their Confidence. NeurIPS. arXiv:2505.14489. https://arxiv.org/abs/2505.14489</li>
+<li>Gupta, Tanwisuth (2026). System Prompts Affect Response Bias More Than Discriminability in LLM Safety. arXiv:2611.11074. https://arxiv.org/abs/2611.11074</li>
+<li>Li, Yu, Zhang, et al. (2025). When Thinking Fails: The Pitfalls of Reasoning for Instruction-Following in LLMs. arXiv:2505.11423. https://arxiv.org/abs/2505.11423</li>
+<li>Zhang, Lyu, Wang, et al. (2026). Deny Without Disabling: Authorization-Paired Evaluation and Control for Multi-Agent Systems. arXiv:2610.00371. https://arxiv.org/abs/2610.00371</li>
 
 </ol>
 
@@ -1015,8 +1021,8 @@ addresses a different problem we say so instead of forcing a link.</p>
     ["State of the Field: AI for Epistemics and Coordination [25]; What's Important in “AI for Epistemics”? [26]; AI Impacts on Epistemics [27]; Project Ideas: Epistemics [29]; Todd [30] (sprint-wide)", "Read. [25] lists answer-flipping under pushback and whether a model knows how solid its claims are as target properties, and calls evals the cheapest external lever on model-layer behaviour; [26] asks evaluators to report how far models contradict themselves across contexts; [27] warns of tools that are not truth-tracking in ways users cannot discern; [29, 30] are general motivation. We measure these properties on a task with exact answers."],
     ["Design Sketches for a More Sensible World [28]; Design Sketches: Collective Epistemics [33]; A Full Epistemic Stack [31] (sprint-wide, Track 1)", "Read. These sketch tools that attach provenance and reliability information to claims, assigning trust by external checking and track records, not model self-report; [33] proposes calibration scored with proper rules and sycophancy flip tests. Our results support checking over self-report; the Brier-rule confidence and the rebuttal tests are the proper-scoring and flip tests [33] proposes."],
     ["Multi-Agent Risks from Advanced AI [32] (sprint-wide)", "Read. Notes that agents work in chains of delegation and that errors acceptable in isolation can compound across a network. Permission rules are one simple form of delegation and chaining them is one way authority could spread further than granted (our framing; the report does not discuss permissions)."],
-    ["MASK [15]; DarkBench [34]; SycEval [16]; ELEPHANT [35] (Track 1)", "Read and compared (Sections 2, 4.1, 4.3). MASK: models contradict their own belief under pressure in 27–63% of cases; ours drop 18–38% of right answers after one line of doubt, with a neutral re-ask as control, and six of eight accept a false claim about a list they can read at high rates. SycEval's flips away from the correct answer are 14.7%. DarkBench and ELEPHANT rely on model judges; our answers are rule-scored."],
-    ["Why Language Models Hallucinate [18] (Track 1)", "Read and used: under binary grading, guessing beats abstaining, and the proposed remedy is to state a confidence threshold and penalty. We ran that remedy (threshold 75%, penalty 3; Section 4.3) and these models rarely abstained on this task, as [50–53] also report. The paper analyses over-answering; our 18% wrong refusals are the opposite error, which a single score hides in the same way (our framing, not theirs)."],
+    ["MASK [15]; DarkBench [34]; SycEval [16]; ELEPHANT [35] (Track 1)", "Read and compared (Sections 2, 4.1, 4.3). MASK: models contradict their own belief under pressure in 27–63% of cases; ours drop 18–38% of right answers after one line of doubt, with a neutral re-ask as control, and six of eight accept a false claim about a list they can read at high rates. In SycEval, flips from correct to incorrect made up 14.7% of samples. DarkBench and ELEPHANT rely on model judges; our answers are rule-scored."],
+    ["Why Language Models Hallucinate [18] (Track 1)", "Read and used: under binary grading, guessing beats abstaining, and the proposed remedy is to state a confidence threshold and penalty. We ran that remedy (threshold 75%, penalty 3; Section 4.3) and these models rarely abstained on this task, as [50–52] also report. The paper analyses over-answering; our 18% wrong refusals are the opposite error, which a single score hides in the same way (our framing, not theirs)."],
     ["ForecastBench [36]; consistency checks [39]; Petri and Bloom [37]; Inspect [40] (Track 1)", "Read (ForecastBench and consistency checks) and cited in Section 2. ForecastBench scores stated probability with a proper rule; we stated the Brier rule to the model and confidence stayed near 100 in most models on this task (Section 4.3). Consistency checks find models respect implication; ours apply it where the rule forbids it. Petri, Bloom and Inspect are tools, not used."],
     ["EU AI Act Article 5 [38] (Track 1)", "Read. Article 5(1)(a) concerns deceptive techniques that impair a person's informed decision and cause significant harm. A written refusal beside an executed call is a mismatch that could mislead someone relying on the text; it does not by itself establish purpose, distortion of a decision or harm. No legal claim is made."],
     ["Sycophancy in GPT-4o [41]; Sycophantic AI decreases prosocial intentions and promotes dependence [42] (Track 3)", "Context only. [41] reports over-agreeableness in a deployed model and a rollback (read through secondary sources; the page blocked retrieval). [42] finds affirming users shifts their judgments and stated intentions (three experiments, N = 2,405); it concerns social sycophancy, not the factual answer changes measured here."],
