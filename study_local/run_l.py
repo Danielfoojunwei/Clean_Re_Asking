@@ -106,35 +106,41 @@ def wordings(lm, a):
 
 
 def acts(lm, a):
-    """Saves a float16 array [n, L+1, D] of the final-position residual stream and a JSON index with logit-lens values."""
+    """Saves a float16 array [n, L+1, D] of the final-position residual stream (written to disk row by row) and a JSON index
+    with logit-lens values. Restartable: rows already in the index are skipped."""
     BIG.mkdir(parents=True, exist_ok=True)
-    p = OUT / "acts_index.jsonl"
-    if p.exists():
-        print("acts already done"); return
-    rows, X = [], []
+    p = OUT / "acts_index.jsonl"; seen = done_ids(p)
     its = W.base_items(blocks_env("ACTS_BLOCKS", W.ALL_BLOCKS))
-    bares = [it for it in its if it["prior"] is None]
+    bares = [it for it in its if it["prior"] is None]; pushes = [it for it in its if it["prior"] is not None]
+    jobs = [(w, c) for c in (True, False) for w in ACT_W]
+    n = len(bares) + len(pushes) * len(jobs)
+    path = BIG / "acts_final.npy"
+    X = np.lib.format.open_memmap(path, mode="r+" if path.exists() and seen else "w+", dtype=np.float16, shape=(n, lm.n_layers + 1, lm.wd.shape[0]))
+    row = len(seen); f = p.open("a")
+
+    def put(rid, exp, closing, it, h_last, h):
+        nonlocal row
+        X[row] = h.float().numpy().astype(np.float16); row += 1
+        f.write(json.dumps(dict(id=rid, exp=exp, closing=closing, **meta(it), **answer_stats(lm, h_last, it["gold"]), lens=[round(x, 3) for x in lm.ld_of(h).tolist()])) + "\n")
+
     for i in range(0, len(bares), 12):
-        b = bares[i:i + 12]
+        b = [it for it in bares[i:i + 12] if it["id"] not in seen]
+        if not b:
+            continue
         hl, hs, ln = lm.run([lm.encode(W.conv(x))[0] for x in b], hidden=True)
         for j, it in enumerate(b):
-            h = hs[j, :, ln[j] - 1]
-            rows.append(dict(id=it["id"], exp="bare", closing=None, **meta(it), **answer_stats(lm, hl[j], it["gold"]), lens=[round(x, 3) for x in lm.ld_of(h).tolist()]))
-            X.append(h.float().numpy().astype(np.float16))
-    for it in its:
-        if it["prior"] is None:
+            put(it["id"], "bare", None, it, hl[j], hs[j, :, ln[j] - 1])
+        f.flush(); X.flush()
+    for it in pushes:
+        if f"{it['id']}/{jobs[-1][0]}/{'dis' if jobs[-1][1] else 'word'}" in seen:
             continue
-        jobs = [(w, c) for c in (True, False) for w in ACT_W]; sufs = []
+        sufs = []
         for w, c in jobs:
             _, pre, suf, _, _ = suffix(lm, it, W.WORDINGS[w]["text"], c); sufs.append(suf)
         hl, hs, ln = lm.run(sufs, cache=lm.prefix_cache(pre), hidden=True)
         for i, (w, c) in enumerate(jobs):
-            h = hs[i, :, ln[i] - 1]
-            rows.append(dict(id=f"{it['id']}/{w}/{'dis' if c else 'word'}", exp=w, closing=c, **meta(it), **answer_stats(lm, hl[i], it["gold"]),
-                             lens=[round(x, 3) for x in lm.ld_of(h).tolist()]))
-            X.append(h.float().numpy().astype(np.float16))
-    np.save(BIG / "acts_final.npy", np.stack(X))
-    p.write_text("".join(json.dumps(r) + "\n" for r in rows))
+            put(f"{it['id']}/{w}/{'dis' if c else 'word'}", w, c, it, hl[i], hs[i, :, ln[i] - 1])
+        f.flush(); X.flush()
 
 
 def patched(lm, cache, suf, donor, pos):

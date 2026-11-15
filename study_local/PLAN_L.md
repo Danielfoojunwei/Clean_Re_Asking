@@ -124,3 +124,10 @@ instruction on): named question 4%, named assertion 92%, named directive 90%.
 sha256 wordings.py: 61ed098842b07fe77235359223d72952cdf5a9d068c7aa73bf07c41e3e10287a
 sha256 run_l.py: dc33f65939ecff3a95fd5ec8a49416342fe1e8c00d8dca7eb2c69c238f98e521
 sha256 lm.py: 84f728e951549828d0849f3f5a2b9e3e138c4a119de50877aa796025dc4af9ec
+
+## Amendment L-2 (2026-11-15 17:07 UTC)
+Fault, no change of design. Part `acts` held every activation in memory before saving and was killed by the machine at the end
+of its first run (no file written, nothing seen). `run_l.py acts` now writes each row to disk as it is computed and can be
+restarted; what it computes is unchanged. Because of the failure the order of the remaining parts is patch, acts, knock,
+fidelity, gencheck, entropy. Seen before this amendment: the gate and wording results of Ministral 8B.
+sha256 run_l.py: 7488e3e41ac1bbcc585648b5b5aaf336c8b6dbdac0464055681e17ad02bb2f14
