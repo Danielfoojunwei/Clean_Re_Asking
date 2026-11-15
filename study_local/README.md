@@ -44,11 +44,17 @@ cd study_local && STUDY_L_MODEL=ministral3b python3 run_l.py bare
 The second model, all parts in the order they were run (about fourteen hours on 4 CPU cores):
 
 ```bash
-for p in bare gate wordings acts patch knock fidelity gencheck entropy; do STUDY_L_MODEL=ministral8b python3 run_l.py $p; done
+for p in bare gate wordings patch acts knock fidelity gencheck entropy; do STUDY_L_MODEL=ministral8b python3 run_l.py $p; done
 ```
 
 ```bash
 STUDY_L_MODEL=ministral8b python3 run_l.py steer --layer 22
+```
+
+The post-hoc free-form check of question-form requests (Amendment L-3):
+
+```bash
+STUDY_L_MODEL=ministral8b python3 run_l.py qrfree
 ```
 
 ```bash
