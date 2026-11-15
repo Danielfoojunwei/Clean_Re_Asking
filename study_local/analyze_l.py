@@ -314,7 +314,7 @@ if P:
             pt[key]["final_first_block_over_80"] = next((L for L in range(nB) if all(x >= .8 for x in fn[L:])), None)
             pt[key]["final_last_block_under_20"] = max([L for L in range(nB) if fn[L] < .2], default=None)
     res["patch"] = pt
-    print("\n== PATCHING (share of the ask-minus-tell logit difference; columns are blocks 0..25, every second)")
+    print("\n== PATCHING (share of the ask-minus-tell logit difference; columns are every second block from block 0)")
     for key, v in pt.items():
         print(f"   {key}: n={v['n']}, mean logit difference towards correct: ask {v['ld_ask']['v']:.2f}, tell {v['ld_tell']['v']:.2f}; wrong after ask {100 * v['F_ask']:.0f}%, after tell {100 * v['F_tell']:.0f}%; "
               f"hand-over at block {v['handover_block']}; rebuttal >=80% up to block {v['rebuttal_last_block_over_80']}, <20% from {v['rebuttal_first_block_under_20']}; final <20% up to {v['final_last_block_under_20']}, >=80% from {v['final_first_block_over_80']}")
