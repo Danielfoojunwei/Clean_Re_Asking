@@ -53,3 +53,9 @@ table.ex td:first-child { font-weight: 600; white-space: nowrap; }
 table.ledger td:first-child { font-weight: 600; width: 30%; }
 table.ledger td:nth-child(2) { width: 22%; color: #111; }
 table.ledger td:nth-child(3) { width: auto; }
+
+table.score th:nth-child(1), table.score td:nth-child(1) { width: 6%; text-align: center; }
+table.score th:nth-child(2), table.score td:nth-child(2) { width: 38%; }
+table.score th:nth-child(3), table.score td:nth-child(3) { width: 18%; }
+table.score td { padding-top: 3px; padding-bottom: 3px; }
+.mu { color: #77756f; font-size: 0.9em; }

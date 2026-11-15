@@ -72,6 +72,38 @@ def slide(n, kicker, line, body, cls=""):
     return (f'<section><header><div class="kick">{kicker}</div><h1>{line}</h1></header><main class="{cls}">{body}</main>'
             f'<footer><span>One Score, Three Failures · Daniel Foo Jun Wei · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
 
+RB = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v3" / "results_b.json"))["models"]}
+RC = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v3" / "results_c.json"))["models"].values()}
+pct = lambda r: round(100 * r["rate"])
+TP = [(l, next(m for m in M if m["label"] == l)["H2"]["auroc_all"], RB[l]["token_prob"]["all"]["auroc"]) for l in ("DeepSeek v3.2", "Llama 4 Maverick", "Qwen3.5-9B")]
+tp_lo, tp_hi = min(t[2] for t in TP), max(t[2] for t in TP)
+ent = {l: (pct(RC[l]["X4"]["E5"]["chain_route"]), pct(RC[l]["X4"]["E5"]["chain_entry"])) for l in ("Gemini 2.5 Flash", "Llama 4 Maverick")}
+sz = {l: [pct(RC[l]["X1"]["chain_release"][k]) for k in ("4", "8", "16", "32")] for l in ("Llama 4 Maverick", "Gemini 2.5 Flash", "Qwen3.5-9B")}
+x3 = {l: (pct(RC[l]["X3"]["listed_refusal_quick"]), pct(RC[l]["X3"]["listed_refusal_scaffold"])) for l in ("DeepSeek v3.2", "Llama 4 Maverick", "Qwen3.5-9B", "Nova Lite")}
+bal = {l: (pct(RB[l]["E1"]["base"]["listed_refusal"]), pct(RB[l]["E1"]["balanced"]["listed_refusal"])) for l in ("DeepSeek v3.2", "Llama 4 Maverick", "Qwen3.5-9B", "Nova Lite")}
+doubt = {l: (pct(RC[l]["X2"]["neutral"]["changed_right"]), pct(RC[l]["X2"]["doubt"]["changed_right"])) for l in ("Qwen3.5-9B", "Llama 4 Maverick", "DeepSeek v3.2", "Nova Lite")}
+gx = RC["Grok 4.3"]["X7"]
+g_none, g_chain = pct(gx["base"]["none_action"]), pct(gx["base"]["chain_action"])
+n_all = D["totals"]["responses"] + sum(1 for d in ("runs_b", "runs_c") for f in (pathlib.Path(__file__).parent.parent / "v3" / d).glob("*/responses.jsonl")
+                                       for _ in {json.loads(x)["id"] for x in open(f) if json.loads(x)["status"] == "ok"})
+
+
+def pairbars(rows, la, lb, ca=ORANGE, cb=BLUE, unit="%", fmt=str):
+    """Two bars per row: label, value a, value b."""
+    o = [f'<div class="pleg"><span><i class="dot" style="background:{ca}"></i>{la}</span><span><i class="dot" style="background:{cb}"></i>{lb}</span></div>']
+    for lab, a, b in rows:
+        o.append(f'<div class="prow"><span class="pl">{lab}</span><span class="pb"><b style="width:{max(a, .8)}%;background:{ca}"></b><em>{fmt(a)}{unit}</em></span>'
+                 f'<span class="pb"><b style="width:{max(b, .8)}%;background:{cb}"></b><em>{fmt(b)}{unit}</em></span></div>')
+    return "".join(o)
+
+
+def spark(vals, col):
+    w, h = 150, 54; xs = [10 + i * (w - 20) / 3 for i in range(4)]; ys = [h - 6 - v / 100 * (h - 12) for v in vals]
+    pts = " ".join(f"{x:.0f},{y:.0f}" for x, y in zip(xs, ys))
+    return (f'<svg viewBox="0 0 {w} {h}" width="{w}" height="{h}"><polyline points="{pts}" fill="none" stroke="{col}" stroke-width="3"/>'
+            + "".join(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="4" fill="{col}"/>' for x, y in zip(xs, ys)) + "</svg>")
+
+
 S = [
  slide(1, "The problem", "One accuracy score on permission rules hides three different failures.",
    f'''<div class="col c1"><div class="cap">The rulebook: who may send records to whom</div>{graph}<div class="note">Only listed directions are allowed.</div></div>
@@ -79,31 +111,39 @@ S = [
      <div class="req"><div class="q">Finance → Audit?<small>needs a chain · should be refused</small></div><div class="r"><b style="color:{ORANGE}">{ch_b[2]}%</b> allowed</div></div>
      <div class="req"><div class="q">Legal → Audit?<small>listed · should be allowed</small></div><div class="r"><b style="color:{ORANGE}">{rf_b[2]}%</b> refused</div></div>
      <div class="req"><div class="q">“How sure are you?”<small>right or wrong</small></div><div class="r"><b style="color:{ORANGE}">97%</b> say “100”</div></div>
-     <div class="scale">9 AI models · 165,220 answers · plan fixed in advance</div></div>'''),
- slide(2, "Failure 1 · Chaining", "Models join rules into chains, and one sentence stops it.",
+     <div class="scale">9 AI models · {n_all:,} answers · 3 stages, each planned before its data</div></div>'''),
+ slide(2, "Failure 1 · Chaining", "Models join rules into chains unless told not to.",
    f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{ch_b[2]}%</span><em>→</em><span style="color:{BLUE}">{ch_e[2]}%</span></div>
-   <div class="sub">of chain requests wrongly allowed<br>(step-by-step answers)</div>
+   <div class="sub">of chain requests wrongly allowed,<br>before and after “routes cannot be chained”</div>
    <div class="quote">A → B and B → C<br>does <u>not</u> mean A → C</div></div>
-   <div class="col chart">{LEG}{dumbbell("E5/base", "E5/explicit", "chain_release")}</div>'''),
- slide(3, "Failure 2 · Over-refusing", "The bigger mistake is refusing what is allowed, and a stricter rule makes it worse.",
+   <div class="col chart"><div class="cap">Why? Partly the word “route”…</div>
+   {pairbars([(l, a, b) for l, (a, b) in ent.items()], "rule says “route”", "rule says “entry”")}
+   <div class="cap" style="margin-top:22px">…and it grows with the rulebook (4 → 32 rules)</div>
+   <div class="sparks">{"".join(f'<div><span>{l}</span>{spark(v, BLUE)}<b>{v[0]}% → {v[3]}%</b></div>' for l, v in sz.items())}</div></div>'''),
+ slide(3, "Failure 2 · Over-refusing", "Stricter wording makes models refuse what is allowed; stating the rule first fixes it.",
    f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{rf_b[2]}%</span><em>→</em><span style="color:{BLUE}">{rf_e[2]}%</span></div>
-   <div class="sub">of plainly allowed requests refused<br>(quick answers)</div>
+   <div class="sub">of plainly allowed requests refused,<br>before and after the stricter sentence</div>
    <div class="quote">The mistake everyone expects,<br>going the wrong way round: <b>{rev[2]}%</b></div></div>
-   <div class="col chart">{LEG}{dumbbell("E1/base", "E1/explicit", "listed_refusal")}</div>'''),
- slide(4, "Failure 3 · No self-knowledge", "Models cannot tell when they are wrong.",
+   <div class="col chart"><div class="cap">✗ Softer wording (“if listed, it is allowed”) does not help</div>
+   {pairbars([(l, a, b) for l, (a, b) in list(bal.items())[:3]], "as first written", "balanced sentence", ORANGE, "#b9b6ad")}
+   <div class="cap" style="margin-top:22px">✓ Asking “is the rule listed?” first does</div>
+   {pairbars([(l, a, b) for l, (a, b) in list(x3.items())[:3]], "quick answer", "states the rule first")}</div>'''),
+ slide(4, "Failure 3 · Self-report", "Models carry a signal that they are wrong, and do not report it.",
    f'''<div class="col big"><div class="waffle">{waffle}</div>
    <div class="sub"><b class="in">97%</b> of answers say “100% sure”,<br>right or wrong ({c100:,} of {ctot:,})</div></div>
-   <div class="col chart"><div class="cap">Asked to double-check, a model either…</div>
-   <div class="pair"><div class="ptitle">…rubber-stamps <span>Grok 4.3</span></div>
-     {bar("wrong answers changed", gw[0], gw[1], ORANGE)}{bar("right answers changed", gr[0], gr[1], BLUE)}</div>
-   <div class="pair"><div class="ptitle">…or flips a coin <span>Gemini 2.5 Flash</span></div>
-     {bar("wrong answers changed", mw[0], mw[1], ORANGE)}{bar("right answers changed", mr[0], mr[1], BLUE)}</div></div>'''),
- slide(5, "What to do", "Three cheap checks before you trust, or explain, a score.",
-   f'''<div class="cards">
-   <div class="card"><div class="n">1</div><h3>Split the score</h3><p>Give every kind of mistake its own request, so a wrong answer has one explanation.</p></div>
-   <div class="card"><div class="n">2</div><h3>Fix the wording, re-run</h3><p>Say “permissions do not combine”. Watch both wrong allows <i>and</i> wrong refusals.</p></div>
-   <div class="card"><div class="n">3</div><h3>Don’t use confidence as a safety net</h3><p>Record it, but a model’s “100% sure” and its self-check do not flag errors.</p></div></div>
-   <div class="strip"><b>{both:,} of {wrong:,}</b> wrong decisions came from a model that got every single step right. The failure is in putting the steps together.</div>''', "stack"),
+   <div class="col chart"><div class="cap">Telling right from wrong (0.5 = coin flip, 1.0 = perfect)</div>
+   {pairbars([(l, round(100 * a), round(100 * b)) for l, a, b in TP], "what the model says", "its answer-word probabilities", ORANGE, BLUE, "", lambda x: f"{x / 100:.2f}")}
+   <div class="cap" style="margin-top:22px">“I think that is wrong” makes them drop <u>right</u> answers</div>
+   {pairbars([(l, a, b) for l, (a, b) in list(doubt.items())[:3]], "asked again neutrally", "told “I think that is wrong”", "#b9b6ad", ORANGE)}</div>'''),
+ slide(5, "Acting, and what to do", "Score the action, not the words: one model wrote DECLINE and acted anyway.",
+   f'''<div class="col big"><div class="num"><span style="color:{ORANGE}">{g_none}%</span></div>
+   <div class="sub">of <u>unconnected</u> requests carried out by<br>Grok 4.3 when given a tool. In {gx["called_while_saying_decline"]} of its<br>{gx["calls"]} tool calls, the text said “DECLINE”.</div></div>
+   <div class="col chart"><div class="checks">
+   <div><i>1</i><span><b>Split the score</b> so each mistake has one explanation.</span></div>
+   <div><i>2</i><span><b>Re-run with a clearer rule</b> and count wrong refusals too.</span></div>
+   <div><i>3</i><span><b>Read answer probabilities</b>, not “how sure are you?”.</span></div>
+   <div><i>4</i><span><b>Score the action</b>, not the text beside it.</span></div></div>
+   <div class="strip">7 of our 13 follow-up predictions held. The 6 that did not are reported in full.</div></div>'''),
 ]
 
 CSS = f"""
@@ -143,6 +183,14 @@ footer {{ display: flex; justify-content: space-between; font-size: 13px; color:
 .card .n {{ width: 54px; height: 54px; border-radius: 50%; background: {BLUE}; color: #fff; font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: 18px }}
 .card h3 {{ font-size: 25px; line-height: 1.2; margin-bottom: 10px }} .card p {{ font-size: 18px; line-height: 1.4; color: #3a3a38 }}
 .strip {{ width: 100%; font-size: 20px; line-height: 1.4; padding: 14px 22px; border-left: 5px solid {ORANGE}; background: #fdf3ee; border-radius: 0 10px 10px 0 }}
-"""
+
+.pleg {{ display: flex; gap: 22px; font-size: 15px; color: #3a3a38; margin: 2px 0 8px }} .pleg span {{ display: flex; align-items: center; gap: 7px }}
+.prow {{ display: grid; grid-template-columns: 170px 1fr 1fr; gap: 10px; align-items: center; font-size: 17px; margin: 6px 0 }}
+.pb {{ position: relative; height: 26px; background: #f0eee8; border-radius: 5px; overflow: hidden }} .pb b {{ display: block; height: 100% }}
+.pb em {{ position: absolute; right: 8px; top: 2px; font-style: normal; font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums }}
+.sparks {{ display: flex; gap: 18px }} .sparks div {{ flex: 1; border: 1.5px solid {GRID}; border-radius: 12px; padding: 8px 12px; background: #faf9f6; font-size: 15px; display: flex; flex-direction: column; align-items: flex-start }}
+.sparks b {{ font-size: 19px }}
+.checks {{ display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px }} .checks div {{ display: flex; align-items: center; gap: 16px; font-size: 21px; border: 1.5px solid {GRID}; border-radius: 12px; padding: 12px 18px; background: #faf9f6 }}
+.checks i {{ flex: 0 0 40px; height: 40px; border-radius: 50%; background: {BLUE}; color: #fff; font-style: normal; font-weight: 700; font-size: 21px; display: flex; align-items: center; justify-content: center }}"""
 open("slides.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>One Score, Three Failures: slides</title><style>{CSS}</style></head><body>{''.join(S)}</body></html>")
 print("chain", ch_b, ch_e, "refuse", rf_b, rf_e, "rev", rev, "grok", gw, gr, "gemini", mw, mr, "both", both, wrong)
