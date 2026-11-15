@@ -104,8 +104,8 @@ def fig_fixes():
         a.legend(loc="upper center", bbox_to_anchor=(0.5, -0.24), ncol=1, handletextpad=0.2, labelspacing=0.25, fontsize=6.2)
     panel(ax[0], [(lambda h: h["base"]["page_word"]["F"], ORANGE, "o", "no fix"), (lambda h: h["fix"]["quote_page"]["F"], AQUA, "s", "model quotes the deciding line first"),
                   (lambda h: h["fix"]["note_page"]["F"], BLUE, "D", "fact computed outside the model, attached")], "One-word format", True)
-    panel(ax[1], [(lambda h: h["base"]["page_free"]["F"], ORANGE, "o", "no fix"), (lambda h: h["fix"]["warn_page"]["F"], AQUA, "s", "warning prompt of [22]"),
-                  (lambda h: h["fix"]["gate_page"]["F"], BLUE, "D", "evidence-gated prompt of [22]")], "Free-form replies", False)
+    panel(ax[1], [(lambda h: h["base"]["page_free"]["F"], ORANGE, "o", "no fix"), (lambda h: h["fix"]["warn_page"]["F"], AQUA, "s", "warning prompt of Basta et al."),
+                  (lambda h: h["fix"]["gate_page"]["F"], BLUE, "D", "evidence-gated prompt of Basta et al.")], "Free-form replies", False)
     save(fig, "f_fixes")
 
 
