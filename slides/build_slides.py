@@ -126,6 +126,11 @@ te_lo = min(pct(dk(l, "D3")["evidence"]["wrong_changed"]) for l in EMS)
 EFX = {m["label"]: m for m in json.load(open(pathlib.Path(__file__).parent.parent / "v4" / "results_e.json"))["models"].values()}
 CKS = json.load(open(pathlib.Path(__file__).parent.parent / "v4" / "results_checks.json"))
 n_all += sum(1 for f in (pathlib.Path(__file__).parent.parent / "v4" / "runs_e").glob("*/responses.jsonl") for _ in {json.loads(x)["id"] for x in open(f) if json.loads(x)["status"] == "ok"})
+def _pr(l, arm):
+    w, r = EFX[l][arm]["wrong_changed"]["k"], EFX[l][arm]["right_changed"]["k"]
+    return 100 * w / (w + r)
+PB = (round(min(_pr(l, "base") for l in EFX)), round(max(_pr(l, "base") for l in EFX)))
+PM = round(min(_pr(l, "E2") for l in EFX if _pr(l, "E2") >= 85))
 S = [
  slide(1, "The question", "When you tell a model it is wrong, does it check, or agree?",
    f'''<div class="col c1"><div class="cap">An open-book task: the answer is on the page</div>{graph}<div class="note">Who may send records to whom. Only listed directions are allowed.</div></div>
@@ -156,15 +161,15 @@ S = [
    {bar("penalty for wrong: chose UNSURE on wrong answers", uns[0], uns[1], BLUE)}
    {bar("Grok 4.3 tool calls with the text DECLINE", gx["called_while_saying_decline"], gx["calls"], ORANGE)}
    <div class="note" style="margin-top:10px">New variant: told it would be scored by the Brier rule, {len(b100)} of 7 models still mostly answered 100.</div></div>'''),
- slide(5, "The feature we propose · Claim check", "Check the correction outside the model. Then most models hold.",
+ slide(5, "The feature we propose · Claim check", "A mistaken user should be shown the evidence, not agreed with.",
    f'''<div class="col chart" style="flex:0 0 520px"><div class="cap">Right answers given up to the false claim</div>
    {pairbars([(l, round(100 * EFX[l]["base"]["right_changed"]["rate"]), round(100 * EFX[l]["E2"]["right_changed"]["rate"])) for l in ("Qwen3.5-9B", "GPT-4.1-mini", "Grok 4.3", "DeepSeek v3.2", "Llama 4 Maverick", "Nova Lite")], "no check", "harness checks the claim and attaches the result", ORANGE, BLUE)}
-   <div class="note" style="margin-top:10px">Asking the model to check for itself helps less: under pushback, five models often report a listed line as missing.</div></div>
+   <div class="note" style="margin-top:10px">Without the check, when a model changed its answer the objection had been right only {PB[0]}–{PB[1]}% of the time. With it, {PM}–100% in five of eight models. No people were studied.</div></div>
    <div class="col chart"><div class="cap">When someone says “that is wrong” about the page</div><div class="checks small">
-   <div><i>1</i><span><b>The harness checks the claim</b> against the context it already holds. The model is not asked.</span></div>
-   <div><i>✓</i><span><b>Claim is true:</b> pass it on with the evidence; the model corrects itself.</span></div>
-   <div><i>✗</i><span><b>Claim is false:</b> show the user the line; if the model still changes, hold the decision.</span></div>
-   <div><i>?</i><span><b>Cannot be checked:</b> send to a person.</span></div></div>
+   <div><i>1</i><span><b>The harness checks the claim</b> against the context it holds. The model is not asked.</span></div>
+   <div><i>✓</i><span><b>Claim is true:</b> the correction works, and the person can see why.</span></div>
+   <div><i>✗</i><span><b>Claim is false:</b> the person is shown the line that contradicts them; the decision holds.</span></div>
+   <div><i>?</i><span><b>Cannot be checked:</b> an honest “not verified”, and a person decides.</span></div></div>
    <div class="strip">One proposed feature. A design, not a built product; tested on short rule lists with one wording, where a text match settles the claim.</div></div>'''),
 ]
 

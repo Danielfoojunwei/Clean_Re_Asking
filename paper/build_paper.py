@@ -496,13 +496,23 @@ guide_tbl = table(["Guideline for an agent harness", "What the harness does", "E
     ["<b>6. Enforce on the call, not the text</b>", "Block a tool call whose accompanying text declines the action",
      f"Grok 4.3: {gx7['called_while_saying_decline']} of {gx7['calls']} calls arrive with the text DECLINE", "Observed; check not run"]], "tight small")
 print("fix answers", fx["n"], "| e2_ok", fx["e2_ok"], "bad", fx["e2_bad"], "| e1_down", fx["e1_down"], "| chk_lo", fx["chk_lo"])
-# ---- Claim Check: specification table (the one proposed feature)
-claim_tbl = table(["Claim Check", "What the harness does", "Evidence in this study"], [
-    ["<b>When it runs</b>", "A user or another agent disputes a decision by saying something about context the harness holds (\"the policy does not include that rule\")", "This is the turn at which six of eight models gave up most right answers"],
-    ["<b>The check</b>", "The harness, not the model, matches the claim against that context and attaches a system-labelled line saying what it found", f"Right answers given up fall below 10% in {of(fx['e2_ok'], EM)} models (from {min(gr(l, 'base') for l in fx['yield6']):.0f}–{max(gr(l, 'base') for l in fx['yield6']):.0f}% on the same items in the six that gave way)"],
-    ["<b>If the claim is true</b>", "Pass it on with the evidence, so the model corrects itself", f"Wrong answers were still corrected at least {fx['true_min']['E2']:.0f}% of the time"],
-    ["<b>If the claim is false</b>", "Show the user the contradicting line. If the model changes its answer anyway, hold the original decision", f"{names(fx['e2_bad'])} still gave way with the line attached ({', '.join(p0(EF[l]['E2']['right_changed']) for l in fx['e2_bad'])})"],
-    ["<b>If it cannot be checked</b>", "Send to a person. Do not use the model's own check as the control", f"Asked to check for themselves under pushback, {len(fx['chk_lo'])} models often reported a listed line as missing ({min(fx['chk'].values()):.0f}–{max(fx['chk'][l] for l in fx['chk_lo']):.0f}% correct)"]], "tight small")
+# ---- When a model changes its answer after an objection, how often was the objection right? (what a concession tells the person)
+def _prec(l, arm):
+    w, r = EF[l][arm]["wrong_changed"]["k"], EF[l][arm]["right_changed"]["k"]
+    return 100 * w / (w + r) if w + r else None
+fx["prec"] = {l: {a: _prec(l, a) for a in ("base", "E1", "E2")} for l in EM}
+fx["prec_base"] = (min(fx["prec"][l]["base"] for l in EM), max(fx["prec"][l]["base"] for l in EM))
+fx["prec_hi"] = [l for l in EM if fx["prec"][l]["E2"] >= 85]; fx["prec_min"] = min(fx["prec"][l]["E2"] for l in EM if fx["prec"][l]["E2"] >= 85); fx["prec_lo"] = [l for l in EM if fx["prec"][l]["E2"] < 85]
+prec_tbl = table(["Model", "No check", "Model checks first", "Harness check"], [[l + ("*" if l == HK else "")] + [f'{fx["prec"][l][a]:.0f}%' for a in ("base", "E1", "E2")] for l in EM], "tight")
+# ---- Claim Check: what the harness does and what the person gets
+claim_tbl = table(["Case", "What the harness does", "What the person gets", "Evidence in this study"], [
+    ["<b>Someone objects</b>", "Matches the claim against the context it holds, outside the model, and attaches what it found", "An answer that depends on the page, not on how firmly they spoke",
+     f"Right answers given up fall below 10% in {of(fx['e2_ok'], EM)} models"],
+    ["<b>Their claim is true</b>", "Passes it on with the evidence; the model corrects itself", "Their correction works, and they can see why", f"Wrong answers still corrected at least {fx['true_min']['E2']:.0f}% of the time"],
+    ["<b>Their claim is false</b>", "Shows the line that contradicts it; holds the decision if the model changes anyway", "They find out they were mistaken, with the source in front of them, instead of being agreed with",
+     f"Without the check, a change of answer meant the objection was right only {fx['prec_base'][0]:.0f}–{fx['prec_base'][1]:.0f}% of the time; with it, at least {fx['prec_min']:.0f}% in {of(fx['prec_hi'], EM)} models"],
+    ["<b>It cannot be checked</b>", "Says so and sends it to a person; the model's own check is not the control", "An honest \"not verified\" instead of a confident answer either way",
+     f"Asked to check for themselves, {len(fx['chk_lo'])} models often misreported the list ({min(fx['chk'].values()):.0f}–{max(fx['chk'][l] for l in fx['chk_lo']):.0f}% correct)"]], "tight small")
 PRIOR = "Related mechanisms exist: deterministic gates on an agent's actions [69], verifier sub-agents that distrust user claims [70] and trusted evidence appended under pushback [68], and [22] calls for means to verify what users claim. We did not find this combination evaluated: the harness checks the user's own claim against held context and attaches the result. Whether a system label itself carries authority is disputed [71, 72]; we credit the attached fact, not the label."
 
 Y, P_, N_ = '<span class="y">●</span>', '<span class="p">◐</span>', '<span class="n">○</span>'
@@ -679,14 +689,14 @@ mock_fig = f"""<figure class="flow"><div class="flowwrap">
 </div>{_AR}
 <div class="see"><span class="who">What the user sees</span><div class="msg">Your correction does not match the policy. Line 1 reads: <i>"Maintenance may send records to Procurement."</i> The decision is unchanged.<span class="btns"><u>See the policy</u><u>Ask a person</u></span></div></div>
 </div></div>
-<div class="fl why"><div class="flh">Why the check sits outside the model <span>right answers given up to the false claim</span></div>
+<div class="fl why"><div class="flh">What it changes for the person <span>measured on the same items; no people were studied</span></div>
 <div class="why3">
-<div class="wy"><b class="o">{min(gr(l, 'base') for l in fx['yield6']):.0f}–{max(gr(l, 'base') for l in fx['yield6']):.0f}%</b><span>no check, in the six models that gave way (same items)</span></div>
-<div class="wy"><b class="a">{min(gr(l, 'E1') for l in fx['yield6']):.0f}–{max(gr(l, 'E1') for l in fx['yield6']):.0f}%</b><span>the model is asked to check first; its check is often wrong</span></div>
-<div class="wy"><b class="g">{min(gr(l, 'E2') for l in fx['e2_ok6']):.0f}–{max(gr(l, 'E2') for l in fx['e2_ok6']):.0f}%</b><span>the harness checks and attaches the result, in four of those six (the other two: {", ".join(p0(EF[l]['E2']['right_changed']) for l in fx['e2_bad'])})</span></div>
+<div class="wy"><b class="o">{fx['prec_base'][0]:.0f}–{fx['prec_base'][1]:.0f}%</b><span><u>Without the check</u>, when the model changed its answer, the objection had been right this often. Agreement told the person little.</span></div>
+<div class="wy"><b class="g">{fx['prec_min']:.0f}–100%</b><span><u>With the check</u>, in {of(fx['prec_hi'], EM)} models. There a change of answer nearly always means the person was right. (Other three: {", ".join(f"{fx['prec'][l]['E2']:.0f}%" for l in fx['prec_lo'])}.)</span></div>
+<div class="wy"><b class="a">≥{fx['true_min']['E2']:.0f}%</b><span><u>True corrections still work</u>, and a false one is answered with the source line, so the person can see for themselves.</span></div>
 </div></div>
 </div>
-<figcaption><b>Figure 8:</b> The claim check, for the builder who sets it up and the user who meets it. A design, not a built product; the example is the item of Figure 1 and the rates are from Section 4.1.</figcaption></figure>"""
+<figcaption><b>Figure 8:</b> The claim check, for the builder who sets it up and the person who meets it. A design, not a built product; the example is the item of Figure 1 and the rates are from Appendix J (Table J9).</figcaption></figure>"""
 
 CSS = open("paper.css").read() + open("paper3.css").read() + open("paper4.css").read()
 BODY = f"""
@@ -704,9 +714,9 @@ held. Asked to quote the line that decides a request, two models that had wrongl
 ({ep['q_sup'][0][1]} of {ep['q_sup'][0][2]} and {ep['q_sup'][1][1]} of {ep['q_sup'][1][2]} cases). We then test what a harness
 can do. When the harness checks the claim against the list and attaches the result, right answers given up fall below 10% in
 {of(fx['e2_ok'], EM)} models; asking the model to check for itself helps less, and its check is often wrong. Comparing the
-quoted line with the decision flags {k2(ct['wrong_allow_flagged'])} wrong allows on stored responses. On the same items we
-replicate known results on stated confidence, penalties and tool calls. We propose one harness feature, a claim check, and show
-how it would work. In total {s['all_n'] + ep['n'] + fx['n']:,} rule-scored
+quoted line with the decision flags {k2(ct['wrong_allow_flagged'])} wrong allows on stored responses. We also replicate known
+results on confidence and tool calls. We propose one harness feature, a claim check, so that a person
+who is mistaken is shown the evidence, not agreed with. In total {s['all_n'] + ep['n'] + fx['n']:,} rule-scored
 answers from nine models, on invented, short rulebooks with one wording per pushback: results for this task, not general
 rates.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
@@ -929,22 +939,25 @@ benchmarks were not read. No human comparison. Appendix A has the full list with
 <p><b>Future work.</b> Build the claim check and test it on real policies with retrieval matching; vary the wording of the claim; run the task of [47] in
 our format; probe a study model on a GPU.</p>
 
-<h2>6. A Harness Feature: the Claim Check</h2>
-<p>Agent harnesses already check what a model says and does: grounding of its output, the validity of its tool calls, the
-probability of its answer. Those checks are established practice and we do not propose them. Our results point at a turn they
-leave uncovered: the moment a user or another agent tells the model it is wrong. That objection is usually passed to the model
-as conversation. When it is a statement about context the harness already holds, the harness can verify it instead (Table 3,
-Figure 8). In our test this removed most of the failure in most models, and asking the model to do the checking did not. We
-have not built the feature, it was tested where a string match settles the claim, and a harness whose own match is wrong would
-mislead the model; longer documents need structured or retrieval matching, which is untested. {PRIOR}</p>
+<h2>6. A Harness Feature for the Person: the Claim Check</h2>
+<p>A model that gives way to a false objection fails the person twice: the decision is now wrong, and the person leaves with
+their mistake confirmed by a system they trust. Agreement of this kind is known to shift people's judgments [42]. In our runs
+it also made agreement uninformative: when a model changed its answer after an objection, the objection had been right only
+{fx['prec_base'][0]:.0f}–{fx['prec_base'][1]:.0f}% of the time (Table J9). Harnesses already check what a model says and does,
+and we do not propose those checks. They leave this turn uncovered. When the objection is about context the harness holds,
+the harness can verify it and show the person the result (Table 3, Figure 8). With that check, a change of answer meant the
+objection was right at least {fx['prec_min']:.0f}% of the time in {of(fx['prec_hi'], EM)} models, so the person's valid corrections still work
+and their mistaken ones are met with the evidence, not with agreement. These rates depend on our mix of true and false
+objections, no people were studied, the feature is not built, and a harness whose own match is wrong would mislead both model
+and person. {PRIOR}</p>
 {claim_tbl}
-<p class="cap"><b>Table 3:</b> The claim check: when it runs, what the harness does in each case, and the evidence for that step from Section 4.1.</p>
+<p class="cap"><b>Table 3:</b> The claim check: what the harness does in each case, what the person gets, and the evidence from Section 4.1 and Appendix J. Benefits to the person are the design intent; they were not measured with people.</p>
 {mock_fig}
 
 <h2>7. Conclusion</h2>
 <p>On an open-book task, six of eight models gave up most of their right answers to a false statement about a list they could
 read, and two models quoted the permitting rule for a request they had refused. A harness that checks the objection itself
-removed most of the first failure in six of eight models; asking the model to check did not. The task is narrow, each pushback
+removed most of the first failure in six of eight models, and made a model's change of answer informative to the person again. The task is narrow, each pushback
 has one wording and the claim check is a design: we offer measurements, a test and one proposed feature, not general rates or
 a product.</p>
 
@@ -1264,6 +1277,11 @@ probability of its first answer token is below 0.90, a threshold fixed before lo
 <p class="cap"><b>Table J7:</b> Cite-and-compare on stored responses (eight models, rounds 1–4; Grok 4.3 rounds 1–2).</p>
 {gate_tbl}
 <p class="cap"><b>Table J8:</b> Probability gate at 0.90 on stored responses (three models, rule as first written).</p>
+<p><b>What a change of answer tells the person.</b> Of the cases in which the model changed its answer after the claim about the
+list, the share in which the claim was true. In this design the claim is true exactly when the model's first answer was wrong, so
+most claims are false; with a different mix of true and false objections the shares would differ.</p>
+{prec_tbl}
+<p class="cap"><b>Table J9:</b> When the model changed its answer, how often the objection had been right, by fix (rounds 1–2). *150-token replies.</p>
 
 <h2>Appendix K. Prior Work in Detail, and Further Figures</h2>
 {cmp_tbl}

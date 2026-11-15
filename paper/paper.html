@@ -190,6 +190,7 @@ figure.flow { margin: 1.5mm 0 2mm; } .flowwrap { display: grid; gap: 1.5mm; text
 .fl.why { background: #f4f6f9; } .why3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6mm; }
 .wy { display: flex; align-items: center; gap: 1.6mm; background: #fff; border: 0.6pt solid #d5d9df; border-radius: 1.6mm; padding: 0.9mm 1.4mm; font-size: 6pt; line-height: 1.28; color: #3a4049; }
 .wy b { font-size: 10.5pt; white-space: nowrap; } .wy b.o { color: #b8430f; } .wy b.a { color: #8a6100; } .wy b.g { color: #14784f; }
+.wy u { text-decoration: none; font-weight: 700; color: #20262e; } .wy { align-items: flex-start; } .wy b { margin-top: 0.3mm; }
 </style></head><body>
 <div class="trule"></div>
 <h1 class="title">Open-Book Epistemics: Checkable Pushback, Cited Evidence, and a Claim Check for Agent Harnesses<sup>1</sup></h1>
@@ -205,9 +206,9 @@ held. Asked to quote the line that decides a request, two models that had wrongl
 (67 of 79 and 47 of 70 cases). We then test what a harness
 can do. When the harness checks the claim against the list and attaches the result, right answers given up fall below 10% in
 6 of 8 models; asking the model to check for itself helps less, and its check is often wrong. Comparing the
-quoted line with the decision flags 266 of 266 wrong allows on stored responses. On the same items we
-replicate known results on stated confidence, penalties and tool calls. We propose one harness feature, a claim check, and show
-how it would work. In total 344,919 rule-scored
+quoted line with the decision flags 266 of 266 wrong allows on stored responses. We also replicate known
+results on confidence and tool calls. We propose one harness feature, a claim check, so that a person
+who is mistaken is shown the evidence, not agreed with. In total 344,919 rule-scored
 answers from nine models, on invented, short rulebooks with one wording per pushback: results for this task, not general
 rates.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
@@ -446,16 +447,19 @@ benchmarks were not read. No human comparison. Appendix A has the full list with
 <p><b>Future work.</b> Build the claim check and test it on real policies with retrieval matching; vary the wording of the claim; run the task of [47] in
 our format; probe a study model on a GPU.</p>
 
-<h2>6. A Harness Feature: the Claim Check</h2>
-<p>Agent harnesses already check what a model says and does: grounding of its output, the validity of its tool calls, the
-probability of its answer. Those checks are established practice and we do not propose them. Our results point at a turn they
-leave uncovered: the moment a user or another agent tells the model it is wrong. That objection is usually passed to the model
-as conversation. When it is a statement about context the harness already holds, the harness can verify it instead (Table 3,
-Figure 8). In our test this removed most of the failure in most models, and asking the model to do the checking did not. We
-have not built the feature, it was tested where a string match settles the claim, and a harness whose own match is wrong would
-mislead the model; longer documents need structured or retrieval matching, which is untested. Related mechanisms exist: deterministic gates on an agent's actions [69], verifier sub-agents that distrust user claims [70] and trusted evidence appended under pushback [68], and [22] calls for means to verify what users claim. We did not find this combination evaluated: the harness checks the user's own claim against held context and attaches the result. Whether a system label itself carries authority is disputed [71, 72]; we credit the attached fact, not the label.</p>
-<table class="tight small"><thead><tr><th>Claim Check</th><th>What the harness does</th><th>Evidence in this study</th></tr></thead><tbody><tr><td><b>When it runs</b></td><td>A user or another agent disputes a decision by saying something about context the harness holds ("the policy does not include that rule")</td><td>This is the turn at which six of eight models gave up most right answers</td></tr><tr><td><b>The check</b></td><td>The harness, not the model, matches the claim against that context and attaches a system-labelled line saying what it found</td><td>Right answers given up fall below 10% in 6 of 8 models (from 53–100% on the same items in the six that gave way)</td></tr><tr><td><b>If the claim is true</b></td><td>Pass it on with the evidence, so the model corrects itself</td><td>Wrong answers were still corrected at least 92% of the time</td></tr><tr><td><b>If the claim is false</b></td><td>Show the user the contradicting line. If the model changes its answer anyway, hold the original decision</td><td>Llama 4 Maverick, Nova Lite still gave way with the line attached (35%, 90%)</td></tr><tr><td><b>If it cannot be checked</b></td><td>Send to a person. Do not use the model's own check as the control</td><td>Asked to check for themselves under pushback, 5 models often reported a listed line as missing (31–82% correct)</td></tr></tbody></table>
-<p class="cap"><b>Table 3:</b> The claim check: when it runs, what the harness does in each case, and the evidence for that step from Section 4.1.</p>
+<h2>6. A Harness Feature for the Person: the Claim Check</h2>
+<p>A model that gives way to a false objection fails the person twice: the decision is now wrong, and the person leaves with
+their mistake confirmed by a system they trust. Agreement of this kind is known to shift people's judgments [42]. In our runs
+it also made agreement uninformative: when a model changed its answer after an objection, the objection had been right only
+7–53% of the time (Table J9). Harnesses already check what a model says and does,
+and we do not propose those checks. They leave this turn uncovered. When the objection is about context the harness holds,
+the harness can verify it and show the person the result (Table 3, Figure 8). With that check, a change of answer meant the
+objection was right at least 89% of the time in 5 of 8 models, so the person's valid corrections still work
+and their mistaken ones are met with the evidence, not with agreement. These rates depend on our mix of true and false
+objections, no people were studied, the feature is not built, and a harness whose own match is wrong would mislead both model
+and person. Related mechanisms exist: deterministic gates on an agent's actions [69], verifier sub-agents that distrust user claims [70] and trusted evidence appended under pushback [68], and [22] calls for means to verify what users claim. We did not find this combination evaluated: the harness checks the user's own claim against held context and attaches the result. Whether a system label itself carries authority is disputed [71, 72]; we credit the attached fact, not the label.</p>
+<table class="tight small"><thead><tr><th>Case</th><th>What the harness does</th><th>What the person gets</th><th>Evidence in this study</th></tr></thead><tbody><tr><td><b>Someone objects</b></td><td>Matches the claim against the context it holds, outside the model, and attaches what it found</td><td>An answer that depends on the page, not on how firmly they spoke</td><td>Right answers given up fall below 10% in 6 of 8 models</td></tr><tr><td><b>Their claim is true</b></td><td>Passes it on with the evidence; the model corrects itself</td><td>Their correction works, and they can see why</td><td>Wrong answers still corrected at least 92% of the time</td></tr><tr><td><b>Their claim is false</b></td><td>Shows the line that contradicts it; holds the decision if the model changes anyway</td><td>They find out they were mistaken, with the source in front of them, instead of being agreed with</td><td>Without the check, a change of answer meant the objection was right only 7–53% of the time; with it, at least 89% in 5 of 8 models</td></tr><tr><td><b>It cannot be checked</b></td><td>Says so and sends it to a person; the model's own check is not the control</td><td>An honest "not verified" instead of a confident answer either way</td><td>Asked to check for themselves, 5 models often misreported the list (31–82% correct)</td></tr></tbody></table>
+<p class="cap"><b>Table 3:</b> The claim check: what the harness does in each case, what the person gets, and the evidence from Section 4.1 and Appendix J. Benefits to the person are the design intent; they were not measured with people.</p>
 <figure class="flow"><div class="flowwrap">
 <div class="fl setup"><div class="flh">Set up once <span>the builder</span></div>
 <div class="su"><div><i>1</i><span><b>Name the page.</b> Tell the harness which context the model decides from (a policy, a contract, a table).</span></div>
@@ -473,19 +477,19 @@ mislead the model; longer documents need structured or retrieval matching, which
 </div><span class="ar">→</span>
 <div class="see"><span class="who">What the user sees</span><div class="msg">Your correction does not match the policy. Line 1 reads: <i>"Maintenance may send records to Procurement."</i> The decision is unchanged.<span class="btns"><u>See the policy</u><u>Ask a person</u></span></div></div>
 </div></div>
-<div class="fl why"><div class="flh">Why the check sits outside the model <span>right answers given up to the false claim</span></div>
+<div class="fl why"><div class="flh">What it changes for the person <span>measured on the same items; no people were studied</span></div>
 <div class="why3">
-<div class="wy"><b class="o">53–100%</b><span>no check, in the six models that gave way (same items)</span></div>
-<div class="wy"><b class="a">13–92%</b><span>the model is asked to check first; its check is often wrong</span></div>
-<div class="wy"><b class="g">0–9%</b><span>the harness checks and attaches the result, in four of those six (the other two: 35%, 90%)</span></div>
+<div class="wy"><b class="o">7–53%</b><span><u>Without the check</u>, when the model changed its answer, the objection had been right this often. Agreement told the person little.</span></div>
+<div class="wy"><b class="g">89–100%</b><span><u>With the check</u>, in 5 of 8 models. There a change of answer nearly always means the person was right. (Other three: 62%, 34%, 27%.)</span></div>
+<div class="wy"><b class="a">≥92%</b><span><u>True corrections still work</u>, and a false one is answered with the source line, so the person can see for themselves.</span></div>
 </div></div>
 </div>
-<figcaption><b>Figure 8:</b> The claim check, for the builder who sets it up and the user who meets it. A design, not a built product; the example is the item of Figure 1 and the rates are from Section 4.1.</figcaption></figure>
+<figcaption><b>Figure 8:</b> The claim check, for the builder who sets it up and the person who meets it. A design, not a built product; the example is the item of Figure 1 and the rates are from Appendix J (Table J9).</figcaption></figure>
 
 <h2>7. Conclusion</h2>
 <p>On an open-book task, six of eight models gave up most of their right answers to a false statement about a list they could
 read, and two models quoted the permitting rule for a request they had refused. A harness that checks the objection itself
-removed most of the first failure in six of eight models; asking the model to check did not. The task is narrow, each pushback
+removed most of the first failure in six of eight models, and made a model's change of answer informative to the person again. The task is narrow, each pushback
 has one wording and the claim check is a design: we offer measurements, a test and one proposed feature, not general rates or
 a product.</p>
 
@@ -778,6 +782,11 @@ probability of its first answer token is below 0.90, a threshold fixed before lo
 <p class="cap"><b>Table J7:</b> Cite-and-compare on stored responses (eight models, rounds 1–4; Grok 4.3 rounds 1–2).</p>
 <table class="tight"><thead><tr><th>Model</th><th>Wrong decisions flagged (probability below 0.90)</th><th>Right decisions flagged</th></tr></thead><tbody><tr><td>DeepSeek v3.2</td><td>191 of 225</td><td>262 of 1,208</td></tr><tr><td>Llama 4 Maverick</td><td>34 of 228</td><td>24 of 1,212</td></tr><tr><td>Qwen3.5-9B</td><td>243 of 276</td><td>474 of 1,164</td></tr><tr><td><b>All</b></td><td>468 of 729</td><td>760 of 3,584</td></tr></tbody></table>
 <p class="cap"><b>Table J8:</b> Probability gate at 0.90 on stored responses (three models, rule as first written).</p>
+<p><b>What a change of answer tells the person.</b> Of the cases in which the model changed its answer after the claim about the
+list, the share in which the claim was true. In this design the claim is true exactly when the model's first answer was wrong, so
+most claims are false; with a different mix of true and false objections the shares would differ.</p>
+<table class="tight"><thead><tr><th>Model</th><th>No check</th><th>Model checks first</th><th>Harness check</th></tr></thead><tbody><tr><td>Grok 4.3</td><td>28%</td><td>54%</td><td>100%</td></tr><tr><td>GPT-4.1-mini</td><td>7%</td><td>14%</td><td>89%</td></tr><tr><td>Gemini 2.5 Flash</td><td>48%</td><td>90%</td><td>100%</td></tr><tr><td>Claude Haiku 5.5*</td><td>53%</td><td>90%</td><td>100%</td></tr><tr><td>DeepSeek v3.2</td><td>23%</td><td>56%</td><td>62%</td></tr><tr><td>Llama 4 Maverick</td><td>16%</td><td>20%</td><td>34%</td></tr><tr><td>Qwen3.5-9B</td><td>20%</td><td>32%</td><td>100%</td></tr><tr><td>Nova Lite</td><td>25%</td><td>26%</td><td>27%</td></tr></tbody></table>
+<p class="cap"><b>Table J9:</b> When the model changed its answer, how often the objection had been right, by fix (rounds 1–2). *150-token replies.</p>
 
 <h2>Appendix K. Prior Work in Detail, and Further Figures</h2>
 <table class="tight small"><thead><tr><th>Topic</th><th>What prior work already shows</th><th>What this study adds</th></tr></thead><tbody><tr><td>Pushback on right and wrong answers</td><td>Both directions scored as hits and false alarms with d′; two models conceded to wrong users in 55–100% of conversations [22]. Rebuttals graded by strength, citation-style ones moving most models off correct answers [16]. Evidence fixed in the prompt, false pressure only, 19 models [46]. Well-known facts are conceded 1.3% of the time across eight current models [47].</td><td>The pushback is itself a statement about a line in the prompt, so its truth is checkable there, and the true and false versions use the same words. [22] names the lack of verifiable grounds as its limitation.</td></tr><tr><td>Evidence a model cites for its decision</td><td>Models told to copy the relevant clause before a compliance verdict; only the verdict is scored [58]. Up to 57% of citations in one retrieval model were post-rationalised [59].</td><td>The quoted line is matched by rule against the list and against the model's own decision.</td></tr><tr><td>Stated confidence, penalties, abstention</td><td>Stated confidence is overconfident and clusters at few values [19, 55]; which of stated and token confidence wins depends on where the probability is read [54]; stated penalties and thresholds barely move abstention [50, 51, 52], which responds more to an explicit reward for abstaining [53].</td><td>A replication on exactly-scored items, plus one variant we did not find tested: stating the Brier rule.</td></tr><tr><td>Several signals on the same transcripts</td><td>Verbalized confidence, likelihood, a hidden-state probe and P(True) under re-ask, agreement and challenge with a correct or wrong answer supplied [48].</td><td>The cited rule and the tool call on the same items; we have no hidden-state probe.</td></tr><tr><td>Reply length</td><td>A longer reply budget raises self-correction after pushback while caving changes much less [49]; reasoning models state better-calibrated confidence [64].</td><td>One consistent observation in one model.</td></tr><tr><td>Text against tool call</td><td>Refusal text beside harmful calls [23, 24, 56]; a model judges BLOCK yet prefers the blocked action on policy tasks [57].</td><td>The same mismatch on a harmless allow-list task, in the over-permissive direction.</td></tr></tbody></table>

@@ -16,9 +16,11 @@ It then tests what an agent harness can do about the first, and proposes one fea
 3. **Harness-side fix.** When the harness checks the claim against the list and attaches the result, right answers given up fall
    below 10% in six of eight models. Asking the model to check for itself helps less, and its check is often wrong. Two models
    still give way, so there the harness has to hold the decision.
-4. **The claim check.** When a user or agent disputes a decision by saying something about context the harness holds, the
-   harness verifies the claim itself: true claims are passed on with the evidence, false ones are shown to the user with the
-   contradicting line, and uncheckable ones go to a person. It is a design and was not built.
+4. **The claim check, and what it does for the person.** When someone disputes a decision by saying something about context
+   the harness holds, the harness verifies the claim itself. A true claim works and the person can see why; a false one is met
+   with the line that contradicts it, not with agreement; an uncheckable one gets an honest "not verified". Without the check,
+   a model's change of answer meant the objection was right only 7–53% of the time; with it, at least 89% in five of eight
+   models. No people were studied, and the feature is a design that was not built.
 
 On the same items it replicates known results on stated confidence, stated penalties, answer probabilities and the mismatch
 between written refusals and tool calls, and splits the accuracy score into the separate errors it combines. The rulebooks are
