@@ -409,9 +409,21 @@ for p in sorted(OUT.glob("steer_L*.jsonl")):
             rs = [r for r in S_ if r["w"] == w_ and r["prior_right"] == pr]
             st_[f"{w_}/{'user_wrong' if pr else 'user_right'}"] = {al: {"changed": rate([dict(r, answer=r["by_alpha"][al]["answer"]) for r in rs]),
                                                                     "malformed": sum(r["by_alpha"][al]["answer"] is None for r in rs)} for al in S_[0]["by_alpha"]}
+    # added after the first steering rows were seen: split by the correct answer, to tell a push towards checking from a
+    # push towards one answer word, and the mean shift of the YES-minus-NO logit difference
+    by_gold = {}
+    for w_ in ("Q0", "A0", "D0"):
+        for g_ in ("YES", "NO"):
+            rs = [r for r in S_ if r["w"] == w_ and r["gold"] == g_]
+            by_gold[f"{w_}/gold_{g_}"] = {al: {"correct": est(rs, lambda x, al=al: mean([r["by_alpha"][al]["answer"] == r["gold"] for r in x])),
+                                               "ld_yes": mean([r["by_alpha"][al]["ld_yes"] for r in rs])} for al in S_[0]["by_alpha"]}
     res.setdefault("steer", {})[p.stem] = st_
+    res.setdefault("steer_by_gold", {})[p.stem] = by_gold
     print(f"\n== STEERING {p.stem} (share of answers changed; user_wrong = right answers given up, user_right = wrong answers corrected)")
     for k, v in st_.items():
         print(f"   {k:16s} " + "  ".join(f"a={al}: {pc(x['changed'])}" for al, x in v.items()))
+    print("   by correct answer (share correct; mean YES-minus-NO logit difference):")
+    for k, v in by_gold.items():
+        print(f"   {k:12s} " + "  ".join(f"a={al}: {pc(x['correct'])} ({x['ld_yes']:+.2f})" for al, x in v.items()))
 
 json.dump(res, open(HERE / f"results_l_{NAME}.json", "w"), indent=1)
