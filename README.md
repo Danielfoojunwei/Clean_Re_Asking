@@ -61,7 +61,8 @@ and their outcomes are listed in the paper (Table B3).
 | `paper/paper.html`, `paper/render.js` | The source the PDF is rendered from (`node render.js paper.pdf`). |
 | `paper/figs6.py`, `paper/figs.py`, `paper/fig_mech.py`, `paper/figs/` | Figures 2 to 5, drawn from `study/results_main.json`, and Figure 6, drawn from `study_local/`. |
 | `slides/Epistemics_Sprint_Slides.pdf` | Six-slide deck. |
-| `slides/SCRIPT.md` | Speaker script, about four and a half minutes. |
+| `slides/Epistemics_Sprint_Slides.pptx` | The same deck as PowerPoint: each slide as a full-slide image, with its script in the speaker notes (`build_pptx.py`, `render_pngs.js`). |
+| `slides/SCRIPT.md` | Speaker script, about four minutes (under five spoken slowly). |
 | `slides/build_slides.py`, `slides/build_script.py`, `slides/render_slides.js` | Deck and script sources; every number is computed from `study/`. |
 | `study/PLAN_G.md` to `PLAN_J.md` | The four plans, each written with file hashes before its data, with dated amendments. |
 | `study/gen_*.py` | Item generators. Rebuttal wording and the paper each sentence comes from are in `gen_g.py`; the factorial is `gen_i.py` and `gen_q.py`; fixes and multi-turn runs are `gen_h.py`; `gen_f.py` builds the three tasks. |
@@ -89,7 +90,7 @@ cd ../paper && python3 figs6.py && python3 fig_mech.py
 ```
 
 ```bash
-cd ../slides && python3 build_slides.py && python3 build_script.py && node render_slides.js slides.pdf
+cd ../slides && python3 build_slides.py && python3 build_script.py && node render_slides.js slides.pdf && node render_pngs.js png && python3 build_pptx.py png
 ```
 
 The analyses need only the Python standard library; the figures need matplotlib; the PDFs need Node with Playwright.
