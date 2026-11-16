@@ -154,3 +154,8 @@ share of wrong answers corrected stays at 90% or more (the vector moves the mode
 If corrections fall below 90%, the vector is read as "refuses to move", not as "checks".
 Also recorded: the session's worker restarted at about 23:25 UTC and killed the running parts; `entropy` resumed from row 112
 of 144 (all rows intact), followed by `steer` and `qrfree`. No code changed.
+
+## Amendment L-5 (2026-11-16 01:20 UTC), before any steering data
+Bug: `steer` installed its hook before the shared-prefix forward pass, which then failed (no output written). The prefix is
+now computed before the hook is installed, so only the last user turn's final position is steered, as planned. Nothing else
+changed. sha256 run_l.py: 7f1b2a040dee42b085dcafce157902e0b0da75ac2dc6cf15190d334e0d69999d

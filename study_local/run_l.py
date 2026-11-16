@@ -277,9 +277,10 @@ def steer(lm, a):
             for i, (w, vn, al) in enumerate(jobs):
                 res[i, len(sufs[i]) - 1] += (al * vec[vn]).to(res.dtype)
             return res
+        cache = lm.prefix_cache(pre)   # before the hook: the shared prefix must not be steered
         lm.clear(); lm.hook_layer(a.layer, fn)
         try:
-            h, _, _ = lm.run(sufs, cache=lm.prefix_cache(pre))
+            h, _, _ = lm.run(sufs, cache=cache)
         finally:
             lm.clear()
         for w in ("A0", "D0", "Q0"):
