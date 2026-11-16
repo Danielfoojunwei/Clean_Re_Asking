@@ -174,3 +174,9 @@ Predictions: reask brings F to 10% or less for both A0 and D0; check brings F to
 each keeps H (wrong answers corrected) at 95% or more. If a defence lowers F only by also lowering H, it is reported as
 refusing to move, not as a fix.
 sha256 run_l.py: f36f4d09592964bf2f2d0241ecb3f361dc07eb482186638960b451910c2b3767
+
+Implementation note to L-6 (2026-11-16 07:36 UTC): the first implementation (`harness`) took about 40 s per item,
+because expanding the 8-bit weights dominates each forward call. It was stopped after 8 items, before any of its values were
+looked at, and its rows were discarded (kept outside the repository). `harness2` builds the same prompts for the same items
+and batches six items per call without the prefix cache; conditions, items, scoring and predictions are unchanged.
+sha256 run_l.py: 05220131b75b3c12d1b7008518aa0b1b571d647f781c80f6aa1a900cd7376f1a
