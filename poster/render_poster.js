@@ -8,11 +8,11 @@ const { chromium } = require('playwright');
   const fit = await p.evaluate(() => {
     const out = [];
     const footTop = document.querySelector('.foot').getBoundingClientRect().top;
-    document.querySelectorAll('.col').forEach((c, i) => {
+    document.querySelectorAll('.pn').forEach((c, i) => {
       const last = c.lastElementChild.getBoundingClientRect();
-      out.push(`col ${i + 1}: content ${Math.round(c.scrollHeight)} / ${Math.round(c.clientHeight)} px, last card ends ${Math.round(last.bottom)} (footer at ${Math.round(footTop)})`);
+      out.push(`panel ${i + 1}: content ${Math.round(c.scrollHeight)} / ${Math.round(c.clientHeight)} px, bottom ${Math.round(c.getBoundingClientRect().bottom)} (footer at ${Math.round(footTop)})`);
     });
-    document.querySelectorAll('.card, .fc, .test, .ev, .fb, .lr, .hb').forEach((e) => {
+    document.querySelectorAll('.pn, .test, .ev, .fb, .tl, .fr, .foot').forEach((e) => {
       if (e.scrollHeight > e.clientHeight + 1 || e.scrollWidth > e.clientWidth + 1)
         out.push(`OVERFLOW ${e.className}: ${e.scrollWidth}x${e.scrollHeight} in ${e.clientWidth}x${e.clientHeight} :: ${e.textContent.trim().slice(0, 50)}`);
     });
