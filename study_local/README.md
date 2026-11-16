@@ -11,6 +11,7 @@ An addendum to the paper. Nothing outside this folder is changed. Results and wh
 | `run_l.py` | Runner, one sub-command per part. |
 | `analyze_l.py` | All statistics (bootstrap over blocks within task, as in `study/analyze_g.py`), the probes, and `results_l_<model>.json`. |
 | `figs_l.py`, `figs/` | Figures. |
+| `paper_numbers.py`, `paper_numbers.json` | Every Study L number quoted in the paper, slides and speaker script, computed from the results files. |
 | `runs/<model>/*.jsonl` | Raw per-item outputs: answers, logit differences, logit-lens values, patching and knockout results, sampled replies. |
 | `runs/<model>/probe_weights.npy`, `probe_results.json` | Probe weights `[layer index, fold, width + 1]` (last entry is the bias) and accuracies. |
 | `runs/<model>/steer_vec_L*.npy` | Steering vectors (ask minus tell, final position). |
@@ -58,7 +59,7 @@ STUDY_L_MODEL=ministral8b python3 run_l.py qrfree
 ```
 
 ```bash
-STUDY_L_MODEL=ministral8b python3 analyze_l.py && python3 figs_l.py
+STUDY_L_MODEL=ministral8b python3 analyze_l.py && python3 figs_l.py && python3 paper_numbers.py
 ```
 
 Every part appends to its `.jsonl` file and skips ids that are already there, so an interrupted run can be restarted.

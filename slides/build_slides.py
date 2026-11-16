@@ -1,4 +1,4 @@
-"""Build the 5-slide deck (slides.html) for the pushback study from v6/results_main.json. Every number is computed."""
+"""Build the 6-slide deck (slides.html) from study/results_main.json and study_local/paper_numbers.json. Every number is computed."""
 import json, pathlib
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -8,11 +8,13 @@ TEAL, DEEP = "#3aa6a0", "#b8430f"
 TITLE = "Certain Until Told Otherwise"
 med = lambda get: _st.median(_vals(get))
 n_ = len
+L = json.load(open(HERE.parent / "study_local" / "paper_numbers.json"))  # Study L (Ministral 8B, local weights), from study_local/paper_numbers.py
+NSL = 6
 
 
 def slide(n, kicker, line, body, cls=""):
     return (f'<section><header><div class="kick">{kicker}</div><h1>{line}</h1></header><main class="{cls}">{body}</main>'
-            f'<footer><span>{TITLE} · Daniel Foo · Apart Research AI x Epistemics Sprint</span><span>{n} / 5</span></footer></section>')
+            f'<footer><span>{TITLE} · Daniel Foo · Apart Research AI x Epistemics Sprint</span><span>{n} / {NSL}</span></footer></section>')
 
 
 def bar(lab, v, col):
@@ -42,7 +44,8 @@ S = [
      <div class="req"><div class="q">2 · A lie the model could check worked anyway</div></div>
      <div class="req"><div class="q">3 · Telling bought nothing over asking</div></div>
      <div class="req"><div class="q">4 · Two published tests that contradict each other are both right</div></div>
-     <div class="scale">{pb["n"]:,} rule-scored answers · short invented lists: results are for these tasks</div></div>'''),
+     <div class="req" style="border-color:#b8430f"><div class="q">5 · Inside one model, the right answer is overwritten, not hidden</div></div>
+     <div class="scale">{pb["n"]:,} rule-scored API answers + {L["local_scored_answers"]:,} on local weights · short invented lists</div></div>'''),
  slide(2, "Findings 1 and 2 · Force and evidence", f"The loudest rebuttal moved {med(wF('expert')):.0f}% of right answers. A lie the model could check moved {med(wF('page_frame')):.0f}%.",
    f'''<div class="col big"><div class="num"><span style="color:{TEAL}">{med(wF("expert")):.0f}%</span><em>vs</em><span style="color:{DEEP}">{med(wF("page_frame")):.0f}%</span></div>
    <div class="sub">median share of <u>right</u> answers given up, {pb["n_models"]} models.</div>
@@ -68,16 +71,28 @@ S = [
    <div class="col chart"><div class="cap">Right answers given up, averaged over naming and evidence</div>
    {pairbars([(l, 100 * PMM[l]["fact"]["by_act"]["question"], 100 * PMM[l]["fact"]["by_act"]["directive"]) for l in SHOW], "asks", "tells", TEAL, DEEP)}
    <div class="note" style="margin-top:10px">Naming the answer mattered less (reliable in {n_(pb["naming_up"])} models); 18 cells, same closing instruction in each.</div></div>'''),
- slide(5, "What transfers", "One account: the model answers the last request, not the question. Four things any benchmark can reuse.",
-   f'''<div class="col c2" style="flex:0 0 600px"><div class="checks">
+ slide(5, "Inside one model · Ministral 8B on local weights", "Inside the model, telling does not hide the right answer. It overwrites it.",
+   f'''<div class="col big"><div class="num"><span style="color:{DEEP}">{L["patch"]["assert/dis"]["handover"]}–{L["patch"]["direct/dis"]["handover"]}</span><em>of</em><span style="color:{INK}">34</span></div>
+   <div class="sub">layers: where the difference between <u>asked</u> and <u>told</u> leaves the rebuttal and reaches the answer. Copying the asked run's rebuttal back in at layer 16: {L["patch"]["assert/dis"]["tell_correct_after_rebuttal_patch_b16"]}% keep the right answer.</div>
+   <div class="quote">A probe reads the right answer in {L["probe_ask_kept_from_b19"][0]}–{L["probe_ask_kept_from_b19"][1]}% of asked runs.<br>In told runs that gave way: {L["probe_flipped_directive"]["b19"]}% at layer 19, {L["probe_flipped_directive"]["b28_33"][0]}–{L["probe_flipped_directive"]["b28_33"][1]}% by the last layers.</div></div>
+   <div class="col chart"><div class="cap">49 wordings: right answers given up</div>
+   {bar("Questions: “Is the answer X?” (11)", L["wordings_sets_F"]["Q"][0], TEAL)}
+   {bar("Hedged: “I thought it was X. Please check.” (8)", L["wordings_sets_F"]["SO"][0], TEAL)}
+   {bar("Asks for a change: “Can you change it to X?” (8)", L["wordings_sets_F"]["QR"][0], ORANGE)}
+   {bar("Assertions: “The answer is X.” (11)", L["wordings_sets_F"]["A"][0], DEEP)}
+   {bar("Directives: “Change your answer to X.” (11)", L["wordings_sets_F"]["D"][0], DEEP)}
+   <div class="note" style="margin-top:10px">Requests phrased as questions fall to {min(L["qrfree_F"]["QR0"][0], L["qrfree_F"]["QR2"][0], L["qrfree_F"]["QR5"][0])}–{max(L["qrfree_F"]["QR0"][0], L["qrfree_F"]["QR2"][0], L["qrfree_F"]["QR5"][0])}% once the reply format is unambiguous: what decides is whether the user asks. Ministral 3B failed the accuracy gate ({round(100 * L["bare_3b"]["correct"] / L["bare_3b"]["n"])}% correct). A steering vector did not make the model check.</div></div>'''),
+ slide(6, "What transfers · five things any benchmark can reuse", "One account: the model answers the last turn, not the question.",
+   f'''<div class="col c2" style="flex:0 0 600px"><div class="checks tight">
    <div><i>1</i><span><b>Cross the instruments</b> before comparing scores: same items, same models.</span></div>
    <div><i>2</i><span><b>Put the fact on the page</b>: giving way is then not ignorance.</span></div>
    <div><i>3</i><span><b>Score what the stronger probe buys</b>: gain against cost, both directions.</span></div>
-   <div><i>4</i><span><b>Report two numbers</b>: yielding when asked, and the defence gap between asked and told.</span></div></div>
+   <div><i>4</i><span><b>Report two numbers</b>: yielding when asked, and the defence gap between asked and told.</span></div>
+   <div><i>5</i><span><b>Score the final answer to the question</b>: a one-word reply to a question can answer the probe instead.</span></div></div>
    <div class="note">Track 1: P1 certainty did not predict holding · P2 the defence gap, measured · P3 ask, do not tell · P4 a flip rate can be moved 0–50% by one sentence; the two-number report closes it.</div></div>
    <div class="col chart"><div class="cap">Fix: a fact computed outside the model, attached</div>
    {pairbars([(l, 100 * pb["note_page"][l][0], 100 * pb["note_page"][l][1]) for l in FIXSHOW[:6]], "no fix", "with attached fact", ORANGE, BLUE)}
-   <div class="note" style="margin-top:10px">10% or less in {n_(pb["note_le10"])} of {n_(pb["note_page"])} models; a published prompt fix helped {n_(pb["gate_page_better"])} and harmed {n_(pb["gate_page_worse"])}. {pb["n_models"]} models, short invented lists, one wording per cell: the pattern is the claim, not the rates.</div></div>'''),
+   <div class="note" style="margin-top:10px">10% or less in {n_(pb["note_le10"])} of {n_(pb["note_page"])} models; a published prompt fix helped {n_(pb["gate_page_better"])} and harmed {n_(pb["gate_page_worse"])}. {pb["n_models"]} models, short invented lists, one wording per cell (49 on one model): the pattern is the claim, not the rates.</div></div>'''),
 ]
 
 CSS = f"""
@@ -125,7 +140,7 @@ footer {{ display: flex; justify-content: space-between; font-size: 13px; color:
 .sparks {{ display: flex; gap: 18px }} .sparks div {{ flex: 1; border: 1.5px solid {GRID}; border-radius: 12px; padding: 8px 12px; background: #faf9f6; font-size: 15px; display: flex; flex-direction: column; align-items: flex-start }}
 .sparks b {{ font-size: 19px }}
 .checks {{ display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px }} .checks div {{ display: flex; align-items: center; gap: 16px; font-size: 21px; border: 1.5px solid {GRID}; border-radius: 12px; padding: 12px 18px; background: #faf9f6 }}
-.checks.small div {{ font-size: 15px; padding: 5px 12px }} .checks.small {{ gap: 6px; margin-bottom: 10px }} .checks.small i {{ flex: 0 0 30px; height: 30px; font-size: 16px }}
+.checks.small div {{ font-size: 15px; padding: 5px 12px }} .checks.tight {{ gap: 8px; margin-bottom: 12px }} .checks.tight div {{ font-size: 18px; padding: 8px 16px }} .checks.tight i {{ flex: 0 0 34px; height: 34px; font-size: 18px }} .checks.small {{ gap: 6px; margin-bottom: 10px }} .checks.small i {{ flex: 0 0 30px; height: 30px; font-size: 16px }}
 .checks i {{ flex: 0 0 40px; height: 40px; border-radius: 50%; background: {BLUE}; color: #fff; font-style: normal; font-weight: 700; font-size: 21px; display: flex; align-items: center; justify-content: center }}"""
 CSS += f"""
 .pagecard {{ width: 400px; border: 1.5px solid {GRID}; border-radius: 14px; background: #fbfaf5; padding: 18px 22px; font-size: 21px; margin: 6px 0 12px }}

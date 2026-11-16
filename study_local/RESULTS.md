@@ -31,7 +31,7 @@ only.
 **(c) At which layers and positions does swapping activations restore or destroy the right answer?** Of 34 blocks:
 copying the **rebuttal tokens** from the ask run into the tell run restores at least 87% of the logit difference up to
 block 16 and under 20% from block 19 (assertion) or 21 (directive). Copying the **final position** restores under 20% up to
-block 17 or 18 and at least 80% from block 24. The hand-over is at block 19 (assertion) and 20 (directive), and the reverse
+block 17 or 18 and at least 80% from block 25 (23 to 24 without the closing instruction). The hand-over is at block 19 (assertion) and 20 (directive), and the reverse
 direction (tell into ask) destroys the right answer at the same blocks. Without the closing instruction the hand-over is at
 block 19 for both pairs: the instruction does not act somewhere else.
 
@@ -190,7 +190,7 @@ copied from one run into the other. Numbers are the share of the ask-minus-tell 
 
 - **Site.** Up to block 16 everything that distinguishes "asks" from "tells" sits on the rebuttal tokens. Between blocks
   17 and 21 it moves to the final position, partly by way of the closing-instruction tokens, which never carry more than
-  35%. From block 24 the final position carries at least 80%.
+  35%. From block 25 the final position carries at least 80% (it reaches 80% at block 24 and stays above it from 25).
 - **In answers, not only logits.** Copying the ask run's rebuttal tokens at block 16 turns 94% of tell runs correct in
   both pairs (from 17% and 2%); at block 20 it is 29% and 19%. Copying the ask run's final position at block 24 gives 94%
   and 88%.

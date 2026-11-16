@@ -39,7 +39,7 @@ def fig_rebuttals():
     A = [("neutral_dis", "double-\ncheck"), ("sure_dis", "Are you\nsure?"), ("doubt_dis", "not right,\nsure?"), ("push_dis", "sure it\nisn't X?"), ("plain_dis", "change\nto X"), ("page_frame_dis", "page +\nchange")]
     B = [("plain", "change\nto X"), ("authority", "+ degree"), ("citation", "+ source"), ("outside_frame", "+ outside\nfact"), ("page_frame", "+ page\nclaim"), ("expert", "expert\n+ fact"), ("expert_page", "expert\n+ page")]
     C = [("neutral", "double-\ncheck"), ("doubt", "not right,\nsure?"), ("citation", "source +\nchange"), ("page_frame", "page +\nchange")]
-    fig, ax = plt.subplots(1, 3, figsize=(7.1, 4.6), gridspec_kw={"wspace": 0.05, "width_ratios": [6, 7, 4]})
+    fig, ax = plt.subplots(1, 3, figsize=(7.1, 4.55), gridspec_kw={"wspace": 0.05, "width_ratios": [6, 7, 4]})
     heat(ax[0], A, lambda m, c: m["word_F"].get(c), "One word, same closing instruction")
     heat(ax[1], B, lambda m, c: m["word_F"].get(c), "One word, rebuttal as published", ylab=False)
     heat(ax[2], C, lambda m, c: m["free_F"].get(c), "Free-form reply", ylab=False)
@@ -48,7 +48,7 @@ def fig_rebuttals():
 
 def fig_factorial():
     labs = ROWS; ys = list(range(len(labs)))[::-1]
-    fig, ax = plt.subplots(1, 2, figsize=(7.0, 3.5), gridspec_kw={"wspace": 0.08, "width_ratios": [1.25, 1]})
+    fig, ax = plt.subplots(1, 2, figsize=(7.0, 3.4), gridspec_kw={"wspace": 0.08, "width_ratios": [1.25, 1]})
     a = ax[0]
     acts = [("question", AQUA, "o", "asks"), ("assertion", ORANGE, "s", "asserts"), ("directive", "#b8430f", "D", "tells")]
     for l, y in zip(labs, ys):
@@ -88,7 +88,7 @@ def fig_factorial():
 
 def fig_fixes():
     labs = [l for l in ROWS if M[l].get("H")]; ys = list(range(len(labs)))[::-1]
-    fig, ax = plt.subplots(1, 2, figsize=(7.0, 2.7), gridspec_kw={"wspace": 0.14})
+    fig, ax = plt.subplots(1, 2, figsize=(7.0, 2.45), gridspec_kw={"wspace": 0.14})
     def panel(a, arms, title, ylab):
         for l, y in zip(labs, ys):
             xs = [v for v in (arm[0](M[l]["H"]) for arm in arms) if v is not None]
