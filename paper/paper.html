@@ -200,22 +200,21 @@ table.prof th:nth-child(1), table.prof td:nth-child(1) { width: 9%; } table.prof
 <div class="trule"></div>
 <div class="auth"><b>Daniel Foo</b><br>Nanyang Technological University (NTU), Singapore<br><span class="with">With</span><br>Apart Research</div>
 <div class="abstract"><h3>Abstract</h3>
-<p>When a user insists that a model is wrong, what moves the model? Published pushback tests disagree: one finds current models
-almost never abandon an anchored fact, another that they concede most correct answers. We ran the rebuttals of five published
-protocols, verbatim, on three open-book tasks where the answer sits on a four-line list in the prompt, across 21 models, with
-the user wrong in half the items and right in half, and then opened one model. Four results run against intuition: the most
-forceful rebuttal was the weakest (0% of right answers given up, against 50% for a flat "Please change your answer"); a lie the
-model could check worked anyway (67%); telling bought no corrections over asking and cost 35 points of right answers; and the
-two contradictory tests are both right on the same items and models. One root cause accounts for all four: models yield to the
-form of the last turn, not its evidence. With content held fixed, asking, asserting and telling cost a median of 3%, 32% and
-48%; credentials, sources and checkability added nothing. In Ministral 8B, run locally, 49 wordings confirm the contrast;
-attention knockout shows that a question is answered again from the original question while an instruction is carried out on
-the model's previous answer; and activation patching and a linear probe place a hand-over at layers 19–20 of 34 where the right
-answer is overwritten, not kept underneath. The same signature appears in recent work on persuasion, cue-following and prompt
-injection. From the mechanism we derive a harness defence, the clean re-ask: the original question asked again without the
-model's previous answer, the user's claim given as a third party's; in Ministral 8B it took right answers given up from
-86–97% to 0% while 99% of correct objections were still accepted. We propose reporting yielding when asked and the defence gap
-between asked and told. 370,170 rule-scored API answers and 35,640 local ones.</p></div>
+<p>When a user tells a language model that its correct answer is wrong, should it hold or give way? Published tests disagree:
+one finds that models almost never abandon an anchored fact, another that they concede most correct answers. To find out why,
+we ran the rebuttals of five published protocols, word for word, on 21 models, using three open-book tasks where the answer
+sits on a short list in the prompt and every objection is right or wrong by rule. Both published pictures reappeared on the
+same items and models, and what separated them was not the evidence a rebuttal carried but its form. The models could see the
+list and were sure of their answers. A credential or a cited source added nothing, and a lie the model could refute by looking
+four lines up worked as well as a claim it could not check; yet telling instead of asking raised the share of right answers
+given up from a median of 3% to 48%, and bought no corrections that asking had not already won. Opening one of these models,
+Ministral 8B, showed how. A question is answered again from what the model computed at the original question, while a
+statement or instruction is carried out on the model's previous answer, which is overwritten past the middle of the network
+rather than kept underneath; the reply then presents the user's answer as a reading of the list. Recent work reports the same
+signature for persuasion and prompt injection. The mechanism also suggests a remedy: re-asking the original question in a clean
+context, without the previous answer, cut the right answers given up from 86–97% to 0% in that model, while 99% of
+correct objections still succeeded. A pushback score should therefore report two numbers, yielding when asked and the defence
+gap between asked and told. All 370,170 API answers and 35,640 local answers were scored by rule on short invented lists.</p></div>
 <p class="foot"><sup>1</sup> Research conducted at the AI x Epistemics Research Sprint (Apart Research), 13–15 November 2026. Track 1 (Model
 Epistemics and Decision-Making Evals). The API study (Sections 4.1–4.7) was designed, run and analysed during the sprint; the local study (Sections 4.6 and 5) ran on 15–16 November, before the submission deadline (Appendix A.3).</p>
 
@@ -510,15 +509,17 @@ through tool results, the attention heads that carry the rebuttal, and answer-ba
 full limitations and dual-use considerations.</p>
 
 <h2>7. Conclusion</h2>
-<p>On open-book items, where the reason is on the page, the loudest rebuttal did the least, a lie the model could check worked
-anyway, telling added no corrections over asking, and two published tests with opposite conclusions were both reproduced. One
-root cause fits all four: models yield to the form of the last turn, not its evidence. In the model we opened, a question is
-answered again from the original question, while an instruction is carried out on the model's previous answer and overwrites
-the right one past the middle of the network. Four models did not behave this way and still accepted correct objections, so it
-can be avoided, and a harness can apply the clean re-ask: ask the original question again without the previous answer. A pushback
-score needs two numbers, yielding when asked and the defence gap, before it says anything about a model's epistemics. These are
-results for short invented lists. Theory of change: a benchmark author who reports both numbers gives developers a target they can
-train against without teaching models to refuse correction, and harness builders a test for every prompt they ship.</p>
+<p>We set out to explain why two tests of the same behaviour disagree, and the explanation turned out to be a property of the
+models rather than of the tests. On items where the answer sat in plain view, models that were sure of it gave it up when they
+were told to and kept it when they were asked, largely regardless of the evidence offered; the two published protocols simply
+sat on either side of that line. Inside the one model we could open, the line has a mechanism. A question sends the model back to
+its reading of the original question; a statement or instruction acts on the answer it already gave and overwrites the right one
+past the middle of the network, leaving a reply that misreports evidence still in front of it. Because the failure lies in how the
+model routes the last turn, not in what it knows, it can be avoided: four of 21 models already hold when told and still accept
+correct objections, and a harness that re-asks the original question in a clean context removed the effect in the model we tested.
+For evaluation, a pushback score speaks to a model's epistemics only if it reports both yielding when asked and the defence gap,
+which also gives developers a target they can train against without teaching models to refuse correction. These are results for
+short invented lists and, for the mechanism and the remedy, one model; the next test is the models and agents people rely on.</p>
 <div class="break"></div>
 <h2>Acknowledgements</h2>
 <p>This work is supported and funded by the Pathfinder Fellowship, a program run by Kairos. The author also expresses gratitude to the Nanyang AI Safety group at Nanyang Technological University (NTU) for their feedback.</p>
