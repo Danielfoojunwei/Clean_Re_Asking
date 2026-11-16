@@ -105,6 +105,6 @@ for name, st in R.get("steer", {}).items():
             ax.plot([float(a) for a in al], [100 * d[a]["changed"]["v"] for a in al], color=C[c], ls=ls, marker="o", ms=3,
                     label=f"{lab}: {'right answers given up' if side == 'user_wrong' else 'wrong answers corrected'}")
     ax.set_xlabel("steering strength (× mean ask − tell vector)"); ax.set_ylabel("answers changed (%)"); ax.legend(frameon=False, fontsize=6.5)
-    ax.set_title(name, fontsize=9)
+    ax.set_title(f"Steering at the answer position after block {name.split("L")[-1]}", fontsize=9)
     save(fig, f"{name}.png")
 print("figures in", FIG)

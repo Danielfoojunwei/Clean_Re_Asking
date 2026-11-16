@@ -2,8 +2,8 @@
 
 Addendum to *Certain Until Told Otherwise*. The paper's reading of its main finding ("the model answers the last request,
 not the question") was behavioural. This study tests it on one open-weight model from the paper, run locally with access
-to its activations. Plan, predictions and file hashes were written before the data ([`PLAN_L.md`](PLAN_L.md), with three
-dated amendments). Everything below is for **one model**. Nothing here is a claim about the other 20 models of the paper.
+to its activations. Plan, predictions and file hashes were written before the data ([`PLAN_L.md`](PLAN_L.md), with five
+dated amendments; L-3 is post hoc and labelled so wherever it is used). Everything below is for **one model**. Nothing here is a claim about the other 20 models of the paper.
 
 F = share of right answers given up when the user is wrong. H = share of wrong answers corrected when the user is right.
 Ranges in brackets are 95% bootstrap ranges over blocks within task, as in the paper.
@@ -300,7 +300,30 @@ which removes the ambiguity of a one-word reply. Block 12, previous answer right
 
 ### Steering
 
-STEERING_PLACEHOLDER
+Site and prediction were fixed before the data (Amendment L-4): add a multiple of the mean final-position difference "ask
+minus tell" after block 22, vector from blocks 12 to 19, tested on blocks 8 to 11 (96 items per direction).
+
+| Run, user wrong (F) | strength −1 | 0 | 0.5 | 1 | 2 | 4 |
+|---|---|---|---|---|---|---|
+| asserts (A0) | 92% | 88% | 93% | 100% | 86% | 52% |
+| tells (D0) | 99% | 96% | 91% | 84% | 69% | 55% |
+| asks (Q0) | 18% | 1% | 0% | 0% | 4% | 30% |
+
+Corrections when the user is right stay at 100% for A0 and D0 up to strength 2 (80% and 100% at strength 4); for Q0 they
+fall to 78% at strength 2 and 50% at strength 4.
+
+**Prediction failed.** At strength 1 the share of right answers given up does not halve: it rises under the assertion (88% to
+100%) and falls by 12 points under the directive. Larger strengths do lower it, but split by the correct answer the reason is
+plain: at strength 4, pooling both directions, items whose correct answer is NO are answered correctly in 98% (A0) and 83% (D0) of runs, items whose
+correct answer is YES in 30% and 61%, and under a plain question YES items drop from 100% to 20% correct. The vector mostly
+moves the answer towards NO. It is not a "check the page" direction.
+
+A likely reason, not tested: the mean of the tell runs is not answer-neutral. The assertion yields more often when the pushed
+answer is YES (95%) than NO (73%, section 6), so its mean leans towards YES and "ask minus tell" leans towards NO. A
+difference vector computed separately for each pushed answer, or a direction orthogonal to the YES-minus-NO read-out, would be
+the next thing to try; neither was run.
+
+![steering](figs/steer_L22.png)
 
 ## What this supports, and what it does not
 
@@ -312,6 +335,8 @@ Supported for Ministral 8B:
   this.
 - When told, the list-based answer at the answer position is replaced, not kept alongside.
 - Telling works through the previous answer and the rebuttal; asking works through the original question tokens.
+- With room to reply (free-form), the directive moves far fewer answers (39% of samples) and question-form requests to change
+  the answer cost about what a plain question costs (8–12%, one block, post hoc); the assertion still moves 85%.
 
 Not supported, or failed:
 - "The model goes back to the page when asked": it does not use the list tokens from the last turn (P9 failed).
@@ -320,6 +345,10 @@ Not supported, or failed:
 - "Any phrasing that replaces the question will not hold": requests phrased as questions mostly hold, and on the clean half
   of the data grammatical form predicts better than my label.
 - Symmetry between pushed YES and pushed NO for assertions (P11 failed).
+- "Flips are confident": sampled answers disagree more after a directive than after a question (+0.32 bits; P10 failed for
+  the directive).
+- A steering vector at the site found by patching that makes the model check: the mean ask-minus-tell vector after block 22
+  mostly pushes the answer towards NO (P12 failed). A causal site is located; a usable direction is not.
 
 Limits:
 - One model of 8B parameters, in the paper's "yields" group, with MLP weights in 8-bit. Nothing here was run on the four
@@ -346,3 +375,4 @@ Limits:
 | P9 | Hiding the list hurts ask runs | Failed |
 | P10 | Flips are confident | Answer entropy: met for the assertion (0.49 bits), not for the directive (0.60). Semantic entropy: met for the assertion (+0.09 bits), failed for the directive (+0.32 bits) |
 | P11 | Symmetry within 15 points | Failed for assertions (21 points); met for directives |
+| P12 | Steering at strength 1 halves F with corrections at 90% or more (Amendment L-4) | Failed: F 88% to 100% (assertion), 96% to 84% (directive); larger strengths act as a push towards NO |
