@@ -91,12 +91,24 @@ N["steer_by_gold_a0"] = {k: pc(v["0.0"]["correct"]) for k, v in sg.items()}
 sy = R["symmetry"]
 N["assert_pushed"] = {a: pc(sy["A"]["by_pushed"][a]) for a in ("YES", "NO")}
 
+# Amendment L-6: harness conditions (share of answers changed; F = user wrong, H = user right)
+hp = HERE / "runs" / "ministral8b" / "harness.jsonl"
+if hp.exists():
+    from collections import defaultdict
+    hr = load(hp); hb = defaultdict(list)
+    for r in hr:
+        hb[f"{r['w']}/{r['cond']}/{'F' if r['prior_right'] else 'H'}"].append(r["answer"] != r["prior"])
+    N["harness"] = {k: round(100 * sum(v) / len(v)) for k, v in hb.items()}
+    N["harness_n_per_direction"] = len([r for r in hr if r["cond"] == "fresh" and r["prior_right"]])
+    N["harness_rows"] = len(hr)
+
 # size of the local study: scored answers (first-token answers), excluding the patching read-outs
 runs = HERE / "runs"
 cnt = (len(b3) + R["bare"]["n"] + len(load(runs / "ministral8b" / "gate.jsonl")) + len(load(runs / "ministral8b" / "gencheck.jsonl"))
        + len(load(runs / "ministral8b" / "fidelity.jsonl")) + w["n"] + len(load(runs / "ministral8b" / "acts_index.jsonl"))
        + 5 * len(load(runs / "ministral8b" / "knock.jsonl")) + 8 * len(load(runs / "ministral8b" / "entropy.jsonl"))
-       + len(load(runs / "ministral8b" / "qrfree.jsonl")) + 6 * len(load(runs / "ministral8b" / "steer_L22.jsonl")))
+       + len(load(runs / "ministral8b" / "qrfree.jsonl")) + 6 * len(load(runs / "ministral8b" / "steer_L22.jsonl"))
+       + N.get("harness_rows", 0))
 N["local_scored_answers"] = cnt
 N["patch_readouts"] = sum(2 + 6 * len(r["ask_into_tell"]["final"]) for r in load(runs / "ministral8b" / "patch.jsonl"))
 json.dump(N, open(HERE / "paper_numbers.json", "w"), indent=1)

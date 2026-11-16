@@ -5,11 +5,12 @@ HERE = pathlib.Path(__file__).resolve().parent
 exec(open(HERE.parent / "study" / "paper_stats.py").read().replace('"../study/', '"' + str(HERE.parent / "study") + '/'))
 BLUE, ORANGE, INK, MUTED, GRID = "#2a78d6", "#eb6834", "#1c1c1a", "#6b6b66", "#e4e2dc"
 TEAL, DEEP = "#3aa6a0", "#b8430f"
-TITLE = "Certain Until Told Otherwise"
+TITLE = "Clean Re-asking"
 med = lambda get: _st.median(_vals(get))
 n_ = len
 L = json.load(open(HERE.parent / "study_local" / "paper_numbers.json"))  # Study L (Ministral 8B, local weights), from study_local/paper_numbers.py
 NSL = 6
+HV = L.get("harness", {})  # Amendment L-6: harness conditions, percent
 
 
 def slide(n, kicker, line, body, cls=""):
@@ -71,7 +72,7 @@ S = [
    <div class="col chart"><div class="cap">Right answers given up, averaged over naming and evidence</div>
    {pairbars([(l, 100 * PMM[l]["fact"]["by_act"]["question"], 100 * PMM[l]["fact"]["by_act"]["directive"]) for l in SHOW], "asks", "tells", TEAL, DEEP)}
    <div class="note" style="margin-top:10px">Naming the answer mattered less (reliable in {n_(pb["naming_up"])} models); 18 cells, same closing instruction in each.</div></div>'''),
- slide(5, "Inside one model · Ministral 8B on local weights", "Inside the model, telling does not hide the right answer. It overwrites it.",
+ slide(5, "Inside one model · Ministral 8B on local weights", "Inside the model, a question is answered again; an instruction overwrites the answer.",
    f'''<div class="col big"><div class="num"><span style="color:{DEEP}">{L["patch"]["assert/dis"]["handover"]}–{L["patch"]["direct/dis"]["handover"]}</span><em>of</em><span style="color:{INK}">34</span></div>
    <div class="sub">layers: where the difference between <u>asked</u> and <u>told</u> leaves the rebuttal and reaches the answer. Copying the asked run's rebuttal back in at layer 16: {L["patch"]["assert/dis"]["tell_correct_after_rebuttal_patch_b16"]}% keep the right answer.</div>
    <div class="quote">A probe reads the right answer in {L["probe_ask_kept_from_b19"][0]}–{L["probe_ask_kept_from_b19"][1]}% of asked runs.<br>In told runs that gave way: {L["probe_flipped_directive"]["b19"]}% at layer 19, {L["probe_flipped_directive"]["b28_33"][0]}–{L["probe_flipped_directive"]["b28_33"][1]}% by the last layers.</div></div>
@@ -81,18 +82,21 @@ S = [
    {bar("Asks for a change: “Can you change it to X?” (8)", L["wordings_sets_F"]["QR"][0], ORANGE)}
    {bar("Assertions: “The answer is X.” (11)", L["wordings_sets_F"]["A"][0], DEEP)}
    {bar("Directives: “Change your answer to X.” (11)", L["wordings_sets_F"]["D"][0], DEEP)}
-   <div class="note" style="margin-top:10px">Requests phrased as questions fall to {min(L["qrfree_F"]["QR0"][0], L["qrfree_F"]["QR2"][0], L["qrfree_F"]["QR5"][0])}–{max(L["qrfree_F"]["QR0"][0], L["qrfree_F"]["QR2"][0], L["qrfree_F"]["QR5"][0])}% once the reply format is unambiguous: what decides is whether the user asks. Ministral 3B failed the accuracy gate ({round(100 * L["bare_3b"]["correct"] / L["bare_3b"]["n"])}% correct). A steering vector did not make the model check.</div></div>'''),
- slide(6, "What transfers · five things any benchmark can reuse", "One account: the model answers the last turn, not the question.",
-   f'''<div class="col c2" style="flex:0 0 600px"><div class="checks tight">
-   <div><i>1</i><span><b>Cross the instruments</b> before comparing scores: same items, same models.</span></div>
-   <div><i>2</i><span><b>Put the fact on the page</b>: giving way is then not ignorance.</span></div>
-   <div><i>3</i><span><b>Score what the stronger probe buys</b>: gain against cost, both directions.</span></div>
-   <div><i>4</i><span><b>Report two numbers</b>: yielding when asked, and the defence gap between asked and told.</span></div>
-   <div><i>5</i><span><b>Score the final answer to the question</b>: a one-word reply to a question can answer the probe instead.</span></div></div>
-   <div class="note">Track 1: P1 certainty did not predict holding · P2 the defence gap, measured · P3 ask, do not tell · P4 a flip rate can be moved 0–50% by one sentence; the two-number report closes it.</div></div>
-   <div class="col chart"><div class="cap">Fix: a fact computed outside the model, attached</div>
-   {pairbars([(l, 100 * pb["note_page"][l][0], 100 * pb["note_page"][l][1]) for l in FIXSHOW[:6]], "no fix", "with attached fact", ORANGE, BLUE)}
-   <div class="note" style="margin-top:10px">10% or less in {n_(pb["note_le10"])} of {n_(pb["note_page"])} models; a published prompt fix helped {n_(pb["gate_page_better"])} and harmed {n_(pb["gate_page_worse"])}. {pb["n_models"]} models, short invented lists, one wording per cell (49 on one model): the pattern is the claim, not the rates.</div></div>'''),
+   <div class="note" style="margin-top:10px">Two routes (attention knockout): asking re-uses what the model computed at the original question, not the list ({L["knock"]["ask_hide_list_user_right"][0]:+d} points when the list is hidden); telling acts on the model's previous answer (hiding it restores {L["knock"]["direct_hide_prior"][0]}–{L["knock"]["assert_hide_prior"][0]} points). Even “Can you change your answer?” falls to {min(L["qrfree_F"]["QR0"][0], L["qrfree_F"]["QR2"][0], L["qrfree_F"]["QR5"][0])}–{max(L["qrfree_F"]["QR0"][0], L["qrfree_F"]["QR2"][0], L["qrfree_F"]["QR5"][0])}% in free form.</div></div>'''),
+ slide(6, "The defence · clean re-asking", "Ask the original question again, in a clean context, without the model's previous answer.",
+   f'''<div class="col c2" style="flex:0 0 560px"><div class="checks tight">
+   <div><i>1</i><span><b>Re-pose the original question</b> as the last request: the turn takes the asking route.</span></div>
+   <div><i>2</i><span><b>Drop the model's previous answer</b>: nothing left for the telling route to edit.</span></div>
+   <div><i>3</i><span><b>Give the user's claim as a third party's</b>: “Another person says the answer is X.”</span></div>
+   <div><i>4</i><span><b>Change the answer only if the clean re-ask does</b>: one extra call, no judge of who is right.</span></div></div>
+   <div class="note">For evaluation: report two numbers, yielding when asked and the defence gap between asked and told, on the same items, in both directions.</div></div>
+   <div class="col chart"><div class="cap">Right answers given up (Ministral 8B, pre-registered)</div>
+   {bar("Objection as sent: “The answer is X.”", HV.get("A0/raw/F", 0), DEEP)}
+   {bar("Objection as sent: “Change your answer to X.”", HV.get("D0/raw/F", 0), DEEP)}
+   {bar("Re-ask, previous answer kept: assertion", HV.get("A0/reask/F", 0), ORANGE)}
+   {bar("Re-ask, previous answer kept: directive", HV.get("D0/reask/F", 0), ORANGE)}
+   {bar("Clean re-ask", HV.get("claim/fresh/F", 0), TEAL)}
+   <div class="note" style="margin-top:10px">Wrong answers still corrected with the clean re-ask: {HV.get("claim/fresh/H", "–")}%. {L.get("harness_n_per_direction", "–")} items per direction, one model; on API models it needs only the original question and the claim.</div></div>'''),
 ]
 
 CSS = f"""

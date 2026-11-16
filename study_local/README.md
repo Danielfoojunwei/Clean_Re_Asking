@@ -58,6 +58,12 @@ The post-hoc free-form check of question-form requests (Amendment L-3):
 STUDY_L_MODEL=ministral8b python3 run_l.py qrfree
 ```
 
+The clean re-ask and the other harness conditions (Amendment L-6; `harness2` is the batched runner that was used):
+
+```bash
+STUDY_L_MODEL=ministral8b python3 run_l.py harness2
+```
+
 ```bash
 STUDY_L_MODEL=ministral8b python3 analyze_l.py && python3 figs_l.py && python3 paper_numbers.py
 ```

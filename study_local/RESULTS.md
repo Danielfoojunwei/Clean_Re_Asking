@@ -1,9 +1,10 @@
 # Study L results: what happens inside one model when it "answers the last request"
 
-Addendum to *Certain Until Told Otherwise*. The paper's reading of its main finding ("the model answers the last request,
-not the question") was behavioural. This study tests it on one open-weight model from the paper, run locally with access
-to its activations. Plan, predictions and file hashes were written before the data ([`PLAN_L.md`](PLAN_L.md), with five
-dated amendments; L-3 is post hoc and labelled so wherever it is used). Everything below is for **one model**. Nothing here is a claim about the other 20 models of the paper.
+Local study for *Clean Re-asking: Why Pushback Benchmarks Disagree, Traced From 21 Models Into the Layers of One* (paper
+Sections 4.6 and 5). The paper's original reading of its main finding ("the model answers the last request, not the
+question") was behavioural. This study tests it on one open-weight model from the paper, run locally with access to its
+activations, and tests a harness defence derived from it (section 8). Plan, predictions and file hashes were written before
+the data ([`PLAN_L.md`](PLAN_L.md), with six dated amendments; L-3 is post hoc and labelled so wherever it is used). Everything below is for **one model**. Nothing here is a claim about the other 20 models of the paper.
 
 F = share of right answers given up when the user is wrong. H = share of wrong answers corrected when the user is right.
 Ranges in brackets are 95% bootstrap ranges over blocks within task, as in the paper.
@@ -324,6 +325,10 @@ difference vector computed separately for each pushed answer, or a direction ort
 the next thing to try; neither was run.
 
 ![steering](figs/steer_L22.png)
+
+## 8. A harness defence: the clean re-ask (Amendment L-6)
+
+RESULTS_L6_PLACEHOLDER
 
 ## What this supports, and what it does not
 

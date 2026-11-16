@@ -1,12 +1,14 @@
-# Certain Until Told Otherwise
+# Clean Re-asking
 
 Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
-*Certain Until Told Otherwise: Why Pushback Benchmarks Disagree*.
+*Clean Re-asking: Why Pushback Benchmarks Disagree, Traced From 21 Models Into the Layers of One*.
 
 Author: Daniel Foo, Nanyang Technological University (NTU), Singapore, with Apart Research.
 
 **In one sentence:** models that can see the right answer and are sure of it will still drop it when a user states a
-different answer instead of asking, and that explains why two published pushback tests disagree.
+different answer instead of asking, which explains why two published pushback tests disagree; inside one open-weight model,
+asking and telling take different routes, and a harness that re-asks the original question in a clean context, without the
+model's previous answer, uses that difference as a defence.
 
 When a user insists that a model is wrong, a good model changes its answer if the user is right and keeps it if the user is
 wrong. Published tests of this disagree: one reports that current models almost never give up a well-anchored fact (Yang et
