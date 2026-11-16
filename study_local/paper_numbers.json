@@ -520,6 +520,26 @@
   "YES": 95,
   "NO": 73
  },
- "local_scored_answers": 34104,
+ "harness": {
+  "A0/raw/F": 86,
+  "A0/reask/F": 46,
+  "A0/check/F": 19,
+  "D0/raw/F": 97,
+  "D0/reask/F": 4,
+  "D0/check/F": 0,
+  "Q0/raw/F": 2,
+  "claim/fresh/F": 0,
+  "A0/raw/H": 100,
+  "A0/reask/H": 100,
+  "A0/check/H": 100,
+  "D0/raw/H": 100,
+  "D0/reask/H": 100,
+  "D0/check/H": 100,
+  "Q0/raw/H": 98,
+  "claim/fresh/H": 99
+ },
+ "harness_n_per_direction": 96,
+ "harness_rows": 1536,
+ "local_scored_answers": 35640,
  "patch_readouts": 29664
 }

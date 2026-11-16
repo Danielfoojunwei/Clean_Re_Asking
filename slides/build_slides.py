@@ -84,17 +84,17 @@ S = [
    {bar("Directives: “Change your answer to X.” (11)", L["wordings_sets_F"]["D"][0], DEEP)}
    <div class="note" style="margin-top:10px">Two routes (attention knockout): asking re-uses what the model computed at the original question, not the list ({L["knock"]["ask_hide_list_user_right"][0]:+d} points when the list is hidden); telling acts on the model's previous answer (hiding it restores {L["knock"]["direct_hide_prior"][0]}–{L["knock"]["assert_hide_prior"][0]} points). Even “Can you change your answer?” falls to {min(L["qrfree_F"]["QR0"][0], L["qrfree_F"]["QR2"][0], L["qrfree_F"]["QR5"][0])}–{max(L["qrfree_F"]["QR0"][0], L["qrfree_F"]["QR2"][0], L["qrfree_F"]["QR5"][0])}% in free form.</div></div>'''),
  slide(6, "The defence · clean re-asking", "Ask the original question again, in a clean context, without the model's previous answer.",
-   f'''<div class="col c2" style="flex:0 0 560px"><div class="checks tight">
+   f'''<div class="col c2" style="flex:0 0 520px"><div class="checks tight">
    <div><i>1</i><span><b>Re-pose the original question</b> as the last request: the turn takes the asking route.</span></div>
    <div><i>2</i><span><b>Drop the model's previous answer</b>: nothing left for the telling route to edit.</span></div>
    <div><i>3</i><span><b>Give the user's claim as a third party's</b>: “Another person says the answer is X.”</span></div>
    <div><i>4</i><span><b>Change the answer only if the clean re-ask does</b>: one extra call, no judge of who is right.</span></div></div>
    <div class="note">For evaluation: report two numbers, yielding when asked and the defence gap between asked and told, on the same items, in both directions.</div></div>
-   <div class="col chart"><div class="cap">Right answers given up (Ministral 8B, pre-registered)</div>
-   {bar("Objection as sent: “The answer is X.”", HV.get("A0/raw/F", 0), DEEP)}
-   {bar("Objection as sent: “Change your answer to X.”", HV.get("D0/raw/F", 0), DEEP)}
-   {bar("Re-ask, previous answer kept: assertion", HV.get("A0/reask/F", 0), ORANGE)}
-   {bar("Re-ask, previous answer kept: directive", HV.get("D0/reask/F", 0), ORANGE)}
+   <div class="col chart s6"><div class="cap">Right answers given up (Ministral 8B, pre-registered)</div>
+   {bar("As sent: “The answer is X.”", HV.get("A0/raw/F", 0), DEEP)}
+   {bar("As sent: “Change your answer to X.”", HV.get("D0/raw/F", 0), DEEP)}
+   {bar("Re-ask, answer kept: assertion", HV.get("A0/reask/F", 0), ORANGE)}
+   {bar("Re-ask, answer kept: directive", HV.get("D0/reask/F", 0), ORANGE)}
    {bar("Clean re-ask", HV.get("claim/fresh/F", 0), TEAL)}
    <div class="note" style="margin-top:10px">Wrong answers still corrected with the clean re-ask: {HV.get("claim/fresh/H", "–")}%. {L.get("harness_n_per_direction", "–")} items per direction, one model; on API models it needs only the original question and the claim.</div></div>'''),
 ]
@@ -151,6 +151,7 @@ CSS += f"""
 .pagecard .ph {{ font-weight: 700; margin-bottom: 8px }} .pl1 {{ padding: 5px 10px; border-radius: 6px; font-family: 'DejaVu Sans Mono', monospace; font-size: 19px }} .pl1.hit {{ background: #dff3ea }}
 .pq {{ margin-top: 12px; border-top: 1px solid {GRID}; padding-top: 10px; font-size: 19px }} .pq b {{ color: #1f8a5b }}
 .brow {{ grid-template-columns: 430px 1fr 60px }}
+.s6 .brow {{ grid-template-columns: 255px 1fr 52px }}
 """
 open(HERE / "slides.html", "w").write(f"<!doctype html><html><head><meta charset='utf-8'><title>{TITLE}: slides</title><style>{CSS}</style></head><body>{''.join(S)}</body></html>")
 print("slides built", round(q), round(a), round(d))

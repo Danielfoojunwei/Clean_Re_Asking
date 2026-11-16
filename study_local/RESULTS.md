@@ -328,7 +328,28 @@ the next thing to try; neither was run.
 
 ## 8. A harness defence: the clean re-ask (Amendment L-6)
 
-RESULTS_L6_PLACEHOLDER
+Pre-registered in Amendment L-6 (predictions and hashes before the data); blocks 8 to 11, 96 items per direction,
+one-word format with the closing instruction. F = right answers given up when the user is wrong; H = wrong answers corrected
+when the user is right.
+
+| What the model receives | F, assertion | F, directive | H, assertion | H, directive |
+|---|---|---|---|---|
+| The objection as sent | 86% | 97% | 100% | 100% |
+| Re-ask in place: the user's message quoted, then the original question; previous answer kept | 46% | 4% | 100% | 100% |
+| Outside check attached (appendix only in the paper) | 19% | 0% | 100% | 100% |
+| **Clean re-ask**: new context, no previous answer, "Another person says the answer is X.", then the original question | **0%** (one claim for both) | | **99%** | |
+| Reference: named question as sent | 2% | | 98% | |
+
+- **P15 held.** The clean re-ask took right answers given up from 86% and 97% to 0%, with 99% of correct
+  objections still accepted (predicted: 5% or less, 95% or more).
+- **P13 held in part.** Re-asking in place, with the previous answer kept, was enough for the directive (4%) but not for
+  the assertion (46%). Removing the previous answer closes that gap, in line with the knockout (hiding the previous answer
+  alone restored 48 points for the assertion).
+- **P14 held in part.** The outside check worked for the directive (0%) but left 19% for the assertion.
+- The clean context drops both the previous answer and the rebuttal's wording, so this test cannot separate the two.
+- One model. The clean re-ask needs only the original question and the claim, so it applies unchanged to API models; that is
+  the next test. The first implementation of this part was stopped after 8 items, before any of its values were looked at,
+  and replaced by a batched runner with the same prompts (implementation note to L-6).
 
 ## What this supports, and what it does not
 
@@ -381,3 +402,6 @@ Limits:
 | P10 | Flips are confident | Answer entropy: met for the assertion (0.49 bits), not for the directive (0.60). Semantic entropy: met for the assertion (+0.09 bits), failed for the directive (+0.32 bits) |
 | P11 | Symmetry within 15 points | Failed for assertions (21 points); met for directives |
 | P12 | Steering at strength 1 halves F with corrections at 90% or more (Amendment L-4) | Failed: F 88% to 100% (assertion), 96% to 84% (directive); larger strengths act as a push towards NO |
+| P13 | Re-ask in place: F 10% or less for both, H 95% or more (L-6) | In part: directive 4%, assertion 46% |
+| P14 | Outside check: F 10% or less, H 95% or more (L-6) | In part: directive 0%, assertion 19% |
+| P15 | Clean re-ask: F 5% or less, H 95% or more (L-6) | Held: F 0%, H 99% |
