@@ -1,7 +1,7 @@
 # Clean Re-asking
 
 Materials for the Apart Research AI x Epistemics sprint entry (Track 1):
-*Clean Re-asking: Why Pushback Benchmarks Disagree, Traced From 21 Models Into the Layers of One*.
+*Clean Re-asking: Why Pushback Benchmarks Disagree and How It Happens*.
 
 Author: Daniel Foo, Nanyang Technological University (NTU), Singapore, with Apart Research.
 

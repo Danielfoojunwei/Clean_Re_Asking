@@ -1,6 +1,6 @@
 # Study L results: what happens inside one model when it "answers the last request"
 
-Local study for *Clean Re-asking: Why Pushback Benchmarks Disagree, Traced From 21 Models Into the Layers of One* (paper
+Local study for *Clean Re-asking: Why Pushback Benchmarks Disagree and How It Happens* (paper
 Sections 4.6 and 5). The paper's original reading of its main finding ("the model answers the last request, not the
 question") was behavioural. This study tests it on one open-weight model from the paper, run locally with access to its
 activations, and tests a harness defence derived from it (section 8). Plan, predictions and file hashes were written before
