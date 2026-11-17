@@ -57,7 +57,7 @@ in writing, with file hashes, before its data was collected.
 
 | Path | Contents |
 |---|---|
-| `paper/Epistemics_Sprint_Paper.pdf` | The report: 8 pages of main text, 42 references, four appendices (21 pages in all). |
+| `paper/Epistemics_Sprint_Paper.pdf` | The report: 8 pages of main text, 42 references, five appendices (22 pages in all). Appendix E lists every experimental setting: items and how they are generated, seeds, sample sizes, decoding, scoring, bootstrap, baselines and controls. |
 | `paper/Epistemics_Sprint_Paper.docx` | The same text for pasting into the sprint template. |
 | `paper/ABSTRACT.txt` | Title and abstract for the submission form. |
 | `paper/paper.html`, `paper/render.js` | The source the PDF is rendered from (`node render.js paper.pdf`). |
